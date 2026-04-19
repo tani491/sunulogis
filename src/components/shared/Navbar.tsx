@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import { useAppStore } from '@/store/app-store';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Home, LogIn, UserPlus, LayoutDashboard, LogOut, Menu, Building2 } from 'lucide-react';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 
 interface NavLinksProps {
   currentView: string;
@@ -117,6 +118,9 @@ export default function Navbar() {
             </Button>
           </SheetTrigger>
           <SheetContent side="right" className="w-64">
+            <VisuallyHidden>
+              <SheetTitle>Menu de navigation</SheetTitle>
+            </VisuallyHidden>
             <div className="flex flex-col gap-3 mt-8">
               <NavLinks
                 currentView={currentView}
