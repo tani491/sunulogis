@@ -4,11 +4,13 @@ import { useEffect } from 'react'
 import { useAppStore, type View } from '@/store/app-store'
 import Navbar from '@/components/shared/Navbar'
 import Footer from '@/components/shared/Footer'
+import { LandingPage } from '@/components/public/LandingPage'
 import { HomePage } from '@/components/public/HomePage'
-import { HostelDetailPage } from '@/components/public/HostelDetailPage'
+import { EstablishmentDetailPage } from '@/components/public/EstablishmentDetailPage'
 import { LoginPage } from '@/components/auth/LoginPage'
 import { RegisterPage } from '@/components/auth/RegisterPage'
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout'
+import { AdminLayout } from '@/components/admin/AdminLayout'
 import { AnimatePresence, motion } from 'framer-motion'
 
 const pageVariants = {
@@ -53,22 +55,30 @@ export default function Home() {
 
   const renderView = () => {
     const views: Record<View, React.ReactNode> = {
+      landing: <LandingPage />,
       home: <HomePage />,
-      'hostel-detail': <HostelDetailPage />,
+      'establishment-detail': <EstablishmentDetailPage />,
       login: <LoginPage />,
       register: <RegisterPage />,
       dashboard: <DashboardLayout />,
-      'dashboard-hostel': <DashboardLayout />,
+      'dashboard-establishments': <DashboardLayout />,
       'dashboard-rooms': <DashboardLayout />,
       'dashboard-bookings': <DashboardLayout />,
+      admin: <AdminLayout />,
+      'admin-stats': <AdminLayout />,
+      'admin-establishments': <AdminLayout />,
+      'admin-users': <AdminLayout />,
     }
-    return views[currentView] || <HomePage />
+    return views[currentView] || <LandingPage />
   }
+
+  // Hide footer for dashboard and admin views
+  const hideFooter = currentView.startsWith('dashboard') || currentView.startsWith('admin')
 
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-1 container mx-auto px-4 py-6">
+      <main className="flex-1">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentView}
@@ -77,12 +87,13 @@ export default function Home() {
             animate="animate"
             exit="exit"
             transition={pageTransition}
+            className={hideFooter ? '' : 'container mx-auto px-4 py-6'}
           >
             {renderView()}
           </motion.div>
         </AnimatePresence>
       </main>
-      <Footer />
+      {!hideFooter && <Footer />}
     </div>
   )
 }

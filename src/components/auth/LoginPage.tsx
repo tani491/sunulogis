@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { LogIn, Mail, Lock } from 'lucide-react'
+import { LogIn, Mail, Lock, Building2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 export function LoginPage() {
@@ -40,7 +40,13 @@ export function LoginPage() {
 
       setUser(data)
       toast.success(`Bienvenue, ${data.fullName || data.email} !`)
-      navigate('dashboard')
+
+      // Navigate based on role
+      if (data.role === 'admin') {
+        navigate('admin')
+      } else {
+        navigate('dashboard')
+      }
     } catch (err) {
       console.error(err)
       toast.error('Erreur de connexion au serveur')
@@ -58,7 +64,7 @@ export function LoginPage() {
           </div>
           <CardTitle className="text-2xl">Connexion</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Connectez-vous pour gérer vos auberges
+            Connectez-vous à votre espace SunuLogis
           </p>
         </CardHeader>
         <CardContent>
@@ -109,9 +115,12 @@ export function LoginPage() {
             </p>
           </form>
 
-          <div className="mt-6 rounded-lg bg-muted p-3">
+          <div className="mt-6 rounded-lg bg-muted p-3 space-y-1">
             <p className="text-xs text-muted-foreground text-center">
-              <strong>Demo :</strong> demo@aubergeconnect.sn / password
+              <strong>Demo Propriétaire :</strong> demo@sunulogis.sn / password
+            </p>
+            <p className="text-xs text-muted-foreground text-center">
+              <strong>Demo Admin :</strong> admin@sunulogis.sn / admin123
             </p>
           </div>
         </CardContent>

@@ -17,7 +17,7 @@ interface Room {
   capacity: number
 }
 
-interface Hostel {
+interface Establishment {
   id: string
   name: string
   phone?: string
@@ -25,12 +25,12 @@ interface Hostel {
 
 interface BookingFormProps {
   room: Room
-  hostel: Hostel
+  establishment: Establishment
   open: boolean
   onClose: () => void
 }
 
-export function BookingForm({ room, hostel, open, onClose }: BookingFormProps) {
+export function BookingForm({ room, establishment, open, onClose }: BookingFormProps) {
   const [guestName, setGuestName] = useState('')
   const [guestPhone, setGuestPhone] = useState('')
   const [startDate, setStartDate] = useState('')
@@ -86,7 +86,7 @@ export function BookingForm({ room, hostel, open, onClose }: BookingFormProps) {
 
   const getWhatsAppLink = () => {
     const message = `Bonjour, je suis ${guestName}. Je souhaite réserver la chambre ${room.name} du ${format(new Date(startDate), 'dd MMMM yyyy', { locale: fr })} au ${format(new Date(endDate), 'dd MMMM yyyy', { locale: fr })}. Merci de confirmer.`
-    const phone = hostel.phone?.replace(/^(\+)/, '') || ''
+    const phone = establishment.phone?.replace(/^(\+)/, '') || ''
     return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
   }
 
@@ -189,10 +189,10 @@ export function BookingForm({ room, hostel, open, onClose }: BookingFormProps) {
             </div>
             <h3 className="text-lg font-semibold">Réservation enregistrée !</h3>
             <p className="text-sm text-muted-foreground">
-              Votre réservation est en attente de confirmation. Contactez l&apos;auberge via WhatsApp pour confirmer.
+              Votre réservation est en attente de confirmation. Contactez l&apos;établissement via WhatsApp pour confirmer.
             </p>
 
-            {hostel.phone && (
+            {establishment.phone && (
               <Button
                 className="w-full gap-2"
                 variant="outline"

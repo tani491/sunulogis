@@ -1,6 +1,19 @@
 import { create } from 'zustand';
 
-export type View = 'home' | 'login' | 'register' | 'dashboard' | 'dashboard-hostel' | 'dashboard-rooms' | 'dashboard-bookings' | 'hostel-detail';
+export type View =
+  | 'home'
+  | 'landing'
+  | 'login'
+  | 'register'
+  | 'dashboard'
+  | 'dashboard-establishments'
+  | 'dashboard-rooms'
+  | 'dashboard-bookings'
+  | 'establishment-detail'
+  | 'admin'
+  | 'admin-stats'
+  | 'admin-establishments'
+  | 'admin-users';
 
 interface CurrentUser {
   id: string;
@@ -10,26 +23,44 @@ interface CurrentUser {
   phone: string | null;
 }
 
+interface SearchFilters {
+  search: string;
+  region: string;
+  priceRange: string;
+  type: string;
+}
+
 interface AppState {
   currentView: View;
   currentUser: CurrentUser | null;
-  selectedHostelId: string | null;
+  currentEstablishmentId: string | null;
+  searchFilters: SearchFilters;
   isLoading: boolean;
   navigate: (view: View) => void;
   setUser: (user: CurrentUser | null) => void;
   logout: () => void;
-  selectHostel: (id: string) => void;
+  selectEstablishment: (id: string) => void;
+  setSearchFilters: (filters: Partial<SearchFilters>) => void;
   setLoading: (loading: boolean) => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
-  currentView: 'home',
+  currentView: 'landing',
   currentUser: null,
-  selectedHostelId: null,
+  currentEstablishmentId: null,
+  searchFilters: {
+    search: '',
+    region: 'all',
+    priceRange: 'all',
+    type: 'all',
+  },
   isLoading: true,
   navigate: (view) => set({ currentView: view }),
   setUser: (user) => set({ currentUser: user, isLoading: false }),
-  logout: () => set({ currentUser: null, currentView: 'home' }),
-  selectHostel: (id) => set({ selectedHostelId: id, currentView: 'hostel-detail' }),
+  logout: () => set({ currentUser: null, currentView: 'landing' }),
+  selectEstablishment: (id) => set({ currentEstablishmentId: id, currentView: 'establishment-detail' }),
+  setSearchFilters: (filters) => set((state) => ({
+    searchFilters: { ...state.searchFilters, ...filters },
+  })),
   setLoading: (loading) => set({ isLoading: loading }),
 }));

@@ -12,24 +12,29 @@ model Profile {
   email     String   @unique
   username  String?
   fullName  String?
-  role      String   @default("owner")
-  password  String
+  role      String   @default("owner") // "client", "owner", "admin"
+  password  String?
   phone     String?
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  hostels   Hostel[]
+  establishments Establishment[]
 }
 
-model Hostel {
+model Establishment {
   id          String   @id @default(cuid())
   ownerId     String
   name        String
+  type        String   @default("auberge") // "auberge", "hotel", "appartement_meuble", "lodge", "loft"
   description String   @default("")
   city        String
+  region      String   @default("")
   address     String   @default("")
   images      String   @default("[]")
   website     String?
   phone       String?
+  isApproved  Boolean  @default(false) // Admin must approve
+  isSuspended Boolean  @default(false) // Admin can suspend
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   owner       Profile  @relation(fields: [ownerId], references: [id], onDelete: Cascade)
@@ -37,16 +42,16 @@ model Hostel {
 }
 
 model Room {
-  id            String   @id @default(cuid())
-  hostelId      String
-  name          String
-  pricePerNight Int
-  capacity      Int      @default(1)
-  isAvailable   Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  hostel        Hostel   @relation(fields: [hostelId], references: [id], onDelete: Cascade)
-  bookings      Booking[]
+  id              String   @id @default(cuid())
+  establishmentId String
+  name            String
+  pricePerNight   Int
+  capacity        Int      @default(1)
+  isAvailable     Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  establishment   Establishment @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+  bookings        Booking[]
 }
 
 model Booking {
@@ -56,7 +61,7 @@ model Booking {
   guestPhone String
   startDate  DateTime
   endDate    DateTime
-  status     String   @default("pending")
+  status     String   @default("pending") // "pending", "confirmed", "cancelled"
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   room       Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)

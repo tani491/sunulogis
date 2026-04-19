@@ -8,14 +8,30 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Search, MapPin, Users, ArrowRight, Building2, Globe, Banknote } from 'lucide-react'
+import { Search, MapPin, Users, ArrowRight, Building2, Globe, Banknote, SlidersHorizontal } from 'lucide-react'
 
-interface Hostel {
+const establishmentTypes = [
+  { value: 'all', label: 'Tous les types' },
+  { value: 'auberge', label: 'Auberge' },
+  { value: 'hotel', label: 'Hôtel' },
+  { value: 'appartement_meuble', label: 'Appartement Meublé' },
+  { value: 'lodge', label: 'Lodge' },
+  { value: 'loft', label: 'Loft' },
+]
+
+const regions = [
+  'Dakar', 'Diourbel', 'Fatick', 'Kaffrine', 'Kaolack',
+  'Kédougou', 'Kolda', 'Louga', 'Matam', 'Sédhiou',
+  'Saint-Louis', 'Tambacounda', 'Thiès', 'Ziguinchor',
+]
+
+interface Establishment {
   id: string
   name: string
+  type: string
   description: string
   city: string
-  address: string
+  region: string
   images: string[]
   phone?: string
   website?: string
@@ -24,40 +40,44 @@ interface Hostel {
 }
 
 export function HomePage() {
-  const { navigate, selectHostel } = useAppStore()
-  const [hostels, setHostels] = useState<Hostel[]>([])
+  const { navigate, selectEstablishment, searchFilters, setSearchFilters } = useAppStore()
+  const [establishments, setEstablishments] = useState<Establishment[]>([])
   const [loading, setLoading] = useState(true)
-  const [cityFilter, setCityFilter] = useState<string>('all')
-  const [priceFilter, setPriceFilter] = useState<string>('all')
-  const [searchQuery, setSearchQuery] = useState('')
+  const [typeFilter, setTypeFilter] = useState<string>('all')
 
   useEffect(() => {
-    fetchHostels()
-  }, [cityFilter, priceFilter])
+    fetchEstablishments()
+  }, [searchFilters.region, searchFilters.priceRange, typeFilter])
 
-  const fetchHostels = async () => {
+  const fetchEstablishments = async () => {
     setLoading(true)
     try {
       const params = new URLSearchParams()
-      if (cityFilter && cityFilter !== 'all') params.set('city', cityFilter)
+      if (searchFilters.region && searchFilters.region !== 'all') params.set('region', searchFilters.region)
+      if (searchFilters.search) params.set('search', searchFilters.search)
+      if (typeFilter && typeFilter !== 'all') params.set('type', typeFilter)
 
       // Price filter ranges
-      if (priceFilter === '0-15000') {
-        params.set('maxPrice', '15000')
-      } else if (priceFilter === '15000-30000') {
-        params.set('minPrice', '15000')
-        params.set('maxPrice', '30000')
-      } else if (priceFilter === '30000-50000') {
-        params.set('minPrice', '30000')
+      const pr = searchFilters.priceRange
+      if (pr === '0-10000') {
+        params.set('maxPrice', '10000')
+      } else if (pr === '10000-25000') {
+        params.set('minPrice', '10000')
+        params.set('maxPrice', '25000')
+      } else if (pr === '25000-50000') {
+        params.set('minPrice', '25000')
         params.set('maxPrice', '50000')
-      } else if (priceFilter === '50000+') {
+      } else if (pr === '50000-100000') {
         params.set('minPrice', '50000')
+        params.set('maxPrice', '100000')
+      } else if (pr === '100000+') {
+        params.set('minPrice', '100000')
       }
 
-      const url = params.toString() ? `/api/hostels?${params.toString()}` : '/api/hostels'
+      const url = params.toString() ? `/api/establishments?${params.toString()}` : '/api/establishments'
       const res = await fetch(url)
       const data = await res.json()
-      setHostels(data)
+      setEstablishments(data)
     } catch (err) {
       console.error(err)
     } finally {
@@ -65,79 +85,88 @@ export function HomePage() {
     }
   }
 
-  const filteredHostels = hostels.filter((h) =>
-    !searchQuery || h.name.toLowerCase().includes(searchQuery.toLowerCase()) || h.city.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredEstablishments = establishments.filter((e) =>
+    !searchFilters.search || e.name.toLowerCase().includes(searchFilters.search.toLowerCase()) || e.city.toLowerCase().includes(searchFilters.search.toLowerCase())
   )
 
-  const cities = ['Dakar', 'Saint-Louis', 'Saly', 'Thies', 'Ziguinchor', 'Kaolack']
+  const getTypeLabel = (type: string) => {
+    const types: Record<string, string> = {
+      auberge: 'Auberge',
+      hotel: 'Hôtel',
+      appartement_meuble: 'Appartement Meublé',
+      lodge: 'Lodge',
+      loft: 'Loft',
+    }
+    return types[type] || type
+  }
+
+  const getTypeColor = (type: string) => {
+    const colors: Record<string, string> = {
+      auberge: 'bg-emerald-100 text-emerald-800',
+      hotel: 'bg-amber-100 text-amber-800',
+      appartement_meuble: 'bg-sky-100 text-sky-800',
+      lodge: 'bg-orange-100 text-orange-800',
+      loft: 'bg-purple-100 text-purple-800',
+    }
+    return colors[type] || 'bg-gray-100 text-gray-800'
+  }
 
   const handleViewDetail = (id: string) => {
-    selectHostel(id)
-    navigate('hostel-detail')
+    selectEstablishment(id)
   }
 
   return (
-    <div className="space-y-12">
-      {/* Hero */}
-      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-accent/30 p-8 md:p-16">
-        <div className="relative z-10 max-w-3xl mx-auto text-center space-y-6">
-          <Badge variant="secondary" className="mb-2 text-sm px-3 py-1">Sénégal</Badge>
-          <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground">
-            Trouvez votre auberge idéale au <span className="text-primary">Sénégal</span>
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Découvrez les meilleures auberges et maisons d&apos;hôtes à travers le Sénégal.
-            Réservez en quelques clics et confirmez via WhatsApp.
-          </p>
-
-          {/* Search bar */}
-          <div className="flex flex-col sm:flex-row gap-3 max-w-2xl mx-auto mt-8">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Rechercher une auberge..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <Select value={cityFilter} onValueChange={setCityFilter}>
-              <SelectTrigger className="w-full sm:w-44">
-                <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
-                <SelectValue placeholder="Ville" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Toutes les villes</SelectItem>
-                {cities.map((c) => (
-                  <SelectItem key={c} value={c}>{c}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={priceFilter} onValueChange={setPriceFilter}>
-              <SelectTrigger className="w-full sm:w-48">
-                <Banknote className="h-4 w-4 mr-2 text-muted-foreground" />
-                <SelectValue placeholder="Budget" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tous les prix</SelectItem>
-                <SelectItem value="0-15000">Moins de 15 000 FCFA</SelectItem>
-                <SelectItem value="15000-30000">15 000 - 30 000 FCFA</SelectItem>
-                <SelectItem value="30000-50000">30 000 - 50 000 FCFA</SelectItem>
-                <SelectItem value="50000+">Plus de 50 000 FCFA</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+    <div className="space-y-8">
+      {/* Filters bar */}
+      <section className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+        <div className="flex items-center gap-2">
+          <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-medium">Filtres :</span>
         </div>
-        {/* Decorative circles */}
-        <div className="absolute -top-12 -right-12 w-64 h-64 rounded-full bg-primary/10 blur-3xl" />
-        <div className="absolute -bottom-8 -left-8 w-48 h-48 rounded-full bg-primary/5 blur-2xl" />
+        <Select value={typeFilter} onValueChange={setTypeFilter}>
+          <SelectTrigger className="w-full sm:w-48 h-9">
+            <Building2 className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+            <SelectValue placeholder="Type" />
+          </SelectTrigger>
+          <SelectContent>
+            {establishmentTypes.map((t) => (
+              <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={searchFilters.region} onValueChange={(v) => setSearchFilters({ region: v })}>
+          <SelectTrigger className="w-full sm:w-44 h-9">
+            <MapPin className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+            <SelectValue placeholder="Région" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Toutes les régions</SelectItem>
+            {regions.map((r) => (
+              <SelectItem key={r} value={r}>{r}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={searchFilters.priceRange} onValueChange={(v) => setSearchFilters({ priceRange: v })}>
+          <SelectTrigger className="w-full sm:w-48 h-9">
+            <Banknote className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+            <SelectValue placeholder="Budget" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tous les prix</SelectItem>
+            <SelectItem value="0-10000">0 - 10 000 FCFA</SelectItem>
+            <SelectItem value="10000-25000">10 000 - 25 000 FCFA</SelectItem>
+            <SelectItem value="25000-50000">25 000 - 50 000 FCFA</SelectItem>
+            <SelectItem value="50000-100000">50 000 - 100 000 FCFA</SelectItem>
+            <SelectItem value="100000+">100 000+ FCFA</SelectItem>
+          </SelectContent>
+        </Select>
       </section>
 
-      {/* Hostel Grid */}
+      {/* Establishment Grid */}
       <section>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold">Auberges disponibles</h2>
-          <Badge variant="outline">{filteredHostels.length} résultat{filteredHostels.length !== 1 ? 's' : ''}</Badge>
+          <h2 className="text-2xl font-bold">Établissements disponibles</h2>
+          <Badge variant="outline">{filteredEstablishments.length} résultat{filteredEstablishments.length !== 1 ? 's' : ''}</Badge>
         </div>
 
         {loading ? (
@@ -153,26 +182,26 @@ export function HomePage() {
               </Card>
             ))}
           </div>
-        ) : filteredHostels.length === 0 ? (
+        ) : filteredEstablishments.length === 0 ? (
           <div className="text-center py-16 space-y-4">
             <Building2 className="h-16 w-16 mx-auto text-muted-foreground/40" />
-            <h3 className="text-lg font-semibold text-muted-foreground">Aucune auberge trouvée</h3>
+            <h3 className="text-lg font-semibold text-muted-foreground">Aucun établissement trouvé</h3>
             <p className="text-sm text-muted-foreground">Essayez de modifier vos critères de recherche</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredHostels.map((hostel) => (
+            {filteredEstablishments.map((est) => (
               <Card
-                key={hostel.id}
+                key={est.id}
                 className="overflow-hidden group cursor-pointer hover:shadow-lg transition-all duration-300"
-                onClick={() => handleViewDetail(hostel.id)}
+                onClick={() => handleViewDetail(est.id)}
               >
                 {/* Image */}
                 <div className="relative h-48 overflow-hidden bg-muted">
-                  {hostel.images && hostel.images.length > 0 ? (
+                  {est.images && est.images.length > 0 ? (
                     <img
-                      src={hostel.images[0]}
-                      alt={hostel.name}
+                      src={est.images[0]}
+                      alt={est.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   ) : (
@@ -180,12 +209,15 @@ export function HomePage() {
                       <Building2 className="h-12 w-12 text-primary/40" />
                     </div>
                   )}
-                  <Badge className="absolute top-3 left-3" variant="secondary">
-                    <MapPin className="h-3 w-3 mr-1" />
-                    {hostel.city}
+                  <Badge className={`absolute top-3 left-3 ${getTypeColor(est.type)}`}>
+                    {getTypeLabel(est.type)}
                   </Badge>
-                  {hostel.website && (
-                    <Badge className="absolute top-3 right-3 bg-white/90 text-foreground hover:bg-white" variant="secondary">
+                  <Badge className="absolute top-3 right-3" variant="secondary">
+                    <MapPin className="h-3 w-3 mr-1" />
+                    {est.city}
+                  </Badge>
+                  {est.website && (
+                    <Badge className="absolute bottom-3 right-3 bg-white/90 text-foreground hover:bg-white" variant="secondary">
                       <Globe className="h-3 w-3 mr-1" />
                       Site web
                     </Badge>
@@ -193,13 +225,21 @@ export function HomePage() {
                 </div>
 
                 <CardContent className="p-4 space-y-3">
-                  <h3 className="font-semibold text-lg line-clamp-1">{hostel.name}</h3>
-                  <p className="text-sm text-muted-foreground line-clamp-2">{hostel.description}</p>
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="font-semibold text-lg line-clamp-1">{est.name}</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground line-clamp-2">{est.description}</p>
+                  {est.region && (
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      <MapPin className="h-3 w-3" />
+                      {est.city}, {est.region}
+                    </p>
+                  )}
                   <div className="flex items-center justify-between pt-2">
                     <div>
-                      {hostel.minPrice !== null && hostel.minPrice !== undefined ? (
+                      {est.minPrice !== null && est.minPrice !== undefined ? (
                         <p className="text-sm">
-                          <span className="font-bold text-primary">{hostel.minPrice.toLocaleString()} FCFA</span>
+                          <span className="font-bold text-primary">{est.minPrice.toLocaleString()} FCFA</span>
                           <span className="text-muted-foreground"> / nuit</span>
                         </p>
                       ) : (
@@ -211,10 +251,10 @@ export function HomePage() {
                       <ArrowRight className="h-3 w-3" />
                     </Button>
                   </div>
-                  {hostel.rooms.length > 0 && (
+                  {est.rooms.length > 0 && (
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Users className="h-3 w-3" />
-                      {hostel.rooms.filter((r) => r.isAvailable).length} chambre{hostel.rooms.filter((r) => r.isAvailable).length !== 1 ? 's' : ''} disponible{hostel.rooms.filter((r) => r.isAvailable).length !== 1 ? 's' : ''}
+                      {est.rooms.filter((r) => r.isAvailable).length} chambre{est.rooms.filter((r) => r.isAvailable).length !== 1 ? 's' : ''} disponible{est.rooms.filter((r) => r.isAvailable).length !== 1 ? 's' : ''}
                     </div>
                   )}
                 </CardContent>

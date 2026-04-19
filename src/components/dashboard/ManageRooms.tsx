@@ -22,11 +22,11 @@ interface Room {
   pricePerNight: number
   capacity: number
   isAvailable: boolean
-  hostelId: string
-  hostel?: { name: string; id: string }
+  establishmentId: string
+  establishment?: { name: string; id: string }
 }
 
-interface Hostel {
+interface Establishment {
   id: string
   name: string
   rooms: Room[]
@@ -35,7 +35,7 @@ interface Hostel {
 export function ManageRooms() {
   const { currentUser } = useAppStore()
   const [rooms, setRooms] = useState<Room[]>([])
-  const [hostels, setHostels] = useState<Hostel[]>([])
+  const [establishments, setEstablishments] = useState<Establishment[]>([])
   const [loading, setLoading] = useState(true)
   const [showDialog, setShowDialog] = useState(false)
   const [editingRoom, setEditingRoom] = useState<Room | null>(null)
@@ -45,7 +45,7 @@ export function ManageRooms() {
   const [pricePerNight, setPricePerNight] = useState('')
   const [capacity, setCapacity] = useState('1')
   const [isAvailable, setIsAvailable] = useState(true)
-  const [selectedHostelId, setSelectedHostelId] = useState('')
+  const [selectedEstablishmentId, setSelectedEstablishmentId] = useState('')
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
@@ -57,17 +57,17 @@ export function ManageRooms() {
   const fetchData = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/hostels')
+      const res = await fetch('/api/establishments')
       const data = await res.json()
-      const userHostels = data.filter((h: { ownerId: string }) => h.ownerId === currentUser?.id)
-      setHostels(userHostels)
+      const userEstablishments = data.filter((e: { ownerId: string }) => e.ownerId === currentUser?.id)
+      setEstablishments(userEstablishments)
 
-      // Get all rooms for user hostels
+      // Get all rooms for user establishments
       const allRooms: Room[] = []
-      for (const hostel of userHostels) {
-        const roomsRes = await fetch(`/api/rooms?hostelId=${hostel.id}`)
-        const hostelRooms = await roomsRes.json()
-        allRooms.push(...hostelRooms.map((r: Room) => ({ ...r, hostel: { name: hostel.name, id: hostel.id } })))
+      for (const est of userEstablishments) {
+        const roomsRes = await fetch(`/api/rooms?establishmentId=${est.id}`)
+        const estRooms = await roomsRes.json()
+        allRooms.push(...estRooms.map((r: Room) => ({ ...r, establishment: { name: est.name, id: est.id } })))
       }
       setRooms(allRooms)
     } catch (err) {
@@ -82,8 +82,8 @@ export function ManageRooms() {
     setPricePerNight('')
     setCapacity('1')
     setIsAvailable(true)
-    // Auto-select the first hostel if there's only one
-    setSelectedHostelId(hostels.length === 1 ? hostels[0].id : '')
+    // Auto-select the first establishment if there's only one
+    setSelectedEstablishmentId(establishments.length === 1 ? establishments[0].id : '')
     setEditingRoom(null)
     setShowDialog(true)
   }
@@ -93,7 +93,7 @@ export function ManageRooms() {
     setPricePerNight('')
     setCapacity('1')
     setIsAvailable(true)
-    setSelectedHostelId('')
+    setSelectedEstablishmentId('')
     setEditingRoom(null)
     setShowDialog(false)
   }
@@ -103,7 +103,7 @@ export function ManageRooms() {
     setPricePerNight(room.pricePerNight.toString())
     setCapacity(room.capacity.toString())
     setIsAvailable(room.isAvailable)
-    setSelectedHostelId(room.hostelId)
+    setSelectedEstablishmentId(room.establishmentId)
     setEditingRoom(room)
     setShowDialog(true)
   }
@@ -116,8 +116,8 @@ export function ManageRooms() {
       return
     }
 
-    if (!editingRoom && !selectedHostelId) {
-      toast.error('Sélectionnez une auberge')
+    if (!editingRoom && !selectedEstablishmentId) {
+      toast.error('Sélectionnez un établissement')
       return
     }
 
@@ -139,7 +139,7 @@ export function ManageRooms() {
         const res = await fetch('/api/rooms', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ hostelId: selectedHostelId, name, pricePerNight: Number(pricePerNight), capacity: Number(capacity), isAvailable }),
+          body: JSON.stringify({ establishmentId: selectedEstablishmentId, name, pricePerNight: Number(pricePerNight), capacity: Number(capacity), isAvailable }),
         })
         if (!res.ok) {
           const data = await res.json()
@@ -214,10 +214,10 @@ export function ManageRooms() {
         </Button>
       </div>
 
-      {hostels.length === 0 ? (
+      {establishments.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground">Créez d&apos;abord une auberge avant d&apos;ajouter des chambres</p>
+            <p className="text-muted-foreground">Créez d&apos;abord un établissement avant d&apos;ajouter des chambres</p>
           </CardContent>
         </Card>
       ) : rooms.length === 0 ? (
@@ -239,7 +239,7 @@ export function ManageRooms() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Nom</TableHead>
-                  <TableHead>Auberge</TableHead>
+                  <TableHead>Établissement</TableHead>
                   <TableHead>Prix/nuit</TableHead>
                   <TableHead>Capacité</TableHead>
                   <TableHead>Disponible</TableHead>
@@ -251,7 +251,7 @@ export function ManageRooms() {
                   <TableRow key={room.id}>
                     <TableCell className="font-medium">{room.name}</TableCell>
                     <TableCell>
-                      <Badge variant="outline">{room.hostel?.name || '—'}</Badge>
+                      <Badge variant="outline">{room.establishment?.name || '—'}</Badge>
                     </TableCell>
                     <TableCell>{room.pricePerNight.toLocaleString()} FCFA</TableCell>
                     <TableCell>{room.capacity} pers.</TableCell>
@@ -303,25 +303,25 @@ export function ManageRooms() {
           <DialogHeader>
             <DialogTitle>{editingRoom ? 'Modifier la chambre' : 'Nouvelle chambre'}</DialogTitle>
             <DialogDescription>
-              {editingRoom ? 'Modifiez les informations de la chambre' : 'Ajoutez une nouvelle chambre à votre auberge'}
+              {editingRoom ? 'Modifiez les informations de la chambre' : 'Ajoutez une nouvelle chambre à votre établissement'}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             {!editingRoom && (
               <div className="space-y-2">
-                <Label>Auberge *</Label>
-                {hostels.length === 0 ? (
+                <Label>Établissement *</Label>
+                {establishments.length === 0 ? (
                   <div className="rounded-md border border-destructive/50 bg-destructive/5 p-3 text-sm text-destructive">
-                    Vous devez d&apos;abord créer une auberge pour pouvoir ajouter des chambres.
+                    Vous devez d&apos;abord créer un établissement pour pouvoir ajouter des chambres.
                   </div>
                 ) : (
-                  <Select value={selectedHostelId} onValueChange={setSelectedHostelId}>
+                  <Select value={selectedEstablishmentId} onValueChange={setSelectedEstablishmentId}>
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Sélectionner une auberge" />
+                      <SelectValue placeholder="Sélectionner un établissement" />
                     </SelectTrigger>
                     <SelectContent>
-                      {hostels.map((h) => (
-                        <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>
+                      {establishments.map((e) => (
+                        <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>

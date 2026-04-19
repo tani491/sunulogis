@@ -11,18 +11,18 @@ export default function Footer() {
                 <Building2 className="h-4 w-4" />
               </div>
               <span className="text-lg font-bold">
-                Auberge<span className="text-primary">Connect</span>
+                Sunu<span className="text-primary">Logis</span>
               </span>
             </div>
             <p className="text-sm text-muted-foreground">
-              La plateforme de réservation d&apos;auberges au Sénégal. Trouvez l&apos;hébergement idéal pour votre séjour.
+              La plateforme de réservation d&apos;hébergements au Sénégal. Auberges, hôtels, appartements meublés et lodges à travers les 14 régions.
             </p>
           </div>
           <div className="space-y-3">
             <h4 className="font-semibold">Liens utiles</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>Accueil</li>
-              <li>Auberges</li>
+              <li>Établissements</li>
               <li>Devenir propriétaire</li>
               <li>Conditions d&apos;utilisation</li>
             </ul>
@@ -31,13 +31,13 @@ export default function Footer() {
             <h4 className="font-semibold">Contact</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>Dakar, Sénégal</li>
-              <li>contact@aubergeconnect.sn</li>
+              <li>contact@sunulogis.sn</li>
               <li>+221 77 000 00 00</li>
             </ul>
           </div>
         </div>
         <div className="mt-8 pt-4 border-t text-center text-sm text-muted-foreground flex items-center justify-center gap-1">
-          Fait avec <Heart className="h-3 w-3 text-red-500 fill-red-500" /> au Sénégal &copy; {new Date().getFullYear()} AubergeConnect
+          Fait avec <Heart className="h-3 w-3 text-red-500 fill-red-500" /> au Sénégal &copy; {new Date().getFullYear()} SunuLogis
         </div>
       </div>
     </footer>

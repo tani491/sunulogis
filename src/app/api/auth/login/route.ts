@@ -21,6 +21,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Email ou mot de passe incorrect' }, { status: 401 });
     }
 
+    if (!profile.isActive) {
+      return NextResponse.json({ error: 'Compte désactivé' }, { status: 403 });
+    }
+
     const user = {
       id: profile.id,
       email: profile.email,

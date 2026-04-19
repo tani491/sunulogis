@@ -5,25 +5,25 @@ import { getSessionUser } from '@/lib/auth';
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const hostelId = searchParams.get('hostelId');
+    const establishmentId = searchParams.get('establishmentId');
 
     const rooms = await db.room.findMany({
       where: {
-        ...(hostelId ? { hostelId } : {}),
+        ...(establishmentId ? { establishmentId } : {}),
       },
-      include: { hostel: { select: { id: true, name: true, ownerId: true } } },
+      include: { establishment: { select: { id: true, name: true, ownerId: true } } },
       orderBy: { createdAt: 'desc' },
     });
 
-    // If user is owner, only return rooms for their hostels
+    // If user is owner, only return rooms for their establishments
     const user = await getSessionUser();
     if (user) {
-      const ownerRooms = rooms.filter(r => r.hostel.ownerId === user.id);
-      if (hostelId) {
+      const ownerRooms = rooms.filter(r => r.establishment.ownerId === user.id);
+      if (establishmentId) {
         return NextResponse.json(ownerRooms);
       }
       // Public: show available rooms; owner: show all their rooms
-      return NextResponse.json(hostelId ? ownerRooms : rooms);
+      return NextResponse.json(establishmentId ? ownerRooms : rooms);
     }
 
     // Public: only available rooms
@@ -43,21 +43,21 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { hostelId, name, pricePerNight, capacity } = body;
+    const { establishmentId, name, pricePerNight, capacity } = body;
 
-    if (!hostelId || !name || pricePerNight === undefined) {
+    if (!establishmentId || !name || pricePerNight === undefined) {
       return NextResponse.json({ error: 'Champ requis manquant' }, { status: 400 });
     }
 
-    // Verify hostel belongs to user
-    const hostel = await db.hostel.findUnique({ where: { id: hostelId } });
-    if (!hostel || hostel.ownerId !== user.id) {
+    // Verify establishment belongs to user
+    const establishment = await db.establishment.findUnique({ where: { id: establishmentId } });
+    if (!establishment || establishment.ownerId !== user.id) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 
     const room = await db.room.create({
       data: {
-        hostelId,
+        establishmentId,
         name,
         pricePerNight: parseInt(pricePerNight),
         capacity: parseInt(capacity) || 1,

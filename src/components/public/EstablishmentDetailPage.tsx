@@ -17,43 +17,67 @@ interface Room {
   isAvailable: boolean
 }
 
-interface Hostel {
+interface Establishment {
   id: string
   name: string
+  type: string
   description: string
   city: string
+  region: string
   address: string
   images: string[]
   phone?: string
   website?: string
   rooms: Room[]
-  owner: { fullName: string; email: string }
+  owner: { fullName: string; email: string; phone?: string }
 }
 
-export function HostelDetailPage() {
-  const { selectedHostelId, navigate } = useAppStore()
-  const [hostel, setHostel] = useState<Hostel | null>(null)
+export function EstablishmentDetailPage() {
+  const { currentEstablishmentId, navigate } = useAppStore()
+  const [establishment, setEstablishment] = useState<Establishment | null>(null)
   const [loading, setLoading] = useState(true)
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
   useEffect(() => {
-    if (selectedHostelId) {
-      fetchHostel()
+    if (currentEstablishmentId) {
+      fetchEstablishment()
     }
-  }, [selectedHostelId])
+  }, [currentEstablishmentId])
 
-  const fetchHostel = async () => {
+  const fetchEstablishment = async () => {
     setLoading(true)
     try {
-      const res = await fetch(`/api/hostels/${selectedHostelId}`)
+      const res = await fetch(`/api/establishments/${currentEstablishmentId}`)
       const data = await res.json()
-      setHostel(data)
+      setEstablishment(data)
     } catch (err) {
       console.error(err)
     } finally {
       setLoading(false)
     }
+  }
+
+  const getTypeLabel = (type: string) => {
+    const types: Record<string, string> = {
+      auberge: 'Auberge',
+      hotel: 'Hôtel',
+      appartement_meuble: 'Appartement Meublé',
+      lodge: 'Lodge',
+      loft: 'Loft',
+    }
+    return types[type] || type
+  }
+
+  const getTypeColor = (type: string) => {
+    const colors: Record<string, string> = {
+      auberge: 'bg-emerald-100 text-emerald-800',
+      hotel: 'bg-amber-100 text-amber-800',
+      appartement_meuble: 'bg-sky-100 text-sky-800',
+      lodge: 'bg-orange-100 text-orange-800',
+      loft: 'bg-purple-100 text-purple-800',
+    }
+    return colors[type] || 'bg-gray-100 text-gray-800'
   }
 
   if (loading) {
@@ -73,10 +97,10 @@ export function HostelDetailPage() {
     )
   }
 
-  if (!hostel) {
+  if (!establishment) {
     return (
       <div className="text-center py-16">
-        <p className="text-muted-foreground">Auberge non trouvée</p>
+        <p className="text-muted-foreground">Établissement non trouvé</p>
         <Button variant="outline" className="mt-4" onClick={() => navigate('home')}>
           Retour à l&apos;accueil
         </Button>
@@ -84,15 +108,15 @@ export function HostelDetailPage() {
     )
   }
 
-  const images = hostel.images || []
-  const availableRooms = hostel.rooms.filter((r) => r.isAvailable)
+  const images = establishment.images || []
+  const availableRooms = establishment.rooms.filter((r) => r.isAvailable)
 
   return (
     <div className="space-y-8">
       {/* Back button */}
       <Button variant="ghost" className="gap-2" onClick={() => navigate('home')}>
         <ArrowLeft className="h-4 w-4" />
-        Retour aux auberges
+        Retour aux établissements
       </Button>
 
       {/* Image gallery */}
@@ -102,7 +126,7 @@ export function HostelDetailPage() {
             <>
               <img
                 src={images[currentImageIndex]}
-                alt={`${hostel.name} - Image ${currentImageIndex + 1}`}
+                alt={`${establishment.name} - Image ${currentImageIndex + 1}`}
                 className="w-full h-full object-cover"
               />
               {images.length > 1 && (
@@ -147,25 +171,34 @@ export function HostelDetailPage() {
         {/* Main info */}
         <div className="lg:col-span-2 space-y-6">
           <div>
-            <div className="flex items-start gap-3 mb-3">
-              <h1 className="text-2xl md:text-3xl font-bold">{hostel.name}</h1>
+            <div className="flex items-start gap-3 mb-3 flex-wrap">
+              <h1 className="text-2xl md:text-3xl font-bold">{establishment.name}</h1>
+              <Badge className={getTypeColor(establishment.type)}>
+                {getTypeLabel(establishment.type)}
+              </Badge>
               <Badge variant="secondary">
                 <MapPin className="h-3 w-3 mr-1" />
-                {hostel.city}
+                {establishment.city}
               </Badge>
             </div>
-            <p className="text-muted-foreground leading-relaxed">{hostel.description}</p>
+            {establishment.region && (
+              <p className="text-sm text-muted-foreground flex items-center gap-1 mb-3">
+                <MapPin className="h-3.5 w-3.5 text-primary" />
+                Région de {establishment.region}
+              </p>
+            )}
+            <p className="text-muted-foreground leading-relaxed">{establishment.description}</p>
           </div>
 
-          {hostel.address && (
+          {establishment.address && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <MapPin className="h-4 w-4 text-primary" />
-              {hostel.address}
+              {establishment.address}
             </div>
           )}
 
-          {/* Website link - prominent for visitors */}
-          {hostel.website && (
+          {/* Website link */}
+          {establishment.website && (
             <Card className="bg-primary/5 border-primary/20">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
@@ -173,11 +206,11 @@ export function HostelDetailPage() {
                     <Globe className="h-5 w-5 text-primary" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-medium">Site web de l&apos;auberge</p>
+                    <p className="text-sm font-medium">Site web de l&apos;établissement</p>
                     <p className="text-xs text-muted-foreground">Plus d&apos;informations et photos sur leur site</p>
                   </div>
                   <a
-                    href={hostel.website}
+                    href={establishment.website}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
@@ -205,7 +238,7 @@ export function HostelDetailPage() {
               </Card>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {hostel.rooms.map((room) => (
+                {establishment.rooms.map((room) => (
                   <Card key={room.id} className={`transition-all ${room.isAvailable ? 'hover:shadow-md' : 'opacity-60'}`}>
                     <CardContent className="p-4 space-y-3">
                       <div className="flex items-start justify-between">
@@ -251,7 +284,27 @@ export function HostelDetailPage() {
               <CardTitle className="text-lg">Informations</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {hostel.phone && (
+              <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
+                  <MapPin className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Type</p>
+                  <p className="text-sm font-medium">{getTypeLabel(establishment.type)}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
+                  <MapPin className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Ville</p>
+                  <p className="text-sm font-medium">{establishment.city}{establishment.region ? `, ${establishment.region}` : ''}</p>
+                </div>
+              </div>
+
+              {establishment.phone && (
                 <div className="flex items-center gap-3">
                   <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
                     <Phone className="h-4 w-4 text-primary" />
@@ -259,16 +312,16 @@ export function HostelDetailPage() {
                   <div>
                     <p className="text-xs text-muted-foreground">Téléphone</p>
                     <a
-                      href={`tel:${hostel.phone}`}
+                      href={`tel:${establishment.phone}`}
                       className="text-sm font-medium hover:text-primary transition-colors"
                     >
-                      +{hostel.phone}
+                      +{establishment.phone}
                     </a>
                   </div>
                 </div>
               )}
 
-              {hostel.website && (
+              {establishment.website && (
                 <div className="flex items-center gap-3">
                   <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
                     <Globe className="h-4 w-4 text-primary" />
@@ -276,7 +329,7 @@ export function HostelDetailPage() {
                   <div>
                     <p className="text-xs text-muted-foreground">Site web</p>
                     <a
-                      href={hostel.website}
+                      href={establishment.website}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-sm font-medium hover:text-primary transition-colors inline-flex items-center gap-1"
@@ -288,22 +341,12 @@ export function HostelDetailPage() {
                 </div>
               )}
 
-              <div className="flex items-center gap-3">
-                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
-                  <MapPin className="h-4 w-4 text-primary" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Ville</p>
-                  <p className="text-sm font-medium">{hostel.city}</p>
-                </div>
-              </div>
-
-              {hostel.phone && (
+              {establishment.phone && (
                 <Button
                   className="w-full mt-4 gap-2"
                   variant="outline"
                   onClick={() => {
-                    window.open(`https://wa.me/${hostel.phone}?text=${encodeURIComponent(`Bonjour, je souhaite avoir des informations sur ${hostel.name}.`)}`, '_blank')
+                    window.open(`https://wa.me/${establishment.phone}?text=${encodeURIComponent(`Bonjour, je souhaite avoir des informations sur ${establishment.name}.`)}`, '_blank')
                   }}
                 >
                   <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current text-green-600">
@@ -318,7 +361,7 @@ export function HostelDetailPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">
-                Géré par <span className="font-medium text-foreground">{hostel.owner?.fullName || 'Propriétaire'}</span>
+                Géré par <span className="font-medium text-foreground">{establishment.owner?.fullName || 'Propriétaire'}</span>
               </p>
             </CardContent>
           </Card>
@@ -326,10 +369,10 @@ export function HostelDetailPage() {
       </div>
 
       {/* Booking form dialog */}
-      {selectedRoom && hostel && (
+      {selectedRoom && establishment && (
         <BookingForm
           room={selectedRoom}
-          hostel={hostel}
+          establishment={establishment}
           open={!!selectedRoom}
           onClose={() => setSelectedRoom(null)}
         />

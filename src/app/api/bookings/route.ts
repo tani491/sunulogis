@@ -13,20 +13,20 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
-    // Get all hostels owned by user
-    const userHostels = await db.hostel.findMany({
+    // Get all establishments owned by user
+    const userEstablishments = await db.establishment.findMany({
       where: { ownerId: user.id },
       select: { id: true },
     });
-    const hostelIds = userHostels.map(h => h.id);
+    const establishmentIds = userEstablishments.map(e => e.id);
 
-    if (hostelIds.length === 0) {
+    if (establishmentIds.length === 0) {
       return NextResponse.json([]);
     }
 
-    // Get rooms in those hostels
+    // Get rooms in those establishments
     const userRooms = await db.room.findMany({
-      where: { hostelId: { in: hostelIds } },
+      where: { establishmentId: { in: establishmentIds } },
       select: { id: true },
     });
     const roomIds = userRooms.map(r => r.id);
@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
       },
       include: {
         room: {
-          select: { id: true, name: true, hostel: { select: { id: true, name: true } } },
+          select: { id: true, name: true, establishment: { select: { id: true, name: true } } },
         },
       },
       orderBy: { createdAt: 'desc' },
@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
 
     const room = await db.room.findUnique({
       where: { id: roomId },
-      include: { hostel: { select: { phone: true } } },
+      include: { establishment: { select: { phone: true } } },
     });
 
     if (!room || !room.isAvailable) {
@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
       },
       include: {
         room: {
-          select: { id: true, name: true, pricePerNight: true, hostel: { select: { id: true, name: true, phone: true } } },
+          select: { id: true, name: true, pricePerNight: true, establishment: { select: { id: true, name: true, phone: true } } },
         },
       },
     });

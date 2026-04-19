@@ -3,14 +3,13 @@
 import { useAppStore, type View } from '@/store/app-store'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { LayoutDashboard, Building2, BedDouble, CalendarDays, Menu, X } from 'lucide-react'
+import { LayoutDashboard, Building2, Users, Settings, Menu, X, Shield } from 'lucide-react'
 import { useState } from 'react'
-import { DashboardOverview } from './DashboardOverview'
-import { ManageEstablishment } from './ManageEstablishment'
-import { ManageRooms } from './ManageRooms'
-import { ManageBookings } from './ManageBookings'
+import { AdminOverview } from './AdminOverview'
+import { AdminEstablishments } from './AdminEstablishments'
+import { AdminUsers } from './AdminUsers'
 
-type SubView = 'dashboard' | 'dashboard-establishments' | 'dashboard-rooms' | 'dashboard-bookings'
+type SubView = 'admin' | 'admin-stats' | 'admin-establishments' | 'admin-users'
 
 interface SidebarContentProps {
   subView: SubView
@@ -20,15 +19,17 @@ interface SidebarContentProps {
 
 function SidebarContent({ subView, onNavigate, onCloseMobile }: SidebarContentProps) {
   const navItems: { view: SubView; label: string; icon: React.ReactNode }[] = [
-    { view: 'dashboard', label: 'Vue d\'ensemble', icon: <LayoutDashboard className="h-4 w-4" /> },
-    { view: 'dashboard-establishments', label: 'Mes Établissements', icon: <Building2 className="h-4 w-4" /> },
-    { view: 'dashboard-rooms', label: 'Chambres', icon: <BedDouble className="h-4 w-4" /> },
-    { view: 'dashboard-bookings', label: 'Réservations', icon: <CalendarDays className="h-4 w-4" /> },
+    { view: 'admin', label: 'Vue d\'ensemble', icon: <LayoutDashboard className="h-4 w-4" /> },
+    { view: 'admin-establishments', label: 'Établissements', icon: <Building2 className="h-4 w-4" /> },
+    { view: 'admin-users', label: 'Utilisateurs', icon: <Users className="h-4 w-4" /> },
   ]
 
   return (
     <div className="space-y-2 p-4">
-      <h2 className="text-lg font-bold text-primary mb-4 px-2">Dashboard</h2>
+      <div className="flex items-center gap-2 mb-4 px-2">
+        <Shield className="h-5 w-5 text-primary" />
+        <h2 className="text-lg font-bold text-primary">Admin</h2>
+      </div>
       {navItems.map((item) => (
         <Button
           key={item.view}
@@ -45,13 +46,13 @@ function SidebarContent({ subView, onNavigate, onCloseMobile }: SidebarContentPr
 }
 
 const navLabels: Record<SubView, string> = {
-  dashboard: 'Vue d\'ensemble',
-  'dashboard-establishments': 'Mes Établissements',
-  'dashboard-rooms': 'Chambres',
-  'dashboard-bookings': 'Réservations',
+  admin: 'Vue d\'ensemble',
+  'admin-stats': 'Statistiques',
+  'admin-establishments': 'Établissements',
+  'admin-users': 'Utilisateurs',
 }
 
-export function DashboardLayout() {
+export function AdminLayout() {
   const { currentView, navigate } = useAppStore()
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
@@ -59,14 +60,14 @@ export function DashboardLayout() {
 
   const renderContent = () => {
     switch (subView) {
-      case 'dashboard-establishments':
-        return <ManageEstablishment />
-      case 'dashboard-rooms':
-        return <ManageRooms />
-      case 'dashboard-bookings':
-        return <ManageBookings />
+      case 'admin-establishments':
+        return <AdminEstablishments />
+      case 'admin-users':
+        return <AdminUsers />
+      case 'admin-stats':
+      case 'admin':
       default:
-        return <DashboardOverview />
+        return <AdminOverview />
     }
   }
 
@@ -104,7 +105,7 @@ export function DashboardLayout() {
             <Menu className="h-5 w-5" />
           </Button>
           <h2 className="font-semibold">
-            {navLabels[subView] || 'Dashboard'}
+            {navLabels[subView] || 'Admin'}
           </h2>
         </div>
 

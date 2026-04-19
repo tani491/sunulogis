@@ -12,14 +12,14 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     const { id } = await params;
     const existing = await db.room.findUnique({
       where: { id },
-      include: { hostel: { select: { ownerId: true } } },
+      include: { establishment: { select: { ownerId: true } } },
     });
 
     if (!existing) {
       return NextResponse.json({ error: 'Chambre non trouvée' }, { status: 404 });
     }
 
-    if (existing.hostel.ownerId !== user.id) {
+    if (existing.establishment.ownerId !== user.id) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 
@@ -53,14 +53,14 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     const { id } = await params;
     const existing = await db.room.findUnique({
       where: { id },
-      include: { hostel: { select: { ownerId: true } } },
+      include: { establishment: { select: { ownerId: true } } },
     });
 
     if (!existing) {
       return NextResponse.json({ error: 'Chambre non trouvée' }, { status: 404 });
     }
 
-    if (existing.hostel.ownerId !== user.id) {
+    if (existing.establishment.ownerId !== user.id) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 

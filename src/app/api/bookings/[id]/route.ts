@@ -12,14 +12,14 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     const { id } = await params;
     const existing = await db.booking.findUnique({
       where: { id },
-      include: { room: { include: { hostel: { select: { ownerId: true } } } } },
+      include: { room: { include: { establishment: { select: { ownerId: true } } } } },
     });
 
     if (!existing) {
       return NextResponse.json({ error: 'Réservation non trouvée' }, { status: 404 });
     }
 
-    if (existing.room.hostel.ownerId !== user.id) {
+    if (existing.room.establishment.ownerId !== user.id && user.role !== 'admin') {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 
@@ -34,7 +34,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       where: { id },
       data: { status },
       include: {
-        room: { select: { id: true, name: true, hostel: { select: { id: true, name: true } } } },
+        room: { select: { id: true, name: true, establishment: { select: { id: true, name: true } } } },
       },
     });
 

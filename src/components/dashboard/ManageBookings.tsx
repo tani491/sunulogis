@@ -22,7 +22,7 @@ interface Booking {
   endDate: string
   status: string
   roomId: string
-  room: { name: string; hostel: { name: string } }
+  room: { name: string; establishment: { name: string } }
 }
 
 export function ManageBookings() {
@@ -39,8 +39,6 @@ export function ManageBookings() {
   const fetchBookings = async () => {
     setLoading(true)
     try {
-      const url = statusFilter && statusFilter !== 'all' ? `/api/bookings?status=${statusFilter}` : '/api/bookings'
-      // Correct: use /api/bookings (plural)
       const res = await fetch(statusFilter && statusFilter !== 'all' ? `/api/bookings?status=${statusFilter}` : '/api/bookings')
       const data = await res.json()
       setBookings(data)
@@ -140,7 +138,7 @@ export function ManageBookings() {
                   <TableHead>Client</TableHead>
                   <TableHead>Téléphone</TableHead>
                   <TableHead>Chambre</TableHead>
-                  <TableHead>Auberge</TableHead>
+                  <TableHead>Établissement</TableHead>
                   <TableHead>Dates</TableHead>
                   <TableHead>Statut</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -154,7 +152,7 @@ export function ManageBookings() {
                     <TableCell>
                       <Badge variant="outline">{booking.room?.name || '—'}</Badge>
                     </TableCell>
-                    <TableCell className="text-sm">{booking.room?.hostel?.name || '—'}</TableCell>
+                    <TableCell className="text-sm">{booking.room?.establishment?.name || '—'}</TableCell>
                     <TableCell className="text-sm">
                       <div className="space-y-0.5">
                         <div>{format(new Date(booking.startDate), 'dd MMM', { locale: fr })}</div>
