@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Profile {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String?
+  fullName  String?
+  role      String   @default("owner")
+  password  String
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  hostels   Hostel[]
+}
+
+model Hostel {
+  id          String   @id @default(cuid())
+  ownerId     String
+  name        String
+  description String   @default("")
+  city        String
+  address     String   @default("")
+  images      String   @default("[]")
+  website     String?
+  phone       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  owner       Profile  @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  rooms       Room[]
+}
+
+model Room {
+  id            String   @id @default(cuid())
+  hostelId      String
+  name          String
+  pricePerNight Int
+  capacity      Int      @default(1)
+  isAvailable   Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  hostel        Hostel   @relation(fields: [hostelId], references: [id], onDelete: Cascade)
+  bookings      Booking[]
+}
+
+model Booking {
+  id         String   @id @default(cuid())
+  roomId     String
+  guestName  String
+  guestPhone String
+  startDate  DateTime
+  endDate    DateTime
+  status     String   @default("pending")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  room       Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+}

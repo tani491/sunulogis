@@ -1,0 +1,309 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useAppStore } from '@/store/app-store'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
+import { BookingForm } from './BookingForm'
+import { ArrowLeft, MapPin, Globe, Phone, Users, BedDouble, CalendarDays } from 'lucide-react'
+
+interface Room {
+  id: string
+  name: string
+  pricePerNight: number
+  capacity: number
+  isAvailable: boolean
+}
+
+interface Hostel {
+  id: string
+  name: string
+  description: string
+  city: string
+  address: string
+  images: string[]
+  phone?: string
+  website?: string
+  rooms: Room[]
+  owner: { fullName: string; email: string }
+}
+
+export function HostelDetailPage() {
+  const { selectedHostelId, navigate } = useAppStore()
+  const [hostel, setHostel] = useState<Hostel | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [selectedRoom, setSelectedRoom] = useState<Room | null>(null)
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+
+  useEffect(() => {
+    if (selectedHostelId) {
+      fetchHostel()
+    }
+  }, [selectedHostelId])
+
+  const fetchHostel = async () => {
+    setLoading(true)
+    try {
+      const res = await fetch(`/api/hostels/${selectedHostelId}`)
+      const data = await res.json()
+      setHostel(data)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-32" />
+        <Skeleton className="h-64 w-full rounded-xl" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="md:col-span-2 space-y-4">
+            <Skeleton className="h-8 w-1/2" />
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-4 w-1/2" />
+          </div>
+          <Skeleton className="h-48" />
+        </div>
+      </div>
+    )
+  }
+
+  if (!hostel) {
+    return (
+      <div className="text-center py-16">
+        <p className="text-muted-foreground">Auberge non trouvée</p>
+        <Button variant="outline" className="mt-4" onClick={() => navigate('home')}>
+          Retour à l&apos;accueil
+        </Button>
+      </div>
+    )
+  }
+
+  const images = hostel.images || []
+  const availableRooms = hostel.rooms.filter((r) => r.isAvailable)
+
+  return (
+    <div className="space-y-8">
+      {/* Back button */}
+      <Button variant="ghost" className="gap-2" onClick={() => navigate('home')}>
+        <ArrowLeft className="h-4 w-4" />
+        Retour aux auberges
+      </Button>
+
+      {/* Image gallery */}
+      <div className="space-y-4">
+        <div className="relative h-64 md:h-96 rounded-xl overflow-hidden bg-muted">
+          {images.length > 0 ? (
+            <>
+              <img
+                src={images[currentImageIndex]}
+                alt={`${hostel.name} - Image ${currentImageIndex + 1}`}
+                className="w-full h-full object-cover"
+              />
+              {images.length > 1 && (
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                  {images.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setCurrentImageIndex(i)}
+                      className={`w-3 h-3 rounded-full transition-colors ${
+                        i === currentImageIndex ? 'bg-white' : 'bg-white/50'
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <BedDouble className="h-16 w-16 text-muted-foreground/40" />
+            </div>
+          )}
+        </div>
+        {images.length > 1 && (
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            {images.map((img, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrentImageIndex(i)}
+                className={`flex-shrink-0 w-20 h-16 rounded-lg overflow-hidden border-2 transition-colors ${
+                  i === currentImageIndex ? 'border-primary' : 'border-transparent'
+                }`}
+              >
+                <img src={img} alt="" className="w-full h-full object-cover" />
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Content */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Main info */}
+        <div className="lg:col-span-2 space-y-6">
+          <div>
+            <div className="flex items-start gap-3 mb-3">
+              <h1 className="text-2xl md:text-3xl font-bold">{hostel.name}</h1>
+              <Badge variant="secondary">
+                <MapPin className="h-3 w-3 mr-1" />
+                {hostel.city}
+              </Badge>
+            </div>
+            <p className="text-muted-foreground leading-relaxed">{hostel.description}</p>
+          </div>
+
+          {hostel.address && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <MapPin className="h-4 w-4 text-primary" />
+              {hostel.address}
+            </div>
+          )}
+
+          {/* Rooms */}
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold flex items-center gap-2">
+              <BedDouble className="h-5 w-5 text-primary" />
+              Chambres disponibles ({availableRooms.length})
+            </h2>
+
+            {availableRooms.length === 0 ? (
+              <Card>
+                <CardContent className="py-8 text-center text-muted-foreground">
+                  Aucune chambre disponible pour le moment
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {hostel.rooms.map((room) => (
+                  <Card key={room.id} className={`transition-all ${room.isAvailable ? 'hover:shadow-md' : 'opacity-60'}`}>
+                    <CardContent className="p-4 space-y-3">
+                      <div className="flex items-start justify-between">
+                        <h3 className="font-semibold">{room.name}</h3>
+                        <Badge variant={room.isAvailable ? 'default' : 'secondary'}>
+                          {room.isAvailable ? 'Disponible' : 'Indisponible'}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Users className="h-3.5 w-3.5" />
+                          {room.capacity} pers.
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <CalendarDays className="h-3.5 w-3.5" />
+                          {room.pricePerNight.toLocaleString()} FCFA/nuit
+                        </span>
+                      </div>
+                      {room.isAvailable && (
+                        <Button
+                          size="sm"
+                          className="w-full mt-2"
+                          onClick={() => setSelectedRoom(room)}
+                        >
+                          Réserver
+                        </Button>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Sidebar */}
+        <div className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Informations</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {hostel.phone && (
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
+                    <Phone className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Téléphone</p>
+                    <a
+                      href={`tel:${hostel.phone}`}
+                      className="text-sm font-medium hover:text-primary transition-colors"
+                    >
+                      +{hostel.phone}
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              {hostel.website && (
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
+                    <Globe className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Site web</p>
+                    <a
+                      href={hostel.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm font-medium hover:text-primary transition-colors"
+                    >
+                      Visiter le site web
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
+                  <MapPin className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Ville</p>
+                  <p className="text-sm font-medium">{hostel.city}</p>
+                </div>
+              </div>
+
+              {hostel.phone && (
+                <Button
+                  className="w-full mt-4 gap-2"
+                  variant="outline"
+                  onClick={() => {
+                    window.open(`https://wa.me/${hostel.phone}?text=${encodeURIComponent(`Bonjour, je souhaite avoir des informations sur ${hostel.name}.`)}`, '_blank')
+                  }}
+                >
+                  <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current text-green-600">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                  </svg>
+                  Contacter via WhatsApp
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <p className="text-sm text-muted-foreground">
+                Géré par <span className="font-medium text-foreground">{hostel.owner.fullName || 'Propriétaire'}</span>
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Booking form dialog */}
+      {selectedRoom && hostel && (
+        <BookingForm
+          room={selectedRoom}
+          hostel={hostel}
+          open={!!selectedRoom}
+          onClose={() => setSelectedRoom(null)}
+        />
+      )}
+    </div>
+  )
+}
