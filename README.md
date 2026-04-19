@@ -141,20 +141,25 @@ cd sunulogis
 npm install
 ```
 
+> ⚠️ `npm install` lance automatiquement `prisma generate` grâce au script `postinstall`.
+
 2. **Configurer les variables d'environnement**
 
-Créer un fichier `.env` à la racine :
+Créer un fichier `.env` à la racine du projet :
 
 ```env
-DATABASE_URL=file:/home/z/my-project/db/custom.db
+DATABASE_URL="file:./db/custom.db"
 ```
+
+> Le chemin `./db/custom.db` est relatif au dossier du projet et fonctionne sur **Windows, Mac et Linux**.
 
 3. **Initialiser la base de données**
 
 ```bash
-npx prisma generate
-npx prisma db push
+npm run db:push
 ```
+
+> Cela crée le dossier `db/` et le fichier `custom.db` automatiquement.
 
 4. **Peupler la base avec les données de démonstration**
 
@@ -162,9 +167,9 @@ Lancer le serveur puis visiter l'URL de seed :
 
 ```bash
 npm run dev
-# Dans un navigateur ou terminal :
-# curl http://localhost:3000/api/seed
 ```
+
+Ouvrir un navigateur sur : **http://localhost:3000/api/seed**
 
 Cela crée automatiquement :
 - 1 admin, 2 propriétaires, 2 clients
@@ -178,6 +183,37 @@ Cela crée automatiquement :
 ```bash
 npm run dev
 ```
+
+L'application est accessible sur **http://localhost:3000**
+
+---
+
+### Installation sur Windows (étapes détaillées)
+
+Si vous êtes sur Windows avec PowerShell :
+
+```powershell
+# 1. Aller dans le dossier du projet
+cd C:\xampp\htdocs\sunulogie
+
+# 2. Supprimer l'ancien node_modules (si existe)
+Remove-Item -Recurse -Force node_modules -ErrorAction SilentlyContinue
+Remove-Item -Force package-lock.json -ErrorAction SilentlyContinue
+
+# 3. Installer les dépendances
+npm install
+
+# 4. Créer la base de données
+npm run db:push
+
+# 5. Créer le dossier pour les uploads d'images
+mkdir public\uploads\hostels -Force
+
+# 6. Lancer le serveur
+npm run dev
+```
+
+Puis ouvrir **http://localhost:3000/api/seed** dans le navigateur pour les données de démo
 
 L'application est accessible sur **http://localhost:3000**
 
