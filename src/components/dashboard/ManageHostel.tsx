@@ -9,8 +9,9 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
-import { Building2, Save, Plus, X, Globe, Phone, MapPin } from 'lucide-react'
+import { Building2, Save, Plus, Globe, Phone, MapPin } from 'lucide-react'
 import { toast } from 'sonner'
+import { DragDropImageUpload } from '@/components/shared/DragDropImageUpload'
 
 interface Hostel {
   id: string
@@ -38,7 +39,6 @@ export function ManageHostel() {
   const [website, setWebsite] = useState('')
   const [phone, setPhone] = useState('')
   const [images, setImages] = useState<string[]>([])
-  const [imageUrl, setImageUrl] = useState('')
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
@@ -69,7 +69,6 @@ export function ManageHostel() {
     setWebsite('')
     setPhone('')
     setImages([])
-    setImageUrl('')
     setEditingId(null)
     setShowCreate(false)
   }
@@ -84,17 +83,6 @@ export function ManageHostel() {
     setImages(hostel.images || [])
     setEditingId(hostel.id)
     setShowCreate(true)
-  }
-
-  const addImage = () => {
-    if (imageUrl.trim()) {
-      setImages([...images, imageUrl.trim()])
-      setImageUrl('')
-    }
-  }
-
-  const removeImage = (index: number) => {
-    setImages(images.filter((_, i) => i !== index))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -221,28 +209,11 @@ export function ManageHostel() {
               {/* Images */}
               <div className="space-y-2">
                 <Label>Images</Label>
-                <div className="flex gap-2">
-                  <Input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://url-de-l-image.jpg" />
-                  <Button type="button" variant="outline" onClick={addImage}>
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-                {images.length > 0 && (
-                  <div className="flex gap-2 flex-wrap mt-2">
-                    {images.map((img, i) => (
-                      <div key={i} className="relative w-20 h-16 rounded-md overflow-hidden border group">
-                        <img src={img} alt="" className="w-full h-full object-cover" />
-                        <button
-                          type="button"
-                          onClick={() => removeImage(i)}
-                          className="absolute top-0.5 right-0.5 w-5 h-5 flex items-center justify-center bg-destructive text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <DragDropImageUpload
+                  images={images}
+                  onImagesChange={setImages}
+                  maxImages={8}
+                />
               </div>
 
               <div className="flex gap-3">

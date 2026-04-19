@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { Switch } from '@/components/ui/switch'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { BedDouble, Plus, Pencil, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -314,17 +315,16 @@ export function ManageRooms() {
                     Vous devez d&apos;abord créer une auberge pour pouvoir ajouter des chambres.
                   </div>
                 ) : (
-                  <select
-                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                    value={selectedHostelId}
-                    onChange={(e) => setSelectedHostelId(e.target.value)}
-                    required
-                  >
-                    <option value="">Sélectionner une auberge</option>
-                    {hostels.map((h) => (
-                      <option key={h.id} value={h.id}>{h.name}</option>
-                    ))}
-                  </select>
+                  <Select value={selectedHostelId} onValueChange={setSelectedHostelId}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Sélectionner une auberge" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {hostels.map((h) => (
+                        <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 )}
               </div>
             )}
