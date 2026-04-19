@@ -63,6 +63,7 @@ export function LandingPage() {
     const types: Record<string, string> = {
       auberge: 'Auberge',
       hotel: 'Hôtel',
+      appartement: 'Appartement',
       appartement_meuble: 'Appartement Meublé',
       lodge: 'Lodge',
       loft: 'Loft',
@@ -74,6 +75,7 @@ export function LandingPage() {
     const colors: Record<string, string> = {
       auberge: 'bg-emerald-100 text-emerald-800',
       hotel: 'bg-amber-100 text-amber-800',
+      appartement: 'bg-rose-100 text-rose-800',
       appartement_meuble: 'bg-sky-100 text-sky-800',
       lodge: 'bg-orange-100 text-orange-800',
       loft: 'bg-purple-100 text-purple-800',

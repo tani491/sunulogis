@@ -14,6 +14,7 @@ const establishmentTypes = [
   { value: 'all', label: 'Tous les types' },
   { value: 'auberge', label: 'Auberge' },
   { value: 'hotel', label: 'Hôtel' },
+  { value: 'appartement', label: 'Appartement' },
   { value: 'appartement_meuble', label: 'Appartement Meublé' },
   { value: 'lodge', label: 'Lodge' },
   { value: 'loft', label: 'Loft' },
@@ -93,6 +94,7 @@ export function HomePage() {
     const types: Record<string, string> = {
       auberge: 'Auberge',
       hotel: 'Hôtel',
+      appartement: 'Appartement',
       appartement_meuble: 'Appartement Meublé',
       lodge: 'Lodge',
       loft: 'Loft',
@@ -104,6 +106,7 @@ export function HomePage() {
     const colors: Record<string, string> = {
       auberge: 'bg-emerald-100 text-emerald-800',
       hotel: 'bg-amber-100 text-amber-800',
+      appartement: 'bg-rose-100 text-rose-800',
       appartement_meuble: 'bg-sky-100 text-sky-800',
       lodge: 'bg-orange-100 text-orange-800',
       loft: 'bg-purple-100 text-purple-800',

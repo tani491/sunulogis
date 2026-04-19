@@ -149,6 +149,24 @@ export async function GET() {
 
     const est5 = await db.establishment.create({
       data: {
+        ownerId: owner2.id,
+        name: 'Appartement Mermoz',
+        type: 'appartement',
+        description: 'Appartement spacieux et lumineux dans le quartier résidentiel de Mermoz. Idéal pour les séjours longue durée ou les familles. Salon confortable, cuisine équipée, deux chambres climatisées et terrasse avec vue sur la ville.',
+        city: 'Dakar',
+        region: 'Dakar',
+        address: 'Rue Mermoz, Dakar',
+        phone: '221770000006',
+        images: JSON.stringify([
+          'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800',
+        ]),
+        isApproved: true,
+        isSuspended: false,
+      },
+    });
+
+    const est6 = await db.establishment.create({
+      data: {
         ownerId: owner.id,
         name: 'Loft Gorée',
         type: 'loft',
@@ -202,10 +220,18 @@ export async function GET() {
       ],
     });
 
-    // Create rooms for establishment 5
+    // Create rooms for establishment 5 (Appartement)
     await db.room.createMany({
       data: [
-        { establishmentId: est5.id, name: 'Loft Supérieur', pricePerNight: 60000, capacity: 2, isAvailable: true },
+        { establishmentId: est5.id, name: 'Appartement 2 pièces', pricePerNight: 40000, capacity: 3, isAvailable: true },
+        { establishmentId: est5.id, name: 'Appartement 3 pièces', pricePerNight: 55000, capacity: 5, isAvailable: true },
+      ],
+    });
+
+    // Create rooms for establishment 6 (Loft)
+    await db.room.createMany({
+      data: [
+        { establishmentId: est6.id, name: 'Loft Supérieur', pricePerNight: 60000, capacity: 2, isAvailable: true },
       ],
     });
 
@@ -368,7 +394,7 @@ Rejoignez-nous et découvrez le Sénégal autrement !`,
       });
     }
 
-    return NextResponse.json({ message: 'Données de démonstration créées avec succès', owners: 2, establishments: 5, rooms: 14, bookings: 3, blogPosts: 4 });
+    return NextResponse.json({ message: 'Données de démonstration créées avec succès', owners: 2, establishments: 6, rooms: 16, bookings: 3, blogPosts: 4 });
   } catch (error) {
     console.error('Seed error:', error);
     return NextResponse.json({ error: 'Erreur lors du seed' }, { status: 500 });

@@ -14,16 +14,16 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AubergeConnect - Réservation d'Auberges au Sénégal",
-  description: "Trouvez et réservez des auberges et maisons d'hôtes à travers le Sénégal. Gestion de réservations simplifiée pour propriétaires.",
-  keywords: ["auberge", "Sénégal", "réservation", "maison d'hôtes", "Dakar", "Saint-Louis", "Saly", "voyage"],
-  authors: [{ name: "AubergeConnect" }],
+  title: "SunuLogis - Trouvez votre logement au Sénégal",
+  description: "Découvrez auberges, hôtels, appartements et lodges à travers les 14 régions du Sénégal. Réservation simplifiée avec confirmation via WhatsApp.",
+  keywords: ["sunulogis", "logement", "Sénégal", "réservation", "auberge", "hôtel", "appartement", "lodge", "Dakar", "Saint-Louis", "Saly", "voyage"],
+  authors: [{ name: "SunuLogis" }],
   icons: {
     icon: "/logo.svg",
   },
   openGraph: {
-    title: "AubergeConnect",
-    description: "Réservation d'auberges et maisons d'hôtes au Sénégal",
+    title: "SunuLogis",
+    description: "Trouvez votre logement au Sénégal - Auberges, hôtels, appartements et lodges",
     type: "website",
   },
 };

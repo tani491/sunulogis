@@ -2,7 +2,7 @@
 
 **Plateforme SaaS de réservation d'hébergements pour le marché sénégalais**
 
-SunuLogis est une application web qui permet aux voyageurs de trouver et réserver des hébergements au Sénégal (auberges, hôtels, appartements meublés, lodges, lofts), tout en offrant aux propriétaires un dashboard de gestion complet. Les réservations se confirment via WhatsApp.
+SunuLogis est une application web qui permet aux voyageurs de trouver et réserver des hébergements au Sénégal (auberges, hôtels, appartements, appartements meublés, lodges, lofts), tout en offrant aux propriétaires un dashboard de gestion complet. Les réservations se confirment via WhatsApp.
 
 ---
 
@@ -79,7 +79,7 @@ La session est gérée via un cookie `ac_session` contenant l'ID du profil. À c
 |---|---|
 | Landing Page | Hero carousel + 2 CTA (voyageur / propriétaire) + établissements en vedette + derniers articles du blog |
 | Recherche | Barre sticky dans la Navbar avec filtres région, budget et recherche textuelle |
-| Établissements | Liste filtrée par type (Auberge, Hôtel, Appartement Meublé, Lodge, Loft), région et prix |
+| Établissements | Liste filtrée par type (Auberge, Hôtel, Appartement, Appartement Meublé, Lodge, Loft), région et prix |
 | Fiche établissement | Détail complet : images, type, description, région, adresse, chambres disponibles |
 | Réservation | Formulaire avec calcul automatique du coût total |
 | Confirmation WhatsApp | Lien pré-rempli `wa.me` avec message de réservation |
@@ -168,8 +168,8 @@ npm run dev
 
 Cela crée automatiquement :
 - 1 admin, 2 propriétaires, 2 clients
-- 5 établissements (4 approuvés, 1 en attente)
-- 14 chambres
+- 6 établissements (5 approuvés, 1 en attente)
+- 16 chambres
 - 3 réservations
 - 4 articles de blog
 
@@ -202,7 +202,7 @@ L'application est accessible sur **http://localhost:3000**
 
 1. **Landing Page** — L'utilisateur arrive sur la page avec le carousel et deux CTA. S'il cherche un logement, il clique "Je cherche un logement".
 
-2. **Recherche** — La barre de recherche sticky dans la Navbar permet de filtrer par région (14 régions du Sénégal), budget et texte. Les types d'établissement (Auberge, Hôtel, Appartement Meublé, Lodge, Loft) sont aussi filtrables.
+2. **Recherche** — La barre de recherche sticky dans la Navbar permet de filtrer par région (14 régions du Sénégal), budget et texte. Les types d'établissement (Auberge, Hôtel, Appartement, Appartement Meublé, Lodge, Loft) sont aussi filtrables.
 
 3. **Fiche établissement** — L'utilisateur voit le détail complet avec galerie d'images, badge de type, région, chambres et prix.
 
@@ -220,7 +220,7 @@ L'application est accessible sur **http://localhost:3000**
 
 3. **Espace Gestion** — Vue d'ensemble avec statistiques, puis gestion de ses établissements, chambres et réservations.
 
-4. **Création d'établissement** — Sélection du type (Auberge/Hôtel/Appartement/Lodge/Loft), région, upload d'images par drag & drop. L'établissement est en attente de validation admin.
+4. **Création d'établissement** — Sélection du type (Auberge/Hôtel/Appartement/Appartement Meublé/Lodge/Loft), région, upload d'images par drag & drop. L'établissement est en attente de validation admin.
 
 5. **Gestion des chambres** — Ajout avec prix FCFA, capacité, disponibilité. Sélection de l'établissement via le composant Select.
 
@@ -262,7 +262,7 @@ L'application est accessible sur **http://localhost:3000**
 | id | String (cuid) | Identifiant unique |
 | ownerId | String (FK) | Lien vers Profile (suppression en cascade) |
 | name | String | Nom de l'établissement |
-| type | String | Type : "auberge", "hotel", "appartement_meuble", "lodge", "loft" |
+| type | String | Type : "auberge", "hotel", "appartement", "appartement_meuble", "lodge", "loft" |
 | description | String | Description |
 | city | String | Ville |
 | region | String | Région (14 régions du Sénégal) |
@@ -571,7 +571,7 @@ CMD ["node", "server.js"]
 - **Téléphone** : Format international sans le `+` (ex: `221770000001`)
 - **WhatsApp** : Intégration `wa.me/{numero}?text={message}` avec message pré-rempli
 - **14 régions** : Dakar, Diourbel, Fatick, Kaffrine, Kaolack, Kédougou, Kolda, Louga, Matam, Sédhiou, Saint-Louis, Tambacounda, Thiès, Ziguinchor
-- **5 types d'établissements** : Auberge, Hôtel, Appartement Meublé, Lodge, Loft
+- **6 types d'établissements** : Auberge, Hôtel, Appartement, Appartement Meublé, Lodge, Loft
 - **Approbation** : Les nouveaux établissements doivent être validés par l'admin avant d'être visibles publiquement
 - **Suspension** : L'admin peut suspendre un établissement (invisible publiquement) ou désactiver un compte propriétaire
 - **Routing** : SPA via Zustand (pas de navigation Next.js traditionnelle)

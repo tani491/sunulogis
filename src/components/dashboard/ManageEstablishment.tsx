@@ -17,6 +17,7 @@ import { DragDropImageUpload } from '@/components/shared/DragDropImageUpload'
 const establishmentTypes = [
   { value: 'auberge', label: 'Auberge' },
   { value: 'hotel', label: 'Hôtel' },
+  { value: 'appartement', label: 'Appartement' },
   { value: 'appartement_meuble', label: 'Appartement Meublé' },
   { value: 'lodge', label: 'Lodge' },
   { value: 'loft', label: 'Loft' },

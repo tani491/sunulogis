@@ -26,7 +26,7 @@ model Establishment {
   id          String   @id @default(cuid())
   ownerId     String
   name        String
-  type        String   @default("auberge") // "auberge", "hotel", "appartement_meuble", "lodge", "loft"
+  type        String   @default("auberge") // "auberge", "hotel", "appartement", "appartement_meuble", "lodge", "loft"
   description String   @default("")
   city        String
   region      String   @default("")
