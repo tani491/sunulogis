@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
       select: { id: true, email: true, fullName: true, role: true, phone: true },
     });
 
-    const response = NextResponse.json({ user: profile });
+    const response = NextResponse.json(profile);
     response.cookies.set('ac_session', profile.id, {
       httpOnly: true,
       secure: false,

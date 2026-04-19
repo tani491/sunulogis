@@ -36,7 +36,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       },
     });
 
-    return NextResponse.json({ room });
+    return NextResponse.json(room);
   } catch (error) {
     console.error('Update room error:', error);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });

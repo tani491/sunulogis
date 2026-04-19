@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Search, MapPin, Users, ArrowRight, Building2 } from 'lucide-react'
+import { Search, MapPin, Users, ArrowRight, Building2, Globe, Banknote } from 'lucide-react'
 
 interface Hostel {
   id: string
@@ -28,16 +28,33 @@ export function HomePage() {
   const [hostels, setHostels] = useState<Hostel[]>([])
   const [loading, setLoading] = useState(true)
   const [cityFilter, setCityFilter] = useState<string>('all')
+  const [priceFilter, setPriceFilter] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     fetchHostels()
-  }, [cityFilter])
+  }, [cityFilter, priceFilter])
 
   const fetchHostels = async () => {
     setLoading(true)
     try {
-      const url = cityFilter && cityFilter !== 'all' ? `/api/hostels?city=${encodeURIComponent(cityFilter)}` : '/api/hostels'
+      const params = new URLSearchParams()
+      if (cityFilter && cityFilter !== 'all') params.set('city', cityFilter)
+
+      // Price filter ranges
+      if (priceFilter === '0-15000') {
+        params.set('maxPrice', '15000')
+      } else if (priceFilter === '15000-30000') {
+        params.set('minPrice', '15000')
+        params.set('maxPrice', '30000')
+      } else if (priceFilter === '30000-50000') {
+        params.set('minPrice', '30000')
+        params.set('maxPrice', '50000')
+      } else if (priceFilter === '50000+') {
+        params.set('minPrice', '50000')
+      }
+
+      const url = params.toString() ? `/api/hostels?${params.toString()}` : '/api/hostels'
       const res = await fetch(url)
       const data = await res.json()
       setHostels(data)
@@ -52,7 +69,7 @@ export function HomePage() {
     !searchQuery || h.name.toLowerCase().includes(searchQuery.toLowerCase()) || h.city.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  const cities = ['Dakar', 'Saint-Louis', 'Saly', 'Thiès', 'Ziguinchor', 'Kaolack']
+  const cities = ['Dakar', 'Saint-Louis', 'Saly', 'Thies', 'Ziguinchor', 'Kaolack']
 
   const handleViewDetail = (id: string) => {
     selectHostel(id)
@@ -64,17 +81,17 @@ export function HomePage() {
       {/* Hero */}
       <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-accent/30 p-8 md:p-16">
         <div className="relative z-10 max-w-3xl mx-auto text-center space-y-6">
-          <Badge variant="secondary" className="mb-2">🌍 Sénégal</Badge>
+          <Badge variant="secondary" className="mb-2 text-sm px-3 py-1">Sénégal</Badge>
           <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground">
             Trouvez votre auberge idéale au <span className="text-primary">Sénégal</span>
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Découvrez les meilleures auberges et maisons d&apos;hôtes à travers le Sénégal. 
+            Découvrez les meilleures auberges et maisons d&apos;hôtes à travers le Sénégal.
             Réservez en quelques clics et confirmez via WhatsApp.
           </p>
 
           {/* Search bar */}
-          <div className="flex flex-col sm:flex-row gap-3 max-w-xl mx-auto mt-8">
+          <div className="flex flex-col sm:flex-row gap-3 max-w-2xl mx-auto mt-8">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -94,6 +111,19 @@ export function HomePage() {
                 {cities.map((c) => (
                   <SelectItem key={c} value={c}>{c}</SelectItem>
                 ))}
+              </SelectContent>
+            </Select>
+            <Select value={priceFilter} onValueChange={setPriceFilter}>
+              <SelectTrigger className="w-full sm:w-48">
+                <Banknote className="h-4 w-4 mr-2 text-muted-foreground" />
+                <SelectValue placeholder="Budget" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous les prix</SelectItem>
+                <SelectItem value="0-15000">Moins de 15 000 FCFA</SelectItem>
+                <SelectItem value="15000-30000">15 000 - 30 000 FCFA</SelectItem>
+                <SelectItem value="30000-50000">30 000 - 50 000 FCFA</SelectItem>
+                <SelectItem value="50000+">Plus de 50 000 FCFA</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -154,6 +184,12 @@ export function HomePage() {
                     <MapPin className="h-3 w-3 mr-1" />
                     {hostel.city}
                   </Badge>
+                  {hostel.website && (
+                    <Badge className="absolute top-3 right-3 bg-white/90 text-foreground hover:bg-white" variant="secondary">
+                      <Globe className="h-3 w-3 mr-1" />
+                      Site web
+                    </Badge>
+                  )}
                 </div>
 
                 <CardContent className="p-4 space-y-3">
@@ -161,7 +197,7 @@ export function HomePage() {
                   <p className="text-sm text-muted-foreground line-clamp-2">{hostel.description}</p>
                   <div className="flex items-center justify-between pt-2">
                     <div>
-                      {hostel.minPrice !== null ? (
+                      {hostel.minPrice !== null && hostel.minPrice !== undefined ? (
                         <p className="text-sm">
                           <span className="font-bold text-primary">{hostel.minPrice.toLocaleString()} FCFA</span>
                           <span className="text-muted-foreground"> / nuit</span>

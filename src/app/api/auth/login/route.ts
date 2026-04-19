@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
       phone: profile.phone,
     };
 
-    const response = NextResponse.json({ user });
+    const response = NextResponse.json(user);
     response.cookies.set('ac_session', profile.id, {
       httpOnly: true,
       secure: false,

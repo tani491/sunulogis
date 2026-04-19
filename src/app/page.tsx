@@ -2,8 +2,8 @@
 
 import { useEffect } from 'react'
 import { useAppStore, type View } from '@/store/app-store'
-import { Navbar } from '@/components/shared/Navbar'
-import { Footer } from '@/components/shared/Footer'
+import Navbar from '@/components/shared/Navbar'
+import Footer from '@/components/shared/Footer'
 import { HomePage } from '@/components/public/HomePage'
 import { HostelDetailPage } from '@/components/public/HostelDetailPage'
 import { LoginPage } from '@/components/auth/LoginPage'
@@ -31,8 +31,8 @@ export default function Home() {
       try {
         const res = await fetch('/api/auth/session')
         const data = await res.json()
-        if (data.user) {
-          setUser(data.user)
+        if (data && data.id) {
+          setUser(data)
         }
       } catch {
         // Not logged in, that's fine

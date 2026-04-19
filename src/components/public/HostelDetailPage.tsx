@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { BookingForm } from './BookingForm'
-import { ArrowLeft, MapPin, Globe, Phone, Users, BedDouble, CalendarDays } from 'lucide-react'
+import { ArrowLeft, MapPin, Globe, Phone, Users, BedDouble, CalendarDays, ExternalLink } from 'lucide-react'
 
 interface Room {
   id: string
@@ -164,6 +164,32 @@ export function HostelDetailPage() {
             </div>
           )}
 
+          {/* Website link - prominent for visitors */}
+          {hostel.website && (
+            <Card className="bg-primary/5 border-primary/20">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
+                    <Globe className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">Site web de l&apos;auberge</p>
+                    <p className="text-xs text-muted-foreground">Plus d&apos;informations et photos sur leur site</p>
+                  </div>
+                  <a
+                    href={hostel.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+                  >
+                    Visiter
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Rooms */}
           <div className="space-y-4">
             <h2 className="text-xl font-semibold flex items-center gap-2">
@@ -202,7 +228,10 @@ export function HostelDetailPage() {
                         <Button
                           size="sm"
                           className="w-full mt-2"
-                          onClick={() => setSelectedRoom(room)}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setSelectedRoom(room)
+                          }}
                         >
                           Réserver
                         </Button>
@@ -250,9 +279,10 @@ export function HostelDetailPage() {
                       href={hostel.website}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm font-medium hover:text-primary transition-colors"
+                      className="text-sm font-medium hover:text-primary transition-colors inline-flex items-center gap-1"
                     >
                       Visiter le site web
+                      <ExternalLink className="h-3 w-3" />
                     </a>
                   </div>
                 </div>
@@ -288,7 +318,7 @@ export function HostelDetailPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">
-                Géré par <span className="font-medium text-foreground">{hostel.owner.fullName || 'Propriétaire'}</span>
+                Géré par <span className="font-medium text-foreground">{hostel.owner?.fullName || 'Propriétaire'}</span>
               </p>
             </CardContent>
           </Card>

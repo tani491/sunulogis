@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
     const hostelIds = userHostels.map(h => h.id);
 
     if (hostelIds.length === 0) {
-      return NextResponse.json({ bookings: [] });
+      return NextResponse.json([]);
     }
 
     // Get rooms in those hostels
@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
       orderBy: { createdAt: 'desc' },
     });
 
-    return NextResponse.json({ bookings });
+    return NextResponse.json(bookings);
   } catch (error) {
     console.error('Get bookings error:', error);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ booking });
+    return NextResponse.json(booking);
   } catch (error) {
     console.error('Create booking error:', error);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });

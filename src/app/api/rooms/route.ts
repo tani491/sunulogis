@@ -20,15 +20,15 @@ export async function GET(req: NextRequest) {
     if (user) {
       const ownerRooms = rooms.filter(r => r.hostel.ownerId === user.id);
       if (hostelId) {
-        return NextResponse.json({ rooms: ownerRooms });
+        return NextResponse.json(ownerRooms);
       }
       // Public: show available rooms; owner: show all their rooms
-      return NextResponse.json({ rooms: hostelId ? ownerRooms : rooms });
+      return NextResponse.json(hostelId ? ownerRooms : rooms);
     }
 
     // Public: only available rooms
     const publicRooms = rooms.filter(r => r.isAvailable);
-    return NextResponse.json({ rooms: publicRooms });
+    return NextResponse.json(publicRooms);
   } catch (error) {
     console.error('Get rooms error:', error);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ room });
+    return NextResponse.json(room);
   } catch (error) {
     console.error('Create room error:', error);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });

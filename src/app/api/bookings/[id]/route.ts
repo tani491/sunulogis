@@ -38,7 +38,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       },
     });
 
-    return NextResponse.json({ booking });
+    return NextResponse.json(booking);
   } catch (error) {
     console.error('Update booking error:', error);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });

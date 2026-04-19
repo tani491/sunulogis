@@ -2,6 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getSessionUser } from '@/lib/auth';
 
+function parseHostel(h: any) {
+  return {
+    ...h,
+    images: typeof h.images === 'string' ? JSON.parse(h.images) : h.images,
+    minPrice: h.rooms && h.rooms.length > 0
+      ? Math.min(...h.rooms.filter((r: any) => r.isAvailable).map((r: any) => r.pricePerNight))
+      : null,
+  };
+}
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -32,7 +42,7 @@ export async function GET(req: NextRequest) {
     // Filter hostels that have rooms matching price criteria
     const filtered = hostels.filter(h => h.rooms.length > 0 || (!minPrice && !maxPrice));
 
-    return NextResponse.json({ hostels: filtered });
+    return NextResponse.json(filtered.map(parseHostel));
   } catch (error) {
     console.error('Get hostels error:', error);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
@@ -67,7 +77,7 @@ export async function POST(req: NextRequest) {
       include: { rooms: true },
     });
 
-    return NextResponse.json({ hostel });
+    return NextResponse.json(parseHostel(hostel));
   } catch (error) {
     console.error('Create hostel error:', error);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });

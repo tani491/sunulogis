@@ -111,7 +111,7 @@ export function LoginPage() {
 
           <div className="mt-6 rounded-lg bg-muted p-3">
             <p className="text-xs text-muted-foreground text-center">
-              <strong>Demo :</strong> demo@aubergeconnect.sn / demo123
+              <strong>Demo :</strong> demo@aubergeconnect.sn / password
             </p>
           </div>
         </CardContent>

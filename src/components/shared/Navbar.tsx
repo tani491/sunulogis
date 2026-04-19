@@ -6,21 +6,21 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Home, LogIn, UserPlus, LayoutDashboard, LogOut, Menu, Building2 } from 'lucide-react';
 
-export default function Navbar() {
-  const { currentUser, navigate, logout, currentView } = useAppStore();
-  const [open, setOpen] = useState(false);
+interface NavLinksProps {
+  currentView: string;
+  currentUser: { id: string; email: string; fullName: string | null; role: string } | null;
+  navigate: (view: string) => void;
+  onLogout: () => void;
+  onNavigate: () => void;
+}
 
-  const handleLogout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
-    logout();
-  };
-
-  const NavLinks = () => (
+function NavLinks({ currentView, currentUser, navigate, onLogout, onNavigate }: NavLinksProps) {
+  return (
     <>
       <Button
         variant={currentView === 'home' ? 'secondary' : 'ghost'}
         size="sm"
-        onClick={() => { navigate('home'); setOpen(false); }}
+        onClick={() => { navigate('home'); onNavigate(); }}
         className="gap-2"
       >
         <Home className="h-4 w-4" />
@@ -32,7 +32,7 @@ export default function Navbar() {
           <Button
             variant={currentView.startsWith('dashboard') ? 'secondary' : 'ghost'}
             size="sm"
-            onClick={() => { navigate('dashboard'); setOpen(false); }}
+            onClick={() => { navigate('dashboard'); onNavigate(); }}
             className="gap-2"
           >
             <LayoutDashboard className="h-4 w-4" />
@@ -41,7 +41,7 @@ export default function Navbar() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={handleLogout}
+            onClick={onLogout}
             className="gap-2 text-destructive hover:text-destructive"
           >
             <LogOut className="h-4 w-4" />
@@ -53,7 +53,7 @@ export default function Navbar() {
           <Button
             variant={currentView === 'login' ? 'secondary' : 'ghost'}
             size="sm"
-            onClick={() => { navigate('login'); setOpen(false); }}
+            onClick={() => { navigate('login'); onNavigate(); }}
             className="gap-2"
           >
             <LogIn className="h-4 w-4" />
@@ -62,7 +62,7 @@ export default function Navbar() {
           <Button
             variant={currentView === 'register' ? 'secondary' : 'outline'}
             size="sm"
-            onClick={() => { navigate('register'); setOpen(false); }}
+            onClick={() => { navigate('register'); onNavigate(); }}
             className="gap-2"
           >
             <UserPlus className="h-4 w-4" />
@@ -72,6 +72,16 @@ export default function Navbar() {
       )}
     </>
   );
+}
+
+export default function Navbar() {
+  const { currentUser, navigate, logout, currentView } = useAppStore();
+  const [open, setOpen] = useState(false);
+
+  const handleLogout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    logout();
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-card/80 backdrop-blur-md">
@@ -90,7 +100,13 @@ export default function Navbar() {
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-2">
-          <NavLinks />
+          <NavLinks
+            currentView={currentView}
+            currentUser={currentUser}
+            navigate={navigate}
+            onLogout={handleLogout}
+            onNavigate={() => {}}
+          />
         </nav>
 
         {/* Mobile nav */}
@@ -102,7 +118,13 @@ export default function Navbar() {
           </SheetTrigger>
           <SheetContent side="right" className="w-64">
             <div className="flex flex-col gap-3 mt-8">
-              <NavLinks />
+              <NavLinks
+                currentView={currentView}
+                currentUser={currentUser}
+                navigate={navigate}
+                onLogout={handleLogout}
+                onNavigate={() => setOpen(false)}
+              />
             </div>
           </SheetContent>
         </Sheet>

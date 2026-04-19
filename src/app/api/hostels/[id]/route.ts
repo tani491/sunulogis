@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getSessionUser } from '@/lib/auth';
 
+function parseHostel(h: any) {
+  return {
+    ...h,
+    images: typeof h.images === 'string' ? JSON.parse(h.images) : h.images,
+  };
+}
+
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
@@ -17,7 +24,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: 'Auberge non trouvée' }, { status: 404 });
     }
 
-    return NextResponse.json({ hostel });
+    return NextResponse.json(parseHostel(hostel));
   } catch (error) {
     console.error('Get hostel error:', error);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
@@ -59,7 +66,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       include: { rooms: true },
     });
 
-    return NextResponse.json({ hostel });
+    return NextResponse.json(parseHostel(hostel));
   } catch (error) {
     console.error('Update hostel error:', error);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
