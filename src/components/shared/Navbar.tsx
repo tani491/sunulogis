@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Home, LayoutDashboard, LogOut, Menu, Building2, Search, MapPin, Banknote, ChevronDown, User, Shield } from 'lucide-react';
+import { Home, LayoutDashboard, LogOut, Menu, Building2, Search, MapPin, Banknote, ChevronDown, User, Shield, BookOpen } from 'lucide-react';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 
 const regions = [
@@ -163,6 +163,15 @@ export default function Navbar() {
                 <Home className="h-4 w-4" />
                 Explorer
               </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('blog')}
+                className="gap-2"
+              >
+                <BookOpen className="h-4 w-4" />
+                Blog
+              </Button>
             </div>
           )}
         </div>
@@ -236,6 +245,15 @@ export default function Navbar() {
                     >
                       <Home className="h-4 w-4" />
                       Explorer
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-start gap-2"
+                      onClick={() => { navigate('blog'); setMobileOpen(false); }}
+                    >
+                      <BookOpen className="h-4 w-4" />
+                      Blog
                     </Button>
                   </>
                 )}

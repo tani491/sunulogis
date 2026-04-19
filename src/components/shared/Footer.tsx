@@ -23,6 +23,7 @@ export default function Footer() {
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>Accueil</li>
               <li>Établissements</li>
+              <li>Blog</li>
               <li>Devenir propriétaire</li>
               <li>Conditions d&apos;utilisation</li>
             </ul>

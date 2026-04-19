@@ -7,6 +7,8 @@ import Footer from '@/components/shared/Footer'
 import { LandingPage } from '@/components/public/LandingPage'
 import { HomePage } from '@/components/public/HomePage'
 import { EstablishmentDetailPage } from '@/components/public/EstablishmentDetailPage'
+import { BlogPage } from '@/components/public/BlogPage'
+import { BlogPostPage } from '@/components/public/BlogPostPage'
 import { LoginPage } from '@/components/auth/LoginPage'
 import { RegisterPage } from '@/components/auth/RegisterPage'
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout'
@@ -58,6 +60,8 @@ export default function Home() {
       landing: <LandingPage />,
       home: <HomePage />,
       'establishment-detail': <EstablishmentDetailPage />,
+      blog: <BlogPage />,
+      'blog-post': <BlogPostPage />,
       login: <LoginPage />,
       register: <RegisterPage />,
       dashboard: <DashboardLayout />,
@@ -68,6 +72,7 @@ export default function Home() {
       'admin-stats': <AdminLayout />,
       'admin-establishments': <AdminLayout />,
       'admin-users': <AdminLayout />,
+      'admin-blog': <AdminLayout />,
     }
     return views[currentView] || <LandingPage />
   }

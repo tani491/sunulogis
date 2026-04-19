@@ -10,10 +10,13 @@ export type View =
   | 'dashboard-rooms'
   | 'dashboard-bookings'
   | 'establishment-detail'
+  | 'blog'
+  | 'blog-post'
   | 'admin'
   | 'admin-stats'
   | 'admin-establishments'
-  | 'admin-users';
+  | 'admin-users'
+  | 'admin-blog';
 
 interface CurrentUser {
   id: string;
@@ -34,12 +37,14 @@ interface AppState {
   currentView: View;
   currentUser: CurrentUser | null;
   currentEstablishmentId: string | null;
+  currentBlogSlug: string | null;
   searchFilters: SearchFilters;
   isLoading: boolean;
   navigate: (view: View) => void;
   setUser: (user: CurrentUser | null) => void;
   logout: () => void;
   selectEstablishment: (id: string) => void;
+  selectBlogPost: (slug: string) => void;
   setSearchFilters: (filters: Partial<SearchFilters>) => void;
   setLoading: (loading: boolean) => void;
 }
@@ -48,6 +53,7 @@ export const useAppStore = create<AppState>((set) => ({
   currentView: 'landing',
   currentUser: null,
   currentEstablishmentId: null,
+  currentBlogSlug: null,
   searchFilters: {
     search: '',
     region: 'all',
@@ -59,6 +65,7 @@ export const useAppStore = create<AppState>((set) => ({
   setUser: (user) => set({ currentUser: user, isLoading: false }),
   logout: () => set({ currentUser: null, currentView: 'landing' }),
   selectEstablishment: (id) => set({ currentEstablishmentId: id, currentView: 'establishment-detail' }),
+  selectBlogPost: (slug) => set({ currentBlogSlug: slug, currentView: 'blog-post' }),
   setSearchFilters: (filters) => set((state) => ({
     searchFilters: { ...state.searchFilters, ...filters },
   })),

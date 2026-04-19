@@ -3,13 +3,14 @@
 import { useAppStore, type View } from '@/store/app-store'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { LayoutDashboard, Building2, Users, Settings, Menu, X, Shield } from 'lucide-react'
+import { LayoutDashboard, Building2, Users, Settings, Menu, X, Shield, Newspaper } from 'lucide-react'
 import { useState } from 'react'
 import { AdminOverview } from './AdminOverview'
 import { AdminEstablishments } from './AdminEstablishments'
 import { AdminUsers } from './AdminUsers'
+import { AdminBlog } from './AdminBlog'
 
-type SubView = 'admin' | 'admin-stats' | 'admin-establishments' | 'admin-users'
+type SubView = 'admin' | 'admin-stats' | 'admin-establishments' | 'admin-users' | 'admin-blog'
 
 interface SidebarContentProps {
   subView: SubView
@@ -22,6 +23,7 @@ function SidebarContent({ subView, onNavigate, onCloseMobile }: SidebarContentPr
     { view: 'admin', label: 'Vue d\'ensemble', icon: <LayoutDashboard className="h-4 w-4" /> },
     { view: 'admin-establishments', label: 'Établissements', icon: <Building2 className="h-4 w-4" /> },
     { view: 'admin-users', label: 'Utilisateurs', icon: <Users className="h-4 w-4" /> },
+    { view: 'admin-blog', label: 'Blog', icon: <Newspaper className="h-4 w-4" /> },
   ]
 
   return (
@@ -50,6 +52,7 @@ const navLabels: Record<SubView, string> = {
   'admin-stats': 'Statistiques',
   'admin-establishments': 'Établissements',
   'admin-users': 'Utilisateurs',
+  'admin-blog': 'Blog',
 }
 
 export function AdminLayout() {
@@ -64,6 +67,8 @@ export function AdminLayout() {
         return <AdminEstablishments />
       case 'admin-users':
         return <AdminUsers />
+      case 'admin-blog':
+        return <AdminBlog />
       case 'admin-stats':
       case 'admin':
       default:
