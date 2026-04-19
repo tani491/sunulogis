@@ -48,8 +48,10 @@ export function ManageRooms() {
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    fetchData()
-  }, [])
+    if (currentUser) {
+      fetchData()
+    }
+  }, [currentUser])
 
   const fetchData = async () => {
     setLoading(true)
@@ -72,6 +74,17 @@ export function ManageRooms() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const openCreateDialog = () => {
+    setName('')
+    setPricePerNight('')
+    setCapacity('1')
+    setIsAvailable(true)
+    // Auto-select the first hostel if there's only one
+    setSelectedHostelId(hostels.length === 1 ? hostels[0].id : '')
+    setEditingRoom(null)
+    setShowDialog(true)
   }
 
   const resetForm = () => {
@@ -194,7 +207,7 @@ export function ManageRooms() {
           <BedDouble className="h-6 w-6 text-primary" />
           Chambres
         </h1>
-        <Button onClick={() => { resetForm(); setShowDialog(true) }} className="gap-2">
+        <Button onClick={openCreateDialog} className="gap-2">
           <Plus className="h-4 w-4" />
           Ajouter
         </Button>
@@ -212,7 +225,7 @@ export function ManageRooms() {
             <BedDouble className="h-12 w-12 mx-auto text-muted-foreground/40" />
             <h3 className="text-lg font-semibold">Aucune chambre</h3>
             <p className="text-sm text-muted-foreground">Ajoutez votre première chambre</p>
-            <Button onClick={() => { resetForm(); setShowDialog(true) }} className="gap-2">
+            <Button onClick={openCreateDialog} className="gap-2">
               <Plus className="h-4 w-4" />
               Ajouter une chambre
             </Button>
@@ -296,17 +309,23 @@ export function ManageRooms() {
             {!editingRoom && (
               <div className="space-y-2">
                 <Label>Auberge *</Label>
-                <select
-                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                  value={selectedHostelId}
-                  onChange={(e) => setSelectedHostelId(e.target.value)}
-                  required
-                >
-                  <option value="">Sélectionner une auberge</option>
-                  {hostels.map((h) => (
-                    <option key={h.id} value={h.id}>{h.name}</option>
-                  ))}
-                </select>
+                {hostels.length === 0 ? (
+                  <div className="rounded-md border border-destructive/50 bg-destructive/5 p-3 text-sm text-destructive">
+                    Vous devez d&apos;abord créer une auberge pour pouvoir ajouter des chambres.
+                  </div>
+                ) : (
+                  <select
+                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    value={selectedHostelId}
+                    onChange={(e) => setSelectedHostelId(e.target.value)}
+                    required
+                  >
+                    <option value="">Sélectionner une auberge</option>
+                    {hostels.map((h) => (
+                      <option key={h.id} value={h.id}>{h.name}</option>
+                    ))}
+                  </select>
+                )}
               </div>
             )}
 

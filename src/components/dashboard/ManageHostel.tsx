@@ -42,8 +42,10 @@ export function ManageHostel() {
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    fetchHostels()
-  }, [])
+    if (currentUser) {
+      fetchHostels()
+    }
+  }, [currentUser])
 
   const fetchHostels = async () => {
     setLoading(true)

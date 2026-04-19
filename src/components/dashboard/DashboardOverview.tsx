@@ -20,8 +20,10 @@ export function DashboardOverview() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchStats()
-  }, [])
+    if (currentUser) {
+      fetchStats()
+    }
+  }, [currentUser])
 
   const fetchStats = async () => {
     setLoading(true)
