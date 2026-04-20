@@ -16,7 +16,9 @@ export type View =
   | 'admin-stats'
   | 'admin-establishments'
   | 'admin-users'
-  | 'admin-blog';
+  | 'admin-blog'
+  | 'admin-subscribers'
+  | 'admin-commissions';
 
 interface CurrentUser {
   id: string;

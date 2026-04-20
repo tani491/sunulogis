@@ -73,6 +73,8 @@ export default function Home() {
       'admin-establishments': <AdminLayout />,
       'admin-users': <AdminLayout />,
       'admin-blog': <AdminLayout />,
+      'admin-subscribers': <AdminLayout />,
+      'admin-commissions': <AdminLayout />,
     }
     return views[currentView] || <LandingPage />
   }

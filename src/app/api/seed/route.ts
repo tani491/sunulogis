@@ -394,7 +394,18 @@ Rejoignez-nous et découvrez le Sénégal autrement !`,
       });
     }
 
-    return NextResponse.json({ message: 'Données de démonstration créées avec succès', owners: 2, establishments: 6, rooms: 16, bookings: 3, blogPosts: 4 });
+    // Create sample subscribers
+    await db.subscriber.createMany({
+      data: [
+        { email: 'moussa@example.sn', consentStatus: true, source: 'footer' },
+        { email: 'aissatou@example.sn', consentStatus: true, source: 'blog' },
+        { email: 'jean.dupont@example.fr', consentStatus: true, source: 'landing' },
+        { email: 'fatima@example.sn', consentStatus: true, source: 'footer' },
+        { email: 'traveler@example.com', consentStatus: true, source: 'blog' },
+      ],
+    });
+
+    return NextResponse.json({ message: 'Données de démonstration créées avec succès', owners: 2, establishments: 6, rooms: 16, bookings: 3, blogPosts: 4, subscribers: 5 });
   } catch (error) {
     console.error('Seed error:', error);
     return NextResponse.json({ error: 'Erreur lors du seed' }, { status: 500 });

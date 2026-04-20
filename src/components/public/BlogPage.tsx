@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { BookOpen, ArrowRight, Calendar, User, Search } from 'lucide-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
+import { NewsletterForm } from '@/components/shared/NewsletterForm'
 
 interface BlogPost {
   id: string
@@ -166,6 +167,9 @@ export function BlogPage() {
           ))}
         </div>
       )}
+
+      {/* Newsletter */}
+      <NewsletterForm source="blog" />
     </div>
   )
 }

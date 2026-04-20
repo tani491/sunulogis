@@ -84,6 +84,7 @@ La session est gérée via un cookie `ac_session` contenant l'ID du profil. À c
 | Réservation | Formulaire avec calcul automatique du coût total |
 | Confirmation WhatsApp | Lien pré-rempli `wa.me` avec message de réservation |
 | Blog | Articles publics avec filtres par catégorie (Voyage, Culture, Guide, Actu) |
+| Newsletter | Formulaire d'inscription dans le footer et sur le blog pour recevoir les offres |
 
 ### Dashboard propriétaire (Owner)
 
@@ -95,6 +96,7 @@ La session est gérée via un cookie `ac_session` contenant l'ID du profil. À c
 | Statut d'approbation | L'owner voit si son établissement est en attente de validation admin |
 | Gestion des chambres | CRUD complet avec prix, capacité, disponibilité |
 | Gestion des réservations | Liste avec filtres, confirmation / annulation |
+| Alerte commission | Alerte visuelle si commission impayée avec instructions de paiement Wave |
 
 ### Panneau Admin (Super-Admin)
 
@@ -104,6 +106,8 @@ La session est gérée via un cookie `ac_session` contenant l'ID du profil. À c
 | Gestion des établissements | Valider/refuser les nouveaux établissements, suspendre/réactiver |
 | Gestion des utilisateurs | Voir tous les comptes, activer/désactiver un propriétaire |
 | Blog | Créer, modifier, supprimer des articles (éditeur avec catégories, image de couverture, brouillon/publié) |
+| Commissions | Vue globale des revenus, suivi des paiements par établissement, confirmer les paiements |
+| Newsletter | Liste des abonnés email, export CSV pour marketing, statistiques |
 
 ---
 
@@ -177,6 +181,7 @@ Cela crée automatiquement :
 - 16 chambres
 - 3 réservations
 - 4 articles de blog
+- 5 abonnés newsletter
 
 5. **Lancer le serveur de développement**
 
@@ -308,6 +313,8 @@ L'application est accessible sur **http://localhost:3000**
 | phone | String? | Numéro de téléphone |
 | isApproved | Boolean | Approuvé par l'admin (false par défaut) |
 | isSuspended | Boolean | Suspendu par l'admin (false par défaut) |
+| commission | Int | Montant de la commission en FCFA (0 par défaut) |
+| paymentStatus | String | Statut : "en_attente" ou "paye" |
 | createdAt | DateTime | Date de création |
 | updatedAt | DateTime | Date de mise à jour |
 
@@ -350,6 +357,16 @@ L'application est accessible sur **http://localhost:3000**
 | createdAt | DateTime | Date de création |
 | updatedAt | DateTime | Date de mise à jour |
 
+### Subscriber (Abonné Newsletter)
+
+| Champ | Type | Description |
+|---|---|---|
+| id | String (cuid) | Identifiant unique |
+| email | String (unique) | Adresse email |
+| consentStatus | Boolean | Consentement reçu (true par défaut) |
+| source | String | Provenance : "footer", "blog", "landing" |
+| createdAt | DateTime | Date d'inscription |
+
 ### Relations
 
 ```
@@ -357,6 +374,7 @@ Profile 1 ──< Establishment  (un propriétaire possède plusieurs établisse
 Profile 1 ──< BlogPost       (un admin écrit plusieurs articles)
 Establishment 1 ──< Room     (un établissement possède plusieurs chambres)
 Room     1 ──< Booking       (une chambre possède plusieurs réservations)
+Subscriber (indépendant, pas de relation FK)
 ```
 
 ---
@@ -423,6 +441,17 @@ Room     1 ──< Booking       (une chambre possède plusieurs réservations)
 | PUT | `/api/admin/establishments` | Approuver/suspendre un établissement | Admin |
 | GET | `/api/admin/users` | Tous les utilisateurs | Admin |
 | PUT | `/api/admin/users` | Activer/désactiver un utilisateur | Admin |
+| GET | `/api/admin/commissions` | Vue globale des commissions et revenus | Admin |
+| PUT | `/api/admin/commissions` | Mettre à jour le statut de paiement d'une commission | Admin |
+
+### Newsletter (Subscribers)
+
+| Méthode | Route | Description | Auth requis |
+|---|---|---|---|
+| POST | `/api/subscribers` | S'inscrire à la newsletter (email + source) | Non |
+| GET | `/api/subscribers` | Liste de tous les abonnés | Admin |
+| DELETE | `/api/subscribers?id=xxx` | Supprimer un abonné | Admin |
+| GET | `/api/subscribers/export` | Exporter la liste en CSV | Admin |
 
 ### Upload
 
@@ -475,6 +504,72 @@ Le contenu est rédigé en texte brut avec un formatage simple :
 - `### Sous-titre` pour les sous-titres (h3)
 - `- Élément` pour les listes à puces
 - Sauts de ligne pour les paragraphes
+
+---
+
+## Newsletter (Collecte Marketing)
+
+Le système de newsletter permet de collecter les emails des visiteurs pour le marketing.
+
+### Fonctionnement
+
+1. **Formulaire dans le Footer** : Présent sur toutes les pages publiques, permet une inscription rapide
+2. **Formulaire sur le Blog** : Carte newsletter attractive en bas de la page blog
+3. **Landing Page** : Formulaire intégré pour capturer les visiteurs intéressés
+
+### Données collectées
+
+| Champ | Description |
+|---|---|
+| email | Adresse email (unique) |
+| consentStatus | Consentement reçu (true par défaut) |
+| source | Provenance : "footer", "blog", "landing" |
+| createdAt | Date d'inscription |
+
+### Côté Admin (Halima)
+
+- **Vue Newsletter** : Liste de tous les abonnés avec email, source et date
+- **Export CSV** : Bouton pour télécharger la liste complète en CSV (compatible Excel, Mailchimp, etc.)
+- **Suppression** : Possibilité de supprimer un abonné
+- **Statistiques** : Total abonnés, répartition par source, inscriptions du mois
+
+---
+
+## Système de Commissions
+
+Chaque établissement approuvé génère une commission mensuelle que le propriétaire doit régler.
+
+### Barème des commissions
+
+| Type d'établissement | Commission mensuelle (FCFA) |
+|---|---|
+| Auberge | 1 000 |
+| Hôtel | 3 000 |
+| Appartement | 2 500 |
+| Appartement Meublé | 2 500 |
+| Lodge | 2 500 |
+| Loft | 2 500 |
+
+### Suivi des paiements
+
+| Champ | Description |
+|---|---|
+| commission | Montant en FCFA (calculé automatiquement selon le type) |
+| paymentStatus | "en_attente" ou "paye" |
+
+### Côté Propriétaire (Dashboard)
+
+- **Alerte visuelle rouge** si une commission est impayée
+- Message : "Commission en attente. Merci de régler [Montant] FCFA via Wave au 773615944 (Halima)"
+- Détail par établissement avec le montant attendu
+- Total à payer affiché clairement
+
+### Côté Admin (Halima)
+
+- **Vue Commissions** : Tableau global de tous les établissements avec statut de paiement
+- **Statistiques** : Revenus attendus, commissions payées, impayés, nombre d'établissements en attente
+- **Validation** : Bouton "Confirmer paiement" pour marquer une commission comme payée
+- **Filtres** : Filtrer par statut (payé / impayé)
 
 ---
 

@@ -3,14 +3,16 @@
 import { useAppStore, type View } from '@/store/app-store'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { LayoutDashboard, Building2, Users, Settings, Menu, X, Shield, Newspaper } from 'lucide-react'
+import { LayoutDashboard, Building2, Users, Menu, X, Shield, Newspaper, Mail, Banknote } from 'lucide-react'
 import { useState } from 'react'
 import { AdminOverview } from './AdminOverview'
 import { AdminEstablishments } from './AdminEstablishments'
 import { AdminUsers } from './AdminUsers'
 import { AdminBlog } from './AdminBlog'
+import { AdminSubscribers } from './AdminSubscribers'
+import { AdminCommissions } from './AdminCommissions'
 
-type SubView = 'admin' | 'admin-stats' | 'admin-establishments' | 'admin-users' | 'admin-blog'
+type SubView = 'admin' | 'admin-stats' | 'admin-establishments' | 'admin-users' | 'admin-blog' | 'admin-subscribers' | 'admin-commissions'
 
 interface SidebarContentProps {
   subView: SubView
@@ -22,8 +24,10 @@ function SidebarContent({ subView, onNavigate, onCloseMobile }: SidebarContentPr
   const navItems: { view: SubView; label: string; icon: React.ReactNode }[] = [
     { view: 'admin', label: 'Vue d\'ensemble', icon: <LayoutDashboard className="h-4 w-4" /> },
     { view: 'admin-establishments', label: 'Établissements', icon: <Building2 className="h-4 w-4" /> },
+    { view: 'admin-commissions', label: 'Commissions', icon: <Banknote className="h-4 w-4" /> },
     { view: 'admin-users', label: 'Utilisateurs', icon: <Users className="h-4 w-4" /> },
     { view: 'admin-blog', label: 'Blog', icon: <Newspaper className="h-4 w-4" /> },
+    { view: 'admin-subscribers', label: 'Newsletter', icon: <Mail className="h-4 w-4" /> },
   ]
 
   return (
@@ -53,6 +57,8 @@ const navLabels: Record<SubView, string> = {
   'admin-establishments': 'Établissements',
   'admin-users': 'Utilisateurs',
   'admin-blog': 'Blog',
+  'admin-subscribers': 'Newsletter',
+  'admin-commissions': 'Commissions',
 }
 
 export function AdminLayout() {
@@ -69,6 +75,10 @@ export function AdminLayout() {
         return <AdminUsers />
       case 'admin-blog':
         return <AdminBlog />
+      case 'admin-subscribers':
+        return <AdminSubscribers />
+      case 'admin-commissions':
+        return <AdminCommissions />
       case 'admin-stats':
       case 'admin':
       default:

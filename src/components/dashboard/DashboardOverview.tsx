@@ -5,8 +5,29 @@ import { useAppStore } from '@/store/app-store'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Badge } from '@/components/ui/badge'
-import { BedDouble, CalendarDays, CheckCircle, Clock, Building2, Plus, AlertCircle } from 'lucide-react'
+import { BedDouble, CalendarDays, CheckCircle, Clock, Building2, Plus, AlertCircle, AlertTriangle } from 'lucide-react'
+
+// Commission rates by type
+const COMMISSION_RATES: Record<string, number> = {
+  auberge: 1000,
+  hotel: 3000,
+  appartement: 2500,
+  appartement_meuble: 2500,
+  lodge: 2500,
+  loft: 2500,
+}
+
+const getTypeLabel = (type: string) => {
+  const types: Record<string, string> = {
+    auberge: 'Auberge',
+    hotel: 'Hôtel',
+    appartement: 'Appartement',
+    appartement_meuble: 'Appartement Meublé',
+    lodge: 'Lodge',
+    loft: 'Loft',
+  }
+  return types[type] || type
+}
 
 interface Stats {
   totalRooms: number
@@ -17,9 +38,18 @@ interface Stats {
   pendingEstablishments: number
 }
 
+interface UnpaidCommission {
+  id: string
+  name: string
+  type: string
+  commission: number
+  paymentStatus: string
+}
+
 export function DashboardOverview() {
   const { navigate, currentUser } = useAppStore()
   const [stats, setStats] = useState<Stats | null>(null)
+  const [unpaidCommissions, setUnpaidCommissions] = useState<UnpaidCommission[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -46,6 +76,17 @@ export function DashboardOverview() {
       const approvedEstablishments = userEstablishments.filter((e: { isApproved: boolean }) => e.isApproved).length
       const pendingEstablishments = userEstablishments.filter((e: { isApproved: boolean }) => !e.isApproved).length
 
+      // Find unpaid commissions for this owner's approved establishments
+      const unpaid = userEstablishments
+        .filter((e: { isApproved: boolean; paymentStatus: string }) => e.isApproved && e.paymentStatus !== 'paye')
+        .map((e: { id: string; name: string; type: string; paymentStatus: string }) => ({
+          id: e.id,
+          name: e.name,
+          type: e.type,
+          commission: COMMISSION_RATES[e.type] || 1000,
+          paymentStatus: e.paymentStatus || 'en_attente',
+        }))
+
       setStats({
         totalRooms,
         pendingBookings,
@@ -54,6 +95,7 @@ export function DashboardOverview() {
         approvedEstablishments,
         pendingEstablishments,
       })
+      setUnpaidCommissions(unpaid)
     } catch (err) {
       console.error(err)
     } finally {
@@ -87,6 +129,45 @@ export function DashboardOverview() {
           Voici un aperçu de votre activité
         </p>
       </div>
+
+      {/* Commission Alert - Unpaid */}
+      {unpaidCommissions.length > 0 && (
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="p-4 space-y-3">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5 shrink-0" />
+              <div className="space-y-2">
+                <p className="font-semibold text-red-800">
+                  Commission en attente de paiement
+                </p>
+                <p className="text-sm text-red-700">
+                  Merci de régler vos commissions via <strong>Wave au 773615944 (Halima)</strong>
+                </p>
+              </div>
+            </div>
+            <div className="space-y-2 pl-8">
+              {unpaidCommissions.map((est) => (
+                <div key={est.id} className="flex items-center justify-between bg-white/60 rounded-lg px-3 py-2">
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{est.name}</p>
+                    <p className="text-xs text-muted-foreground">{getTypeLabel(est.type)}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-red-700">{est.commission.toLocaleString()} FCFA</p>
+                    <p className="text-[10px] text-red-500">En attente</p>
+                  </div>
+                </div>
+              ))}
+              <div className="flex items-center justify-between bg-white/80 rounded-lg px-3 py-2 border border-red-200">
+                <p className="text-sm font-semibold text-red-800">Total à payer</p>
+                <p className="text-base font-bold text-red-800">
+                  {unpaidCommissions.reduce((sum, e) => sum + e.commission, 0).toLocaleString()} FCFA
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Stats cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

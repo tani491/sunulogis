@@ -23,23 +23,25 @@ model Profile {
 }
 
 model Establishment {
-  id          String   @id @default(cuid())
-  ownerId     String
-  name        String
-  type        String   @default("auberge") // "auberge", "hotel", "appartement", "appartement_meuble", "lodge", "loft"
-  description String   @default("")
-  city        String
-  region      String   @default("")
-  address     String   @default("")
-  images      String   @default("[]")
-  website     String?
-  phone       String?
-  isApproved  Boolean  @default(false) // Admin must approve
-  isSuspended Boolean  @default(false) // Admin can suspend
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  owner       Profile  @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  rooms       Room[]
+  id            String   @id @default(cuid())
+  ownerId       String
+  name          String
+  type          String   @default("auberge") // "auberge", "hotel", "appartement", "appartement_meuble", "lodge", "loft"
+  description   String   @default("")
+  city          String
+  region        String   @default("")
+  address       String   @default("")
+  images        String   @default("[]")
+  website       String?
+  phone         String?
+  isApproved    Boolean  @default(false) // Admin must approve
+  isSuspended   Boolean  @default(false) // Admin can suspend
+  commission    Int      @default(0) // Montant de la commission en FCFA
+  paymentStatus String   @default("en_attente") // "en_attente", "paye"
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  owner         Profile  @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  rooms         Room[]
 }
 
 model Room {
@@ -81,4 +83,12 @@ model BlogPost {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   author      Profile  @relation(fields: [authorId], references: [id], onDelete: Cascade)
+}
+
+model Subscriber {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  consentStatus Boolean  @default(true) // Consentement reçu
+  source        String   @default("footer") // "footer", "blog", "landing"
+  createdAt     DateTime @default(now())
 }
