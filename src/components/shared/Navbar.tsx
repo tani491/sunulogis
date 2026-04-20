@@ -34,7 +34,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-card/95 backdrop-blur-md">
+    <header className="sticky top-0 z-50 w-full border-2 border-green-500 bg-card/95 backdrop-blur-md">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         {/* Logo */}
         <button
