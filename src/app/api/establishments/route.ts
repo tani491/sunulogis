@@ -21,7 +21,41 @@ export async function GET(req: NextRequest) {
     const minPrice = searchParams.get('minPrice');
     const maxPrice = searchParams.get('maxPrice');
     const search = searchParams.get('search');
+    const ownerId = searchParams.get('ownerId');
 
+    // If ownerId is provided, return establishments for that owner (including unapproved)
+    // This is used by the owner dashboard. For security, only the owner themselves or admins can request this.
+    if (ownerId) {
+      const user = await getSessionUser();
+      if (!user || (user.id !== ownerId && !isAdminRole(user.role))) {
+        return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+      }
+
+      const ownerEstablishments = await db.establishment.findMany({
+        where: {
+          ownerId,
+          ...(city ? { city: { contains: city } } : {}),
+          ...(region ? { region } : {}),
+          ...(type ? { type } : {}),
+          ...(search ? {
+            OR: [
+              { name: { contains: search } },
+              { city: { contains: search } },
+              { description: { contains: search } },
+            ],
+          } : {}),
+        },
+        include: {
+          rooms: true,
+          owner: { select: { id: true, fullName: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      return NextResponse.json(ownerEstablishments.map(parseEstablishment));
+    }
+
+    // Public listing: only approved and non-suspended establishments
     // Note: SQLite doesn't support mode: 'insensitive' but is case-insensitive by default for ASCII.
     // For PostgreSQL (Supabase), add mode: 'insensitive' to contains filters.
     const establishments = await db.establishment.findMany({

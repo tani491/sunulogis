@@ -42,7 +42,7 @@ export function LoginPage() {
       toast.success(`Bienvenue, ${data.fullName || data.email} !`)
 
       // Navigate based on role
-      if (data.role === 'admin') {
+      if (data.role === 'admin' || data.role === 'super_admin') {
         navigate('admin')
       } else {
         navigate('dashboard')
@@ -121,6 +121,9 @@ export function LoginPage() {
             </p>
             <p className="text-xs text-muted-foreground text-center">
               <strong>Demo Admin :</strong> admin@sunulogis.sn / admin123
+            </p>
+            <p className="text-xs text-muted-foreground text-center">
+              <strong>Demo Super Admin :</strong> superadmin@sunulogis.sn / super123
             </p>
           </div>
         </CardContent>

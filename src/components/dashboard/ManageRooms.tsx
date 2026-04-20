@@ -57,14 +57,13 @@ export function ManageRooms() {
   const fetchData = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/establishments')
+      const res = await fetch(`/api/establishments?ownerId=${currentUser?.id}`)
       const data = await res.json()
-      const userEstablishments = data.filter((e: { ownerId: string }) => e.ownerId === currentUser?.id)
-      setEstablishments(userEstablishments)
+      setEstablishments(data)
 
       // Get all rooms for user establishments
       const allRooms: Room[] = []
-      for (const est of userEstablishments) {
+      for (const est of data) {
         const roomsRes = await fetch(`/api/rooms?establishmentId=${est.id}`)
         const estRooms = await roomsRes.json()
         allRooms.push(...estRooms.map((r: Room) => ({ ...r, establishment: { name: est.name, id: est.id } })))

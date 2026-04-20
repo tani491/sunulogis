@@ -58,10 +58,9 @@ export function ManageEstablishment() {
   const fetchEstablishments = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/establishments')
+      const res = await fetch(`/api/establishments?ownerId=${currentUser?.id}`)
       const data = await res.json()
-      const userEstablishments = data.filter((e: { ownerId: string }) => e.ownerId === currentUser?.id)
-      setEstablishments(userEstablishments.map((e: Establishment) => ({ ...e, images: typeof e.images === 'string' ? JSON.parse(e.images) : e.images })))
+      setEstablishments(data.map((e: Establishment) => ({ ...e, images: typeof e.images === 'string' ? JSON.parse(e.images) : e.images })))
     } catch (err) {
       console.error(err)
     } finally {

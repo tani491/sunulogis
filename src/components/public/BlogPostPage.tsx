@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { ArrowLeft, Calendar, User, BookOpen, Clock } from 'lucide-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
+import ReactMarkdown from 'react-markdown'
 
 interface BlogPost {
   id: string
@@ -49,7 +50,7 @@ interface RecentPost {
 }
 
 export function BlogPostPage() {
-  const { currentBlogSlug, navigate } = useAppStore()
+  const { currentBlogSlug, navigate, selectBlogPost } = useAppStore()
   const [post, setPost] = useState<BlogPost | null>(null)
   const [recentPosts, setRecentPosts] = useState<RecentPost[]>([])
   const [loading, setLoading] = useState(true)
@@ -155,13 +156,7 @@ export function BlogPostPage() {
 
           {/* Post content */}
           <div className="prose prose-gray max-w-none">
-            {post.content.split('\n').map((paragraph, i) => {
-              if (!paragraph.trim()) return <br key={i} />
-              if (paragraph.startsWith('## ')) return <h2 key={i} className="text-xl font-bold mt-6 mb-3">{paragraph.replace('## ', '')}</h2>
-              if (paragraph.startsWith('### ')) return <h3 key={i} className="text-lg font-semibold mt-4 mb-2">{paragraph.replace('### ', '')}</h3>
-              if (paragraph.startsWith('- ')) return <li key={i} className="ml-4 text-muted-foreground">{paragraph.replace('- ', '')}</li>
-              return <p key={i} className="text-muted-foreground leading-relaxed mb-4">{paragraph}</p>
-            })}
+            <ReactMarkdown>{post.content}</ReactMarkdown>
           </div>
         </div>
 
@@ -187,11 +182,7 @@ export function BlogPostPage() {
                 {recentPosts.map((rp) => (
                   <button
                     key={rp.id}
-                    onClick={() => {
-                      navigate('blog')
-                      setTimeout(() => navigate('blog-post'), 50)
-                      // We need to use selectBlogPost instead
-                    }}
+                    onClick={() => selectBlogPost(rp.slug)}
                     className="block w-full text-left text-sm hover:text-primary transition-colors py-1.5 border-b last:border-0"
                   >
                     <span className="font-medium line-clamp-2">{rp.title}</span>

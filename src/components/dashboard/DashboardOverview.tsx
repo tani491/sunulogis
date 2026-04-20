@@ -41,7 +41,7 @@ export function DashboardOverview() {
     setLoading(true)
     try {
       const [establishmentsRes, bookingsRes] = await Promise.all([
-        fetch('/api/establishments'),
+        fetch(`/api/establishments?ownerId=${currentUser?.id}`),
         fetch('/api/bookings'),
       ])
 
