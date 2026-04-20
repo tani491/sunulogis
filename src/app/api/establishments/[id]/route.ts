@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { getSessionUser } from '@/lib/auth';
+import { getSessionUser, isAdminRole } from '@/lib/auth';
 
 function parseEstablishment(e: any) {
   return {
@@ -50,8 +50,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
     const body = await req.json();
 
-    // Admin can approve/suspend
-    if (user.role === 'admin') {
+    // Admin or Super Admin can edit/approve/suspend any establishment
+    if (isAdminRole(user.role)) {
       const establishment = await db.establishment.update({
         where: { id },
         data: {
@@ -116,7 +116,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ error: 'Établissement non trouvé' }, { status: 404 });
     }
 
-    if (existing.ownerId !== user.id && user.role !== 'admin') {
+    if (existing.ownerId !== user.id && !isAdminRole(user.role)) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 

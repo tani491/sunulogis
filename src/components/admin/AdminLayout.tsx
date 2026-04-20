@@ -3,7 +3,7 @@
 import { useAppStore, type View } from '@/store/app-store'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { LayoutDashboard, Building2, Users, Menu, X, Shield, Newspaper, Mail, Banknote } from 'lucide-react'
+import { LayoutDashboard, Building2, Users, Menu, X, Shield, Newspaper, Mail, Banknote, Crown } from 'lucide-react'
 import { useState } from 'react'
 import { AdminOverview } from './AdminOverview'
 import { AdminEstablishments } from './AdminEstablishments'
@@ -21,6 +21,9 @@ interface SidebarContentProps {
 }
 
 function SidebarContent({ subView, onNavigate, onCloseMobile }: SidebarContentProps) {
+  const { currentUser } = useAppStore()
+  const isSuperAdmin = currentUser?.role === 'super_admin'
+
   const navItems: { view: SubView; label: string; icon: React.ReactNode }[] = [
     { view: 'admin', label: 'Vue d\'ensemble', icon: <LayoutDashboard className="h-4 w-4" /> },
     { view: 'admin-establishments', label: 'Établissements', icon: <Building2 className="h-4 w-4" /> },
@@ -33,8 +36,14 @@ function SidebarContent({ subView, onNavigate, onCloseMobile }: SidebarContentPr
   return (
     <div className="space-y-2 p-4">
       <div className="flex items-center gap-2 mb-4 px-2">
-        <Shield className="h-5 w-5 text-primary" />
-        <h2 className="text-lg font-bold text-primary">Admin</h2>
+        {isSuperAdmin ? (
+          <Crown className="h-5 w-5 text-purple-600" />
+        ) : (
+          <Shield className="h-5 w-5 text-primary" />
+        )}
+        <h2 className={`text-lg font-bold ${isSuperAdmin ? 'text-purple-600' : 'text-primary'}`}>
+          {isSuperAdmin ? 'Super Admin' : 'Admin'}
+        </h2>
       </div>
       {navItems.map((item) => (
         <Button

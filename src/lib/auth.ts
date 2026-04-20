@@ -22,6 +22,16 @@ export async function getSessionUser() {
   }
 }
 
+// Check if user has admin-level access (admin or super_admin)
+export function isAdminRole(role: string | null | undefined): boolean {
+  return role === 'admin' || role === 'super_admin';
+}
+
+// Check if user is super_admin
+export function isSuperAdmin(role: string | null | undefined): boolean {
+  return role === 'super_admin';
+}
+
 // Cookie options factory - secure in production
 export function getCookieOptions() {
   return {

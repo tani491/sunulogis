@@ -72,6 +72,14 @@ export const PAYMENT_STATUSES = {
   paye: 'Payé',
 } as const
 
+// Role labels (French)
+export const ROLE_LABELS: Record<string, string> = {
+  super_admin: 'Super Admin',
+  admin: 'Administrateur',
+  owner: 'Propriétaire',
+  client: 'Client',
+} as const
+
 // Blog categories
 export const BLOG_CATEGORIES = [
   { value: 'all', label: 'Toutes' },

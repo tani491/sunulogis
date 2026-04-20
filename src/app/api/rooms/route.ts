@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { getSessionUser } from '@/lib/auth';
+import { getSessionUser, isAdminRole } from '@/lib/auth';
 
 export async function GET(req: NextRequest) {
   try {
@@ -22,8 +22,8 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(rooms);
     }
 
-    // Admin: return all rooms
-    if (user && user.role === 'admin') {
+    // Admin/Super Admin: return all rooms
+    if (user && isAdminRole(user.role)) {
       const rooms = await db.room.findMany({
         where: {
           ...(establishmentId ? { establishmentId } : {}),
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
 
     // Verify establishment belongs to user
     const establishment = await db.establishment.findUnique({ where: { id: establishmentId } });
-    if (!establishment || (establishment.ownerId !== user.id && user.role !== 'admin')) {
+    if (!establishment || (establishment.ownerId !== user.id && !isAdminRole(user.role))) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 

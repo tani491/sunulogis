@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
-import { Building2, Users, BedDouble, CalendarDays, Clock, CheckCircle, AlertCircle, Shield } from 'lucide-react'
+import { Building2, Users, BedDouble, CalendarDays, Clock, CheckCircle, AlertCircle, Shield, Crown } from 'lucide-react'
 
 interface PlatformStats {
   totalOwners: number
@@ -62,11 +62,19 @@ export function AdminOverview() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Shield className="h-6 w-6 text-primary" />
-          Administration SunuLogis
+          {currentUser?.role === 'super_admin' ? (
+            <Crown className="h-6 w-6 text-purple-600" />
+          ) : (
+            <Shield className="h-6 w-6 text-primary" />
+          )}
+          {currentUser?.role === 'super_admin' ? 'Super Admin SunuLogis' : 'Administration SunuLogis'}
         </h1>
         <p className="text-muted-foreground">
-          Vue d&apos;ensemble de la plateforme
+          {currentUser?.role === 'super_admin' ? (
+            <>Contrôle total : gestion, modération et édition de toutes les données</>
+          ) : (
+            <>Vue d&apos;ensemble de la plateforme</>
+          )}
         </p>
       </div>
 
@@ -160,7 +168,7 @@ export function AdminOverview() {
         </Card>
       </div>
 
-      {/* Quick action for pending approvals */}
+      {/* Quick action for pending approvals - Enhanced for Super Admin moderation */}
       {(stats?.pendingEstablishments || 0) > 0 && (
         <Card className="border-yellow-200 bg-yellow-50">
           <CardContent className="p-4 flex items-center justify-between">
@@ -168,14 +176,18 @@ export function AdminOverview() {
               <AlertCircle className="h-5 w-5 text-yellow-600" />
               <div>
                 <p className="font-medium text-yellow-800">
-                  {stats?.pendingEstablishments} établissement{stats?.pendingEstablishments !== 1 ? 's' : ''} en attente d&apos;approbation
+                  {stats?.pendingEstablishments} établissement{stats?.pendingEstablishments !== 1 ? 's' : ''} en attente de validation
                 </p>
-                <p className="text-sm text-yellow-700">Action requise pour valider les nouveaux établissements</p>
+                <p className="text-sm text-yellow-700">
+                  {currentUser?.role === 'super_admin' 
+                    ? 'Examinez les photos et descriptions, corrigez si nécessaire, puis validez pour publication.'
+                    : 'Action requise pour valider les nouveaux établissements.'}
+                </p>
               </div>
             </div>
             <Button onClick={() => navigate('admin-establishments')} variant="outline" className="gap-2">
               <Building2 className="h-4 w-4" />
-              Gérer
+              Examiner
             </Button>
           </CardContent>
         </Card>

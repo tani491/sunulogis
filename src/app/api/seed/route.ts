@@ -22,6 +22,18 @@ export async function GET() {
       },
     });
 
+    // Create super admin user
+    await db.profile.create({
+      data: {
+        email: 'superadmin@sunulogis.sn',
+        password: hashPassword('super123'),
+        fullName: 'Super Admin SunuLogis',
+        username: 'superadmin',
+        role: 'super_admin',
+        isActive: true,
+      },
+    });
+
     // Create sample owner
     const owner = await db.profile.create({
       data: {

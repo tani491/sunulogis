@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { getSessionUser } from '@/lib/auth';
+import { getSessionUser, isAdminRole } from '@/lib/auth';
 
 function parseEstablishment(e: any) {
   return {
@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
-    if (user.role !== 'owner' && user.role !== 'admin') {
+    if (user.role !== 'owner' && !isAdminRole(user.role)) {
       return NextResponse.json({ error: 'Seuls les propriétaires peuvent créer des établissements' }, { status: 403 });
     }
 

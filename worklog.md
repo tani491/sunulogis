@@ -1,34 +1,52 @@
+# SunuLogis Worklog
+
 ---
 Task ID: 1
 Agent: Main Agent
-Task: Complete code review and fix all errors for SunuLogis deployment readiness
+Task: Implement Super Admin role and Moderation Workflow
 
 Work Log:
-- Explored entire project structure (all API routes, components, config files)
-- Identified 15+ critical and medium issues
-- Created missing `/api/upload` route (was breaking image uploads)
-- Created `src/lib/constants.ts` to eliminate duplicated constants across 8+ components
-- Fixed `.env` to use relative path `file:./db/custom.db` (was absolute Linux path)
-- Created `.env.example` with Supabase PostgreSQL configuration
-- Fixed `package.json`: pinned `@prisma/client` to `6.11.1`, removed `next-auth`, `next-intl`, `z-ai-web-dev-sdk`
-- Fixed `next.config.ts`: removed `output: "standalone"` (not for Vercel), removed `ignoreBuildErrors: true`
-- Fixed `src/lib/db.ts`: disabled query logging in production
-- Fixed `src/lib/auth.ts`: added `getCookieOptions()` with `secure: true` in production
-- Fixed all 3 auth routes (login, register, logout) to use shared cookie options
-- Fixed rooms API logic bug (owner/public filtering was incorrect)
-- Updated 6 components to use shared constants (HomePage, EstablishmentDetailPage, DashboardOverview, AdminCommissions, AdminEstablishments, ManageEstablishment)
-- Fixed `tsconfig.json` to exclude `skills/`, `examples/`, `agent-ctx/` from build
-- Fixed `mode: 'insensitive'` SQLite incompatibility in establishments API
-- Fixed Framer Motion type error in `page.tsx`
-- Removed `examples/` directory causing build errors
-- Removed deprecated `middleware.ts` (Next.js 16 uses proxy)
-- Created `prisma/schema.production.prisma` for Supabase PostgreSQL with indexes
-- Updated commissions API to use shared constants
-- **npm run build passes successfully** ✅
+- Added `super_admin` role to Prisma schema (both dev SQLite and production PostgreSQL)
+- Created `isAdminRole()` and `isSuperAdmin()` helper functions in `src/lib/auth.ts`
+- Updated ALL API routes (15+ routes) to use `isAdminRole()` instead of `role === 'admin'`:
+  - `/api/admin/` (stats)
+  - `/api/admin/establishments` (GET + PUT)
+  - `/api/admin/users` (GET + PUT)
+  - `/api/admin/commissions` (GET + PUT)
+  - `/api/establishments` (POST)
+  - `/api/establishments/[id]` (PUT + DELETE)
+  - `/api/rooms` (GET + POST)
+  - `/api/rooms/[id]` (PUT + DELETE)
+  - `/api/bookings/[id]` (PUT)
+  - `/api/blog` (POST)
+  - `/api/blog/all` (GET)
+  - `/api/blog/[slug]` (PUT + DELETE)
+  - `/api/subscribers` (GET + DELETE)
+  - `/api/subscribers/export` (GET)
+- Created `AdminEstablishmentEditor` component with full CRUD for any establishment:
+  - Edit name, type, description, city, region, address, website, phone, images
+  - Approve/suspend/reactivate/delete establishment
+  - View owner info, commission status, rooms summary
+  - Image management with drag-and-drop replacement
+- Enhanced `AdminEstablishments` with moderation workflow:
+  - Pending alert banner at top
+  - "Examiner" button for pending, "Modifier" for approved
+  - Photo thumbnails in table
+  - Description preview
+  - Inline approve/suspend actions
+- Updated `AdminUsers` with super_admin role badge (purple Crown icon)
+- Updated `AdminLayout` sidebar: Crown icon + purple styling for super_admin
+- Updated `AdminOverview`: Crown icon, contextual descriptions for super_admin
+- Updated `Navbar`: both desktop and mobile menus show "Super Admin" label
+- Added `ROLE_LABELS` to constants.ts
+- Added `superadmin@sunulogis.sn` / `super123` demo user in seed data
+- Reset database and re-seeded with new data
+- Build verified: `next build` compiles successfully with zero errors
 
 Stage Summary:
-- Build passes with all 21 API routes functional
-- All critical bugs fixed (upload route, rooms logic, SQLite compatibility)
-- Code is now DRY with shared constants
-- Ready for Vercel + Supabase deployment
-- Production schema with indexes prepared for PostgreSQL migration
+- Super Admin role fully implemented with complete CRUD access to all data
+- Moderation workflow: Pending → Review/Edit → Validate/Reject
+- Super Admin can edit any establishment's text, photos, and details
+- All API routes support both admin and super_admin roles
+- Demo credentials: superadmin@sunulogis.sn / super123
+- Build passes, deployment ready

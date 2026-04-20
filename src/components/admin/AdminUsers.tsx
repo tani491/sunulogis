@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
-import { Users, ShieldCheck, Ban, Filter } from 'lucide-react'
+import { Users, ShieldCheck, Ban, Filter, Crown, Shield } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface User {
@@ -74,10 +74,12 @@ export function AdminUsers() {
 
   const getRoleBadge = (role: string) => {
     switch (role) {
+      case 'super_admin':
+        return <Badge className="gap-1 bg-purple-600"><Crown className="h-3 w-3" /> Super Admin</Badge>
       case 'admin':
         return <Badge className="gap-1 bg-red-600"><ShieldCheck className="h-3 w-3" /> Admin</Badge>
       case 'owner':
-        return <Badge className="gap-1 bg-primary"><Ban className="h-3 w-3 hidden" /> Propriétaire</Badge>
+        return <Badge className="gap-1 bg-primary"><Shield className="h-3 w-3 hidden" /> Propriétaire</Badge>
       case 'client':
         return <Badge variant="secondary" className="gap-1">Client</Badge>
       default:
@@ -112,14 +114,15 @@ export function AdminUsers() {
         <div className="flex items-center gap-2 flex-wrap">
           <Filter className="h-4 w-4 text-muted-foreground" />
           <Select value={roleFilter} onValueChange={setRoleFilter}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger className="w-44">
               <SelectValue placeholder="Rôle" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tous les rôles</SelectItem>
+              <SelectItem value="super_admin">Super Admin</SelectItem>
+              <SelectItem value="admin">Admins</SelectItem>
               <SelectItem value="owner">Propriétaires</SelectItem>
               <SelectItem value="client">Clients</SelectItem>
-              <SelectItem value="admin">Admins</SelectItem>
             </SelectContent>
           </Select>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -179,7 +182,7 @@ export function AdminUsers() {
                       )}
                     </TableCell>
                     <TableCell className="text-right">
-                      {user.role !== 'admin' && (
+                      {user.role !== 'super_admin' && (
                         user.isActive ? (
                           <AlertDialog>
                             <AlertDialogTrigger asChild>

@@ -12,7 +12,7 @@ model Profile {
   email     String   @unique
   username  String?
   fullName  String?
-  role      String   @default("owner") // "client", "owner", "admin"
+  role      String   @default("owner") // "client", "owner", "admin", "super_admin"
   password  String?
   phone     String?
   isActive  Boolean  @default(true)

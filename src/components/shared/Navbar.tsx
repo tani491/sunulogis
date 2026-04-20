@@ -38,7 +38,7 @@ export default function Navbar() {
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         {/* Logo */}
         <button
-          onClick={() => navigate(currentUser ? (currentUser.role === 'admin' ? 'admin' : 'dashboard') : 'landing')}
+          onClick={() => navigate(currentUser ? (currentUser.role === 'admin' || currentUser.role === 'super_admin' ? 'admin' : 'dashboard') : 'landing')}
           className="flex items-center gap-2 hover:opacity-80 transition-opacity"
         >
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
@@ -117,7 +117,7 @@ export default function Navbar() {
                       <p className="text-xs text-primary mt-1 capitalize">{currentUser.role}</p>
                     </div>
                     <div className="p-1">
-                      {currentUser.role === 'admin' ? (
+                      {(currentUser.role === 'admin' || currentUser.role === 'super_admin') ? (
                         <Button
                           variant="ghost"
                           size="sm"
@@ -125,7 +125,7 @@ export default function Navbar() {
                           onClick={() => { navigate('admin'); setShowUserMenu(false); }}
                         >
                           <Shield className="h-4 w-4" />
-                          Panel Admin
+                          {currentUser.role === 'super_admin' ? 'Super Admin' : 'Panel Admin'}
                         </Button>
                       ) : (
                         <Button
@@ -204,7 +204,7 @@ export default function Navbar() {
                       <p className="font-medium text-sm">{currentUser.fullName || currentUser.email}</p>
                       <p className="text-xs text-muted-foreground">{currentUser.email}</p>
                     </div>
-                    {currentUser.role === 'admin' ? (
+                    {(currentUser.role === 'admin' || currentUser.role === 'super_admin') ? (
                       <Button
                         variant={currentView.startsWith('admin') ? 'secondary' : 'ghost'}
                         size="sm"
@@ -212,7 +212,7 @@ export default function Navbar() {
                         onClick={() => { navigate('admin'); setMobileOpen(false); }}
                       >
                         <Shield className="h-4 w-4" />
-                        Panel Admin
+                        {currentUser.role === 'super_admin' ? 'Super Admin' : 'Panel Admin'}
                       </Button>
                     ) : (
                       <Button

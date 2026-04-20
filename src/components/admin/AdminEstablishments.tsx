@@ -8,9 +8,10 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
-import { Building2, Check, X, Ban, ShieldCheck, Filter, MapPin } from 'lucide-react'
+import { Building2, Check, X, Ban, ShieldCheck, Filter, MapPin, Pencil, Eye, Clock, MessageSquare } from 'lucide-react'
 import { toast } from 'sonner'
 import { ESTABLISHMENT_TYPE_FILTERS, getTypeLabel, getTypeColor } from '@/lib/constants'
+import { AdminEstablishmentEditor } from './AdminEstablishmentEditor'
 
 interface Establishment {
   id: string
@@ -18,10 +19,12 @@ interface Establishment {
   type: string
   city: string
   region: string
+  description: string
+  images: string[]
   isApproved: boolean
   isSuspended: boolean
   minPrice: number | null
-  owner: { id: string; fullName: string; email: string }
+  owner: { id: string; fullName: string; email: string; phone?: string | null }
   rooms: { id: string }[]
 }
 
@@ -31,6 +34,7 @@ export function AdminEstablishments() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [typeFilter, setTypeFilter] = useState<string>('all')
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
 
   useEffect(() => {
     fetchEstablishments()
@@ -80,7 +84,7 @@ export function AdminEstablishments() {
       return <Badge variant="destructive" className="gap-1"><Ban className="h-3 w-3" /> Suspendu</Badge>
     }
     if (!est.isApproved) {
-      return <Badge variant="secondary" className="gap-1 bg-yellow-100 text-yellow-800"><X className="h-3 w-3" /> En attente</Badge>
+      return <Badge variant="secondary" className="gap-1 bg-yellow-100 text-yellow-800"><Clock className="h-3 w-3" /> En attente</Badge>
     }
     return <Badge className="gap-1 bg-green-600"><ShieldCheck className="h-3 w-3" /> Approuvé</Badge>
   }
@@ -93,6 +97,20 @@ export function AdminEstablishments() {
     return true
   })
 
+  // Count pending
+  const pendingCount = establishments.filter(e => !e.isApproved).length
+
+  // If editing an establishment, show the editor
+  if (editingId) {
+    return (
+      <AdminEstablishmentEditor
+        establishmentId={editingId}
+        onClose={() => setEditingId(null)}
+        onSaved={fetchEstablishments}
+      />
+    )
+  }
+
   if (loading) {
     return (
       <div className="space-y-4">
@@ -104,6 +122,33 @@ export function AdminEstablishments() {
 
   return (
     <div className="space-y-6">
+      {/* Pending alert */}
+      {pendingCount > 0 && (
+        <Card className="border-yellow-200 bg-yellow-50">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Clock className="h-5 w-5 text-yellow-600" />
+              <div>
+                <p className="font-medium text-yellow-800">
+                  {pendingCount} établissement{pendingCount !== 1 ? 's' : ''} en attente de validation
+                </p>
+                <p className="text-sm text-yellow-700">
+                  Cliquez sur &quot;Examiner&quot; pour voir les détails, modifier les photos si nécessaire, puis valider ou rejeter.
+                </p>
+              </div>
+            </div>
+            <Button
+              onClick={() => setStatusFilter('pending')}
+              variant="outline"
+              className="gap-2 border-yellow-300 text-yellow-800 hover:bg-yellow-100"
+            >
+              <Eye className="h-4 w-4" />
+              Voir les en attente
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <Building2 className="h-6 w-6 text-primary" />
@@ -149,6 +194,7 @@ export function AdminEstablishments() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>Photo</TableHead>
                   <TableHead>Nom</TableHead>
                   <TableHead>Type</TableHead>
                   <TableHead>Localisation</TableHead>
@@ -160,8 +206,22 @@ export function AdminEstablishments() {
               </TableHeader>
               <TableBody>
                 {filteredEstablishments.map((est) => (
-                  <TableRow key={est.id}>
-                    <TableCell className="font-medium">{est.name}</TableCell>
+                  <TableRow key={est.id} className={!est.isApproved ? 'bg-yellow-50/50' : ''}>
+                    <TableCell>
+                      {est.images && est.images.length > 0 ? (
+                        <img src={est.images[0]} alt={est.name} className="w-12 h-12 rounded object-cover" />
+                      ) : (
+                        <div className="w-12 h-12 rounded bg-muted flex items-center justify-center">
+                          <Building2 className="h-5 w-5 text-muted-foreground/40" />
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium">{est.name}</p>
+                        <p className="text-xs text-muted-foreground line-clamp-1">{est.description?.substring(0, 60)}{est.description?.length > 60 ? '...' : ''}</p>
+                      </div>
+                    </TableCell>
                     <TableCell>
                       <Badge className={getTypeColor(est.type)}>{getTypeLabel(est.type)}</Badge>
                     </TableCell>
@@ -171,41 +231,58 @@ export function AdminEstablishments() {
                         {est.city}{est.region ? `, ${est.region}` : ''}
                       </div>
                     </TableCell>
-                    <TableCell className="text-sm">{est.owner?.fullName || '—'}</TableCell>
+                    <TableCell className="text-sm">
+                      <div>
+                        <p>{est.owner?.fullName || '—'}</p>
+                        <p className="text-xs text-muted-foreground">{est.owner?.email}</p>
+                      </div>
+                    </TableCell>
                     <TableCell>{est.rooms?.length || 0}</TableCell>
                     <TableCell>{getStatusBadge(est)}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
+                        {/* Examine/Edit button - opens the full editor */}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="gap-1 text-primary hover:text-primary"
+                          onClick={() => setEditingId(est.id)}
+                          disabled={actionLoading === est.id}
+                        >
+                          <Pencil className="h-3 w-3" />
+                          {!est.isApproved ? 'Examiner' : 'Modifier'}
+                        </Button>
+
                         {!est.isApproved && (
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button size="sm" variant="outline" className="gap-1 text-green-600 hover:text-green-700" disabled={actionLoading === est.id}>
                                 <Check className="h-3 w-3" />
-                                Approuver
+                                Valider
                               </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                               <AlertDialogHeader>
-                                <AlertDialogTitle>Approuver l&apos;établissement ?</AlertDialogTitle>
+                                <AlertDialogTitle>Valider l&apos;établissement ?</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  Approuver {est.name} ? Il sera visible publiquement.
+                                  Approuver {est.name} ? Il sera visible publiquement sur le site.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
                                 <AlertDialogCancel>Annuler</AlertDialogCancel>
                                 <AlertDialogAction onClick={() => updateEstablishment(est.id, { isApproved: true })} className="bg-green-600 hover:bg-green-700">
-                                  Approuver
+                                  Valider
                                 </AlertDialogAction>
                               </AlertDialogFooter>
                             </AlertDialogContent>
                           </AlertDialog>
                         )}
+
                         {!est.isSuspended ? (
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
-                              <Button size="sm" variant="outline" className="gap-1 text-destructive hover:text-destructive" disabled={actionLoading === est.id}>
+                              <Button size="sm" variant="ghost" className="gap-1 text-destructive hover:text-destructive" disabled={actionLoading === est.id}>
                                 <Ban className="h-3 w-3" />
-                                Suspendre
                               </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
@@ -226,13 +303,12 @@ export function AdminEstablishments() {
                         ) : (
                           <Button
                             size="sm"
-                            variant="outline"
+                            variant="ghost"
                             className="gap-1 text-green-600 hover:text-green-700"
                             onClick={() => updateEstablishment(est.id, { isSuspended: false })}
                             disabled={actionLoading === est.id}
                           >
                             <ShieldCheck className="h-3 w-3" />
-                            Réactiver
                           </Button>
                         )}
                       </div>
