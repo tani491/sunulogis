@@ -50,3 +50,33 @@ Stage Summary:
 - All API routes support both admin and super_admin roles
 - Demo credentials: superadmin@sunulogis.sn / super123
 - Build passes, deployment ready
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Add Villa and Maison à Vendre establishment types
+
+Work Log:
+- Added `villa` (label: "Villa") and `maison_a_vendre` (label: "Maison à Vendre") to ESTABLISHMENT_TYPES in `src/lib/constants.ts`
+- Added commission rates: villa = 5 000 FCFA, maison_a_vendre = 15 000 FCFA
+- Added badge colors: villa = indigo, maison_a_vendre = teal
+- Updated Prisma schema comments in both `schema.prisma` (SQLite) and `schema.production.prisma` (PostgreSQL)
+- Fixed LandingPage.tsx: removed duplicate inline getTypeLabel/getTypeColor functions, now imports from @/lib/constants
+- Updated hero text on LandingPage to include "villas, maisons à vendre"
+- Updated Footer text to include "villas, maisons à vendre"
+- Updated layout.tsx SEO metadata (description, keywords, openGraph) to include villa and maison à vendre
+- Added seed data for Villa ("Villa Les Almadies" - Dakar, approved) and Maison à vendre ("Maison Famille Ndiaye - Saly", approved)
+- Added rooms for new establishments in seed data
+- Updated EstablishmentDetailPage: maison_a_vendre shows "Détails du bien" section, "Bien à vendre" label, "Contacter pour achat" WhatsApp button instead of "Réserver"
+- Updated HomePage cards: maison_a_vendre shows "À vendre" instead of price/night
+- Updated LandingPage featured cards: same "À vendre" treatment
+- Build verified: `next build` compiles with zero errors
+- Prisma client regenerated
+
+Stage Summary:
+- 8 establishment types now available: Auberge, Hôtel, Appartement, Appartement Meublé, Lodge, Loft, Villa, Maison à Vendre
+- Villa: premium rental property (5 000 FCFA commission)
+- Maison à Vendre: property for sale (15 000 FCFA commission)
+- All forms, filters, admin panels, and public pages support the new types
+- Maison à vendre has special UI treatment (no nightly price, WhatsApp contact for purchase)
+- Build passes, deployment ready

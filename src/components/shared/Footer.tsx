@@ -55,7 +55,7 @@ export default function Footer() {
               </span>
             </div>
             <p className="text-sm text-muted-foreground">
-              La plateforme de réservation d&apos;hébergements au Sénégal. Auberges, hôtels, appartements et lodges à travers les 14 régions.
+              La plateforme de réservation d&apos;hébergements au Sénégal. Auberges, hôtels, appartements, villas, maisons à vendre et lodges à travers les 14 régions.
             </p>
           </div>
 

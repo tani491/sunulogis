@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Building2, Search, MapPin, ArrowRight, Home, Key, CalendarCheck, Users, Star } from 'lucide-react';
+import { getTypeLabel, getTypeColor } from '@/lib/constants';
 
 const heroImages = [
   'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&q=80',
@@ -59,29 +60,8 @@ export function LandingPage() {
     fetchFeatured();
   }, []);
 
-  const getTypeLabel = (type: string) => {
-    const types: Record<string, string> = {
-      auberge: 'Auberge',
-      hotel: 'Hôtel',
-      appartement: 'Appartement',
-      appartement_meuble: 'Appartement Meublé',
-      lodge: 'Lodge',
-      loft: 'Loft',
-    };
-    return types[type] || type;
-  };
-
-  const getTypeColor = (type: string) => {
-    const colors: Record<string, string> = {
-      auberge: 'bg-emerald-100 text-emerald-800',
-      hotel: 'bg-amber-100 text-amber-800',
-      appartement: 'bg-rose-100 text-rose-800',
-      appartement_meuble: 'bg-sky-100 text-sky-800',
-      lodge: 'bg-orange-100 text-orange-800',
-      loft: 'bg-purple-100 text-purple-800',
-    };
-    return colors[type] || 'bg-gray-100 text-gray-800';
-  };
+  // Type labels and colors are now imported from @/lib/constants
+  // No more duplicate inline definitions
 
   return (
     <div className="space-y-0">
@@ -101,7 +81,7 @@ export function LandingPage() {
                 au Sénégal
               </h1>
               <p className="mt-4 text-lg text-muted-foreground max-w-md">
-                Découvrez auberges, hôtels, appartements meublés et lodges à travers les 14 régions du Sénégal. Réservez facilement et confirmez via WhatsApp.
+                Découvrez auberges, hôtels, appartements meublés, villas, maisons à vendre et lodges à travers les 14 régions du Sénégal. Réservez facilement et confirmez via WhatsApp.
               </p>
               <div className="mt-8 flex flex-col sm:flex-row gap-3">
                 <Button
@@ -253,7 +233,11 @@ export function LandingPage() {
                     <p className="text-sm text-muted-foreground line-clamp-2">{est.description}</p>
                     <div className="flex items-center justify-between pt-2">
                       <div>
-                        {est.minPrice !== null && est.minPrice !== undefined ? (
+                        {est.type === 'maison_a_vendre' ? (
+                          <p className="text-sm">
+                            <span className="font-bold text-primary">À vendre</span>
+                          </p>
+                        ) : est.minPrice !== null && est.minPrice !== undefined ? (
                           <p className="text-sm">
                             <span className="font-bold text-primary">{est.minPrice.toLocaleString()} FCFA</span>
                             <span className="text-muted-foreground"> / nuit</span>

@@ -11,6 +11,8 @@ export const COMMISSION_RATES: Record<string, number> = {
   appartement_meuble: 2500,
   lodge: 2500,
   loft: 2500,
+  villa: 5000,
+  maison_a_vendre: 15000,
 }
 
 // Establishment type labels (French)
@@ -21,6 +23,8 @@ export const ESTABLISHMENT_TYPES = [
   { value: 'appartement_meuble', label: 'Appartement Meublé' },
   { value: 'lodge', label: 'Lodge' },
   { value: 'loft', label: 'Loft' },
+  { value: 'villa', label: 'Villa' },
+  { value: 'maison_a_vendre', label: 'Maison à Vendre' },
 ] as const
 
 // For filter dropdowns (includes "all" option)
@@ -51,6 +55,8 @@ export function getTypeColor(type: string): string {
     appartement_meuble: 'bg-sky-100 text-sky-800',
     lodge: 'bg-orange-100 text-orange-800',
     loft: 'bg-purple-100 text-purple-800',
+    villa: 'bg-indigo-100 text-indigo-800',
+    maison_a_vendre: 'bg-teal-100 text-teal-800',
   }
   return colors[type] || 'bg-gray-100 text-gray-800'
 }

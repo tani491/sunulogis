@@ -197,7 +197,11 @@ export function HomePage() {
                   )}
                   <div className="flex items-center justify-between pt-2">
                     <div>
-                      {est.minPrice !== null && est.minPrice !== undefined ? (
+                      {est.type === 'maison_a_vendre' ? (
+                        <p className="text-sm">
+                          <span className="font-bold text-primary">À vendre</span>
+                        </p>
+                      ) : est.minPrice !== null && est.minPrice !== undefined ? (
                         <p className="text-sm">
                           <span className="font-bold text-primary">{est.minPrice.toLocaleString()} FCFA</span>
                           <span className="text-muted-foreground"> / nuit</span>

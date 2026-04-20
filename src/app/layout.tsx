@@ -15,15 +15,15 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "SunuLogis - Trouvez votre logement au Sénégal",
-  description: "Découvrez auberges, hôtels, appartements et lodges à travers les 14 régions du Sénégal. Réservation simplifiée avec confirmation via WhatsApp.",
-  keywords: ["sunulogis", "logement", "Sénégal", "réservation", "auberge", "hôtel", "appartement", "lodge", "Dakar", "Saint-Louis", "Saly", "voyage"],
+  description: "Découvrez auberges, hôtels, appartements, villas, maisons à vendre et lodges à travers les 14 régions du Sénégal. Réservation simplifiée avec confirmation via WhatsApp.",
+  keywords: ["sunulogis", "logement", "Sénégal", "réservation", "auberge", "hôtel", "appartement", "lodge", "villa", "maison à vendre", "Dakar", "Saint-Louis", "Saly", "voyage"],
   authors: [{ name: "SunuLogis" }],
   icons: {
     icon: "/logo.svg",
   },
   openGraph: {
     title: "SunuLogis",
-    description: "Trouvez votre logement au Sénégal - Auberges, hôtels, appartements et lodges",
+    description: "Trouvez votre logement au Sénégal - Auberges, hôtels, appartements, villas, maisons à vendre et lodges",
     type: "website",
   },
 };

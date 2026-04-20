@@ -195,6 +195,45 @@ export async function GET() {
       },
     });
 
+    const est7 = await db.establishment.create({
+      data: {
+        ownerId: owner.id,
+        name: 'Villa Les Almadies',
+        type: 'villa',
+        description: 'Villa de luxe avec piscine privée dans le quartier prestigieux des Almadies. 4 chambres, salon spacieux, cuisine équipée, jardin tropical et terrasse avec vue sur l\'océan. Idéale pour les familles ou les séjours haut de gamme à Dakar.',
+        city: 'Dakar',
+        region: 'Dakar',
+        address: 'Boulevard des Almadies, Dakar',
+        phone: '221770000007',
+        website: 'https://example.com/villa-almadies',
+        images: JSON.stringify([
+          'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800',
+          'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800',
+        ]),
+        isApproved: true,
+        isSuspended: false,
+      },
+    });
+
+    const est8 = await db.establishment.create({
+      data: {
+        ownerId: owner2.id,
+        name: 'Maison Famille Ndiaye - Saly',
+        type: 'maison_a_vendre',
+        description: 'Magnifique maison de 5 pièces à vendre à Saly Portudal, sur la route de la plage. Terrain de 500 m² avec maison de 250 m², 3 chambres, 2 salles de bain, grand séjour, cuisine américaine, garage et jardin arboré. Titre foncier disponible. Proche de toutes les commodités.',
+        city: 'Saly',
+        region: 'Thiès',
+        address: 'Route de la Plage, Saly Portudal',
+        phone: '221770000008',
+        images: JSON.stringify([
+          'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800',
+          'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800',
+        ]),
+        isApproved: true,
+        isSuspended: false,
+      },
+    });
+
     // Create rooms for establishment 1
     await db.room.createMany({
       data: [
@@ -244,6 +283,23 @@ export async function GET() {
     await db.room.createMany({
       data: [
         { establishmentId: est6.id, name: 'Loft Supérieur', pricePerNight: 60000, capacity: 2, isAvailable: true },
+      ],
+    });
+
+    // Create rooms for establishment 7 (Villa)
+    await db.room.createMany({
+      data: [
+        { establishmentId: est7.id, name: 'Suite Master', pricePerNight: 120000, capacity: 2, isAvailable: true },
+        { establishmentId: est7.id, name: 'Chambre Océan', pricePerNight: 80000, capacity: 2, isAvailable: true },
+        { establishmentId: est7.id, name: 'Chambre Jardin', pricePerNight: 75000, capacity: 2, isAvailable: true },
+        { establishmentId: est7.id, name: 'Chambre Enfant', pricePerNight: 50000, capacity: 3, isAvailable: true },
+      ],
+    });
+
+    // Create rooms for establishment 8 (Maison à vendre - displayed as single property)
+    await db.room.createMany({
+      data: [
+        { establishmentId: est8.id, name: 'Maison complète', pricePerNight: 0, capacity: 8, isAvailable: true },
       ],
     });
 
@@ -417,7 +473,7 @@ Rejoignez-nous et découvrez le Sénégal autrement !`,
       ],
     });
 
-    return NextResponse.json({ message: 'Données de démonstration créées avec succès', owners: 2, establishments: 6, rooms: 16, bookings: 3, blogPosts: 4, subscribers: 5 });
+    return NextResponse.json({ message: 'Données de démonstration créées avec succès', owners: 2, establishments: 8, rooms: 21, bookings: 3, blogPosts: 4, subscribers: 5 });
   } catch (error) {
     console.error('Seed error:', error);
     return NextResponse.json({ error: 'Erreur lors du seed' }, { status: 500 });
