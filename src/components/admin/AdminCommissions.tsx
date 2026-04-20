@@ -10,39 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { Banknote, CheckCircle, Clock, AlertTriangle, TrendingUp, Users } from 'lucide-react'
 import { toast } from 'sonner'
-
-const COMMISSION_RATES: Record<string, number> = {
-  auberge: 1000,
-  hotel: 3000,
-  appartement: 2500,
-  appartement_meuble: 2500,
-  lodge: 2500,
-  loft: 2500,
-}
-
-const getTypeLabel = (type: string) => {
-  const types: Record<string, string> = {
-    auberge: 'Auberge',
-    hotel: 'Hôtel',
-    appartement: 'Appartement',
-    appartement_meuble: 'Appartement Meublé',
-    lodge: 'Lodge',
-    loft: 'Loft',
-  }
-  return types[type] || type
-}
-
-const getTypeColor = (type: string) => {
-  const colors: Record<string, string> = {
-    auberge: 'bg-emerald-100 text-emerald-800',
-    hotel: 'bg-amber-100 text-amber-800',
-    appartement: 'bg-rose-100 text-rose-800',
-    appartement_meuble: 'bg-sky-100 text-sky-800',
-    lodge: 'bg-orange-100 text-orange-800',
-    loft: 'bg-purple-100 text-purple-800',
-  }
-  return colors[type] || 'bg-gray-100 text-gray-800'
-}
+import { COMMISSION_RATES, ESTABLISHMENT_TYPES, getTypeLabel, getTypeColor } from '@/lib/constants'
 
 interface CommissionItem {
   id: string
@@ -209,12 +177,9 @@ export function AdminCommissions() {
         <CardContent className="p-4">
           <h3 className="font-semibold text-sm mb-2">Barème des commissions par type d&apos;établissement</h3>
           <div className="flex flex-wrap gap-3 text-xs">
-            <Badge variant="outline">Auberge : 1 000 FCFA</Badge>
-            <Badge variant="outline">Hôtel : 3 000 FCFA</Badge>
-            <Badge variant="outline">Appartement : 2 500 FCFA</Badge>
-            <Badge variant="outline">Appartement Meublé : 2 500 FCFA</Badge>
-            <Badge variant="outline">Lodge : 2 500 FCFA</Badge>
-            <Badge variant="outline">Loft : 2 500 FCFA</Badge>
+            {ESTABLISHMENT_TYPES.map((t) => (
+              <Badge key={t.value} variant="outline">{t.label} : {(COMMISSION_RATES[t.value] || 0).toLocaleString()} FCFA</Badge>
+            ))}
           </div>
         </CardContent>
       </Card>

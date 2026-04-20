@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { BookingForm } from './BookingForm'
 import { ArrowLeft, MapPin, Globe, Phone, Users, BedDouble, CalendarDays, ExternalLink } from 'lucide-react'
+import { getTypeLabel, getTypeColor } from '@/lib/constants'
 
 interface Room {
   id: string
@@ -56,30 +57,6 @@ export function EstablishmentDetailPage() {
     } finally {
       setLoading(false)
     }
-  }
-
-  const getTypeLabel = (type: string) => {
-    const types: Record<string, string> = {
-      auberge: 'Auberge',
-      hotel: 'Hôtel',
-      appartement: 'Appartement',
-      appartement_meuble: 'Appartement Meublé',
-      lodge: 'Lodge',
-      loft: 'Loft',
-    }
-    return types[type] || type
-  }
-
-  const getTypeColor = (type: string) => {
-    const colors: Record<string, string> = {
-      auberge: 'bg-emerald-100 text-emerald-800',
-      hotel: 'bg-amber-100 text-amber-800',
-      appartement: 'bg-rose-100 text-rose-800',
-      appartement_meuble: 'bg-sky-100 text-sky-800',
-      lodge: 'bg-orange-100 text-orange-800',
-      loft: 'bg-purple-100 text-purple-800',
-    }
-    return colors[type] || 'bg-gray-100 text-gray-800'
   }
 
   if (loading) {

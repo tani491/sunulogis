@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { Building2, Check, X, Ban, ShieldCheck, Filter, MapPin } from 'lucide-react'
 import { toast } from 'sonner'
+import { ESTABLISHMENT_TYPE_FILTERS, getTypeLabel, getTypeColor } from '@/lib/constants'
 
 interface Establishment {
   id: string
@@ -23,16 +24,6 @@ interface Establishment {
   owner: { id: string; fullName: string; email: string }
   rooms: { id: string }[]
 }
-
-const establishmentTypes = [
-  { value: 'all', label: 'Tous les types' },
-  { value: 'auberge', label: 'Auberge' },
-  { value: 'hotel', label: 'Hôtel' },
-  { value: 'appartement', label: 'Appartement' },
-  { value: 'appartement_meuble', label: 'Appartement Meublé' },
-  { value: 'lodge', label: 'Lodge' },
-  { value: 'loft', label: 'Loft' },
-]
 
 export function AdminEstablishments() {
   const [establishments, setEstablishments] = useState<Establishment[]>([])
@@ -82,30 +73,6 @@ export function AdminEstablishments() {
     } finally {
       setActionLoading(null)
     }
-  }
-
-  const getTypeLabel = (type: string) => {
-    const types: Record<string, string> = {
-      auberge: 'Auberge',
-      hotel: 'Hôtel',
-      appartement: 'Appartement',
-      appartement_meuble: 'Appartement Meublé',
-      lodge: 'Lodge',
-      loft: 'Loft',
-    }
-    return types[type] || type
-  }
-
-  const getTypeColor = (type: string) => {
-    const colors: Record<string, string> = {
-      auberge: 'bg-emerald-100 text-emerald-800',
-      hotel: 'bg-amber-100 text-amber-800',
-      appartement: 'bg-rose-100 text-rose-800',
-      appartement_meuble: 'bg-sky-100 text-sky-800',
-      lodge: 'bg-orange-100 text-orange-800',
-      loft: 'bg-purple-100 text-purple-800',
-    }
-    return colors[type] || 'bg-gray-100 text-gray-800'
   }
 
   const getStatusBadge = (est: Establishment) => {
@@ -161,7 +128,7 @@ export function AdminEstablishments() {
               <SelectValue placeholder="Type" />
             </SelectTrigger>
             <SelectContent>
-              {establishmentTypes.map((t) => (
+              {ESTABLISHMENT_TYPE_FILTERS.map((t) => (
                 <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
               ))}
             </SelectContent>

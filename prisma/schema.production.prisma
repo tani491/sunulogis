@@ -1,0 +1,139 @@
+// ============================================
+// SunuLogis - Production Schema (Supabase PostgreSQL)
+// ============================================
+// To use: Change datasource provider to "postgresql"
+// and set DATABASE_URL to your Supabase connection string
+//
+// Steps for Supabase migration:
+// 1. Set DATABASE_URL in Vercel env vars to Supabase connection string
+// 2. Change provider below from "sqlite" to "postgresql"
+// 3. Run: npx prisma migrate dev --name init
+// 4. Run: npx prisma generate
+//
+// IMPORTANT: SQLite uses "file:./db/custom.db" locally
+// PostgreSQL uses: "postgresql://postgres.[REF]:[PASS]@aws-0-[REGION].pooler.supabase.com:6543/postgres"
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"  // Changed from "sqlite" for production
+  url      = env("DATABASE_URL")
+}
+
+model Profile {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String?
+  fullName  String?
+  role      String   @default("owner") // "client", "owner", "admin"
+  password  String?
+  phone     String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  establishments Establishment[]
+  posts          BlogPost[]
+
+  @@index([role])
+  @@index([isActive])
+}
+
+model Establishment {
+  id            String   @id @default(cuid())
+  ownerId       String
+  name          String
+  type          String   @default("auberge") // "auberge", "hotel", "appartement", "appartement_meuble", "lodge", "loft"
+  description   String   @default("")
+  city          String
+  region        String   @default("")
+  address       String   @default("")
+  images        String   @default("[]")
+  website       String?
+  phone         String?
+  isApproved    Boolean  @default(false)
+  isSuspended   Boolean  @default(false)
+  commission    Int      @default(0)
+  paymentStatus String   @default("en_attente") // "en_attente", "paye"
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  owner Profile @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  rooms Room[]
+
+  @@index([ownerId])
+  @@index([type])
+  @@index([city])
+  @@index([region])
+  @@index([isApproved])
+  @@index([paymentStatus])
+}
+
+model Room {
+  id              String   @id @default(cuid())
+  establishmentId String
+  name            String
+  pricePerNight   Int
+  capacity        Int      @default(1)
+  isAvailable     Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  establishment Establishment @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+  bookings      Booking[]
+
+  @@index([establishmentId])
+  @@index([isAvailable])
+}
+
+model Booking {
+  id         String   @id @default(cuid())
+  roomId     String
+  guestName  String
+  guestPhone String
+  startDate  DateTime
+  endDate    DateTime
+  status     String   @default("pending") // "pending", "confirmed", "cancelled"
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@index([roomId])
+  @@index([status])
+  @@index([startDate])
+}
+
+model BlogPost {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  excerpt     String   @default("")
+  content     String   @default("")
+  coverImage  String?
+  category    String   @default("general")
+  isPublished Boolean  @default(false)
+  authorId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  author Profile @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([slug])
+  @@index([category])
+  @@index([isPublished])
+  @@index([authorId])
+}
+
+model Subscriber {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  consentStatus Boolean  @default(true)
+  source        String   @default("footer") // "footer", "blog", "landing"
+  createdAt     DateTime @default(now())
+
+  @@index([email])
+  @@index([source])
+}

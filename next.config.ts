@@ -1,11 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: "standalone",
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  reactStrictMode: false,
+  // "standalone" output is for Docker, NOT needed for Vercel
+  // Remove output: "standalone" for Vercel deployment
+  reactStrictMode: true,
   images: {
     remotePatterns: [
       {

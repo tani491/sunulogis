@@ -5,26 +5,10 @@ import { useAppStore } from '@/store/app-store'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Search, MapPin, Users, ArrowRight, Building2, Globe, Banknote, SlidersHorizontal } from 'lucide-react'
-
-const establishmentTypes = [
-  { value: 'all', label: 'Tous les types' },
-  { value: 'auberge', label: 'Auberge' },
-  { value: 'hotel', label: 'Hôtel' },
-  { value: 'appartement', label: 'Appartement' },
-  { value: 'appartement_meuble', label: 'Appartement Meublé' },
-  { value: 'lodge', label: 'Lodge' },
-  { value: 'loft', label: 'Loft' },
-]
-
-const regions = [
-  'Dakar', 'Diourbel', 'Fatick', 'Kaffrine', 'Kaolack',
-  'Kédougou', 'Kolda', 'Louga', 'Matam', 'Sédhiou',
-  'Saint-Louis', 'Tambacounda', 'Thiès', 'Ziguinchor',
-]
+import { ESTABLISHMENT_TYPE_FILTERS, REGIONS, PRICE_RANGES, getTypeLabel, getTypeColor } from '@/lib/constants'
 
 interface Establishment {
   id: string
@@ -90,30 +74,6 @@ export function HomePage() {
     !searchFilters.search || e.name.toLowerCase().includes(searchFilters.search.toLowerCase()) || e.city.toLowerCase().includes(searchFilters.search.toLowerCase())
   )
 
-  const getTypeLabel = (type: string) => {
-    const types: Record<string, string> = {
-      auberge: 'Auberge',
-      hotel: 'Hôtel',
-      appartement: 'Appartement',
-      appartement_meuble: 'Appartement Meublé',
-      lodge: 'Lodge',
-      loft: 'Loft',
-    }
-    return types[type] || type
-  }
-
-  const getTypeColor = (type: string) => {
-    const colors: Record<string, string> = {
-      auberge: 'bg-emerald-100 text-emerald-800',
-      hotel: 'bg-amber-100 text-amber-800',
-      appartement: 'bg-rose-100 text-rose-800',
-      appartement_meuble: 'bg-sky-100 text-sky-800',
-      lodge: 'bg-orange-100 text-orange-800',
-      loft: 'bg-purple-100 text-purple-800',
-    }
-    return colors[type] || 'bg-gray-100 text-gray-800'
-  }
-
   const handleViewDetail = (id: string) => {
     selectEstablishment(id)
   }
@@ -132,7 +92,7 @@ export function HomePage() {
             <SelectValue placeholder="Type" />
           </SelectTrigger>
           <SelectContent>
-            {establishmentTypes.map((t) => (
+            {ESTABLISHMENT_TYPE_FILTERS.map((t) => (
               <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
             ))}
           </SelectContent>
@@ -144,7 +104,7 @@ export function HomePage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Toutes les régions</SelectItem>
-            {regions.map((r) => (
+            {REGIONS.map((r) => (
               <SelectItem key={r} value={r}>{r}</SelectItem>
             ))}
           </SelectContent>
@@ -155,12 +115,9 @@ export function HomePage() {
             <SelectValue placeholder="Budget" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Tous les prix</SelectItem>
-            <SelectItem value="0-10000">0 - 10 000 FCFA</SelectItem>
-            <SelectItem value="10000-25000">10 000 - 25 000 FCFA</SelectItem>
-            <SelectItem value="25000-50000">25 000 - 50 000 FCFA</SelectItem>
-            <SelectItem value="50000-100000">50 000 - 100 000 FCFA</SelectItem>
-            <SelectItem value="100000+">100 000+ FCFA</SelectItem>
+            {PRICE_RANGES.map((p) => (
+              <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </section>

@@ -7,11 +7,11 @@ export function hashPassword(password: string): string {
 }
 
 export async function getSessionUser() {
-  const cookieStore = await cookies();
-  const session = cookieStore.get('ac_session');
-  if (!session?.value) return null;
-
   try {
+    const cookieStore = await cookies();
+    const session = cookieStore.get('ac_session');
+    if (!session?.value) return null;
+
     const profile = await db.profile.findUnique({
       where: { id: session.value },
       select: { id: true, email: true, fullName: true, role: true, phone: true },
@@ -20,4 +20,15 @@ export async function getSessionUser() {
   } catch {
     return null;
   }
+}
+
+// Cookie options factory - secure in production
+export function getCookieOptions() {
+  return {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax' as const,
+    maxAge: 60 * 60 * 24 * 7, // 7 days
+    path: '/',
+  };
 }

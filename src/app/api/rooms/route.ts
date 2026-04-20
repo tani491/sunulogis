@@ -7,28 +7,44 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const establishmentId = searchParams.get('establishmentId');
 
+    const user = await getSessionUser();
+
+    // Owner: return rooms for their establishments only
+    if (user && user.role === 'owner') {
+      const rooms = await db.room.findMany({
+        where: {
+          ...(establishmentId ? { establishmentId } : {}),
+          establishment: { ownerId: user.id },
+        },
+        include: { establishment: { select: { id: true, name: true, ownerId: true } } },
+        orderBy: { createdAt: 'desc' },
+      });
+      return NextResponse.json(rooms);
+    }
+
+    // Admin: return all rooms
+    if (user && user.role === 'admin') {
+      const rooms = await db.room.findMany({
+        where: {
+          ...(establishmentId ? { establishmentId } : {}),
+        },
+        include: { establishment: { select: { id: true, name: true, ownerId: true } } },
+        orderBy: { createdAt: 'desc' },
+      });
+      return NextResponse.json(rooms);
+    }
+
+    // Public: only available rooms
     const rooms = await db.room.findMany({
       where: {
+        isAvailable: true,
         ...(establishmentId ? { establishmentId } : {}),
+        establishment: { isApproved: true, isSuspended: false },
       },
       include: { establishment: { select: { id: true, name: true, ownerId: true } } },
       orderBy: { createdAt: 'desc' },
     });
-
-    // If user is owner, only return rooms for their establishments
-    const user = await getSessionUser();
-    if (user) {
-      const ownerRooms = rooms.filter(r => r.establishment.ownerId === user.id);
-      if (establishmentId) {
-        return NextResponse.json(ownerRooms);
-      }
-      // Public: show available rooms; owner: show all their rooms
-      return NextResponse.json(establishmentId ? ownerRooms : rooms);
-    }
-
-    // Public: only available rooms
-    const publicRooms = rooms.filter(r => r.isAvailable);
-    return NextResponse.json(publicRooms);
+    return NextResponse.json(rooms);
   } catch (error) {
     console.error('Get rooms error:', error);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
@@ -51,7 +67,7 @@ export async function POST(req: NextRequest) {
 
     // Verify establishment belongs to user
     const establishment = await db.establishment.findUnique({ where: { id: establishmentId } });
-    if (!establishment || establishment.ownerId !== user.id) {
+    if (!establishment || (establishment.ownerId !== user.id && user.role !== 'admin')) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 

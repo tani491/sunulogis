@@ -6,28 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { BedDouble, CalendarDays, CheckCircle, Clock, Building2, Plus, AlertCircle, AlertTriangle } from 'lucide-react'
-
-// Commission rates by type
-const COMMISSION_RATES: Record<string, number> = {
-  auberge: 1000,
-  hotel: 3000,
-  appartement: 2500,
-  appartement_meuble: 2500,
-  lodge: 2500,
-  loft: 2500,
-}
-
-const getTypeLabel = (type: string) => {
-  const types: Record<string, string> = {
-    auberge: 'Auberge',
-    hotel: 'Hôtel',
-    appartement: 'Appartement',
-    appartement_meuble: 'Appartement Meublé',
-    lodge: 'Lodge',
-    loft: 'Loft',
-  }
-  return types[type] || type
-}
+import { COMMISSION_RATES, getTypeLabel, WAVE_INFO } from '@/lib/constants'
 
 interface Stats {
   totalRooms: number
@@ -123,7 +102,7 @@ export function DashboardOverview() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">
-          Bonjour, {currentUser?.fullName || 'Propriétaire'} 👋
+          Bonjour, {currentUser?.fullName || 'Propriétaire'}
         </h1>
         <p className="text-muted-foreground">
           Voici un aperçu de votre activité
@@ -141,7 +120,7 @@ export function DashboardOverview() {
                   Commission en attente de paiement
                 </p>
                 <p className="text-sm text-red-700">
-                  Merci de régler vos commissions via <strong>Wave au 773615944 (Halima)</strong>
+                  Merci de régler vos commissions via <strong>Wave au {WAVE_INFO.number} ({WAVE_INFO.name})</strong>
                 </p>
               </div>
             </div>

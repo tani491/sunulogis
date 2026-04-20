@@ -1,16 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getSessionUser } from '@/lib/auth';
-
-// Commission rates by establishment type
-const COMMISSION_RATES: Record<string, number> = {
-  auberge: 1000,
-  hotel: 3000,
-  appartement: 2500,
-  appartement_meuble: 2500,
-  lodge: 2500,
-  loft: 2500,
-};
+import { COMMISSION_RATES, getCommissionAmount } from '@/lib/constants';
 
 // GET - All commissions data (admin only)
 export async function GET() {
@@ -31,7 +22,7 @@ export async function GET() {
 
     // Calculate commission for each establishment
     const commissionsData = establishments.map((est) => {
-      const expectedCommission = COMMISSION_RATES[est.type] || 1000;
+      const expectedCommission = getCommissionAmount(est.type);
       return {
         id: est.id,
         name: est.name,
@@ -98,7 +89,7 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: 'Établissement non trouvé' }, { status: 404 });
     }
 
-    const commissionAmount = COMMISSION_RATES[establishment.type] || 1000;
+    const commissionAmount = getCommissionAmount(establishment.type);
 
     const updated = await db.establishment.update({
       where: { id: establishmentId },

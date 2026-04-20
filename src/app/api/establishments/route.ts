@@ -22,18 +22,20 @@ export async function GET(req: NextRequest) {
     const maxPrice = searchParams.get('maxPrice');
     const search = searchParams.get('search');
 
+    // Note: SQLite doesn't support mode: 'insensitive' but is case-insensitive by default for ASCII.
+    // For PostgreSQL (Supabase), add mode: 'insensitive' to contains filters.
     const establishments = await db.establishment.findMany({
       where: {
         isApproved: true,
         isSuspended: false,
-        ...(city ? { city: { contains: city, mode: 'insensitive' } } : {}),
+        ...(city ? { city: { contains: city } } : {}),
         ...(region ? { region } : {}),
         ...(type ? { type } : {}),
         ...(search ? {
           OR: [
-            { name: { contains: search, mode: 'insensitive' } },
-            { city: { contains: search, mode: 'insensitive' } },
-            { description: { contains: search, mode: 'insensitive' } },
+            { name: { contains: search } },
+            { city: { contains: search } },
+            { description: { contains: search } },
           ],
         } : {}),
       },

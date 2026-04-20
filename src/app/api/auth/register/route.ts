@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { hashPassword } from '@/lib/auth';
+import { hashPassword, getCookieOptions } from '@/lib/auth';
 import { randomUUID } from 'crypto';
 
 export async function POST(req: NextRequest) {
@@ -40,13 +40,7 @@ export async function POST(req: NextRequest) {
     });
 
     const response = NextResponse.json(profile);
-    response.cookies.set('ac_session', profile.id, {
-      httpOnly: true,
-      secure: false,
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7,
-      path: '/',
-    });
+    response.cookies.set('ac_session', profile.id, getCookieOptions());
 
     return response;
   } catch (error) {

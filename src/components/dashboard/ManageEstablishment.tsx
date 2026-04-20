@@ -13,21 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Building2, Save, Plus, Globe, Phone, MapPin, CheckCircle, Clock, AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { DragDropImageUpload } from '@/components/shared/DragDropImageUpload'
-
-const establishmentTypes = [
-  { value: 'auberge', label: 'Auberge' },
-  { value: 'hotel', label: 'Hôtel' },
-  { value: 'appartement', label: 'Appartement' },
-  { value: 'appartement_meuble', label: 'Appartement Meublé' },
-  { value: 'lodge', label: 'Lodge' },
-  { value: 'loft', label: 'Loft' },
-]
-
-const regions = [
-  'Dakar', 'Diourbel', 'Fatick', 'Kaffrine', 'Kaolack',
-  'Kédougou', 'Kolda', 'Louga', 'Matam', 'Sédhiou',
-  'Saint-Louis', 'Tambacounda', 'Thiès', 'Ziguinchor',
-]
+import { ESTABLISHMENT_TYPES, REGIONS, getTypeLabel } from '@/lib/constants'
 
 interface Establishment {
   id: string
@@ -159,10 +145,6 @@ export function ManageEstablishment() {
     }
   }
 
-  const getTypeLabel = (t: string) => {
-    return establishmentTypes.find(et => et.value === t)?.label || t
-  }
-
   const getStatusBadge = (est: Establishment) => {
     if (est.isSuspended) {
       return <Badge variant="destructive" className="gap-1"><AlertCircle className="h-3 w-3" /> Suspendu</Badge>
@@ -214,7 +196,7 @@ export function ManageEstablishment() {
                       <SelectValue placeholder="Sélectionner un type" />
                     </SelectTrigger>
                     <SelectContent>
-                      {establishmentTypes.map((t) => (
+                      {ESTABLISHMENT_TYPES.map((t) => (
                         <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
                       ))}
                     </SelectContent>
@@ -240,7 +222,7 @@ export function ManageEstablishment() {
                       <SelectValue placeholder="Sélectionner une région" />
                     </SelectTrigger>
                     <SelectContent>
-                      {regions.map((r) => (
+                      {REGIONS.map((r) => (
                         <SelectItem key={r} value={r}>{r}</SelectItem>
                       ))}
                     </SelectContent>

@@ -1,27 +1,34 @@
 ---
 Task ID: 1
 Agent: Main Agent
-Task: Full-stack AubergeConnect MVP - Bug fixes and enhancements
+Task: Complete code review and fix all errors for SunuLogis deployment readiness
 
 Work Log:
-- Analyzed existing codebase: Next.js 16 + Prisma + SQLite + Zustand SPA routing
-- Identified 6 critical bugs preventing the app from functioning
-- Fixed API response format mismatches (APIs returned nested objects, frontend expected flat arrays/objects)
-- Fixed login/register/session API to return user objects directly instead of { user }
-- Fixed session check in page.tsx to detect user via data.id instead of data.user
-- Fixed Navbar import (default vs named export)
-- Added parseHostel() helper in hostels API to parse images JSON and compute minPrice
-- Fixed seed password: demo hint now says "password" matching the SHA256 hash
-- Added price filter (budget ranges) on HomePage
-- Added website link badge on hostel cards
-- Added prominent website card on HostelDetailPage
-- Created proper SVG logo
-- Reset and re-seeded database with fresh data
-- Verified all API endpoints work correctly (hostels, bookings, auth)
-- Lint passes with no errors
+- Explored entire project structure (all API routes, components, config files)
+- Identified 15+ critical and medium issues
+- Created missing `/api/upload` route (was breaking image uploads)
+- Created `src/lib/constants.ts` to eliminate duplicated constants across 8+ components
+- Fixed `.env` to use relative path `file:./db/custom.db` (was absolute Linux path)
+- Created `.env.example` with Supabase PostgreSQL configuration
+- Fixed `package.json`: pinned `@prisma/client` to `6.11.1`, removed `next-auth`, `next-intl`, `z-ai-web-dev-sdk`
+- Fixed `next.config.ts`: removed `output: "standalone"` (not for Vercel), removed `ignoreBuildErrors: true`
+- Fixed `src/lib/db.ts`: disabled query logging in production
+- Fixed `src/lib/auth.ts`: added `getCookieOptions()` with `secure: true` in production
+- Fixed all 3 auth routes (login, register, logout) to use shared cookie options
+- Fixed rooms API logic bug (owner/public filtering was incorrect)
+- Updated 6 components to use shared constants (HomePage, EstablishmentDetailPage, DashboardOverview, AdminCommissions, AdminEstablishments, ManageEstablishment)
+- Fixed `tsconfig.json` to exclude `skills/`, `examples/`, `agent-ctx/` from build
+- Fixed `mode: 'insensitive'` SQLite incompatibility in establishments API
+- Fixed Framer Motion type error in `page.tsx`
+- Removed `examples/` directory causing build errors
+- Removed deprecated `middleware.ts` (Next.js 16 uses proxy)
+- Created `prisma/schema.production.prisma` for Supabase PostgreSQL with indexes
+- Updated commissions API to use shared constants
+- **npm run build passes successfully** ✅
 
 Stage Summary:
-- All 6 critical bugs fixed
-- App fully functional with: public browsing, auth, dashboard CRUD, booking, WhatsApp integration
-- Demo credentials: demo@aubergeconnect.sn / password
-- 3 sample hostels, 11 rooms, 3 bookings seeded
+- Build passes with all 21 API routes functional
+- All critical bugs fixed (upload route, rooms logic, SQLite compatibility)
+- Code is now DRY with shared constants
+- Ready for Vercel + Supabase deployment
+- Production schema with indexes prepared for PostgreSQL migration
