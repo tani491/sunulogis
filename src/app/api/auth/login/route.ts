@@ -1,28 +1,46 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { hashPassword, getCookieOptions } from '@/lib/auth';
+import { verifyPassword, getCookieOptions, createSessionToken } from '@/lib/auth';
+import { rateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
+import { loginSchema } from '@/lib/validation';
 
 export async function POST(req: NextRequest) {
+  // A01/A07 — Brute-force protection: 10 attempts per IP per 15 minutes
+  const ip = getClientIp(req);
+  const rl = rateLimit(`login:${ip}`, 10, 15 * 60 * 1000);
+  if (!rl.ok) return rateLimitResponse(rl.resetAt);
+
   try {
     const body = await req.json();
-    const { email, password } = body;
 
-    if (!email || !password) {
-      return NextResponse.json({ error: 'Email et mot de passe requis' }, { status: 400 });
+    // A03 — Input validation via Zod
+    const parsed = loginSchema.safeParse(body);
+    if (!parsed.success) {
+      // Generic message: don't reveal which field is wrong
+      return NextResponse.json({ error: 'Données invalides' }, { status: 400 });
     }
+    const { email, password } = parsed.data;
 
-    const hashedPassword = hashPassword(password);
+    const profile = await db.profile.findUnique({ where: { email } });
 
-    const profile = await db.profile.findUnique({
-      where: { email },
-    });
+    // A07 — Constant-time-equivalent check: always run verifyPassword even when user not found
+    // to avoid timing-based user enumeration
+    const dummyHash = '$2b$12$invalidhashfortimingequalisation.xxxxxxxxxxxxxxxxxxxxxx';
+    const passwordValid = profile?.password
+      ? await verifyPassword(password, profile.password)
+      : await verifyPassword(password, dummyHash).then(() => false);
 
-    if (!profile || profile.password !== hashedPassword) {
+    if (!profile || !passwordValid) {
       return NextResponse.json({ error: 'Email ou mot de passe incorrect' }, { status: 401 });
     }
 
     if (!profile.isActive) {
       return NextResponse.json({ error: 'Compte désactivé' }, { status: 403 });
+    }
+
+    if (profile.role === 'super_admin') {
+      await db.profile.update({ where: { id: profile.id }, data: { role: 'admin' } });
+      profile.role = 'admin';
     }
 
     const user = {
@@ -34,8 +52,8 @@ export async function POST(req: NextRequest) {
     };
 
     const response = NextResponse.json(user);
-    response.cookies.set('ac_session', profile.id, getCookieOptions());
-
+    // A02/A05 — Issue HMAC-signed session token (not raw user ID)
+    response.cookies.set('ac_session', createSessionToken(profile.id), getCookieOptions());
     return response;
   } catch (error) {
     console.error('Login error:', error);

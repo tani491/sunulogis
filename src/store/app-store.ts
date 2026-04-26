@@ -1,3 +1,4 @@
+import { startTransition } from 'react';
 import { create } from 'zustand';
 
 export type View =
@@ -18,7 +19,9 @@ export type View =
   | 'admin-users'
   | 'admin-blog'
   | 'admin-subscribers'
-  | 'admin-commissions';
+  | 'admin-commissions'
+  | 'admin-settings'
+  | 'admin-analytics';
 
 interface CurrentUser {
   id: string;
@@ -63,11 +66,11 @@ export const useAppStore = create<AppState>((set) => ({
     type: 'all',
   },
   isLoading: true,
-  navigate: (view) => set({ currentView: view }),
+  navigate: (view) => startTransition(() => set({ currentView: view })),
   setUser: (user) => set({ currentUser: user, isLoading: false }),
-  logout: () => set({ currentUser: null, currentView: 'landing' }),
-  selectEstablishment: (id) => set({ currentEstablishmentId: id, currentView: 'establishment-detail' }),
-  selectBlogPost: (slug) => set({ currentBlogSlug: slug, currentView: 'blog-post' }),
+  logout: () => startTransition(() => set({ currentUser: null, currentView: 'landing' })),
+  selectEstablishment: (id) => startTransition(() => set({ currentEstablishmentId: id, currentView: 'establishment-detail' })),
+  selectBlogPost: (slug) => startTransition(() => set({ currentBlogSlug: slug, currentView: 'blog-post' })),
   setSearchFilters: (filters) => set((state) => ({
     searchFilters: { ...state.searchFilters, ...filters },
   })),

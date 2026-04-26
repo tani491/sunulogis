@@ -23,7 +23,12 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
     });
 
-    return NextResponse.json(users);
+    return NextResponse.json(
+      users.map((profile) => ({
+        ...profile,
+        role: profile.role === 'super_admin' ? 'admin' : profile.role,
+      }))
+    );
   } catch (error) {
     console.error('Admin users error:', error);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });

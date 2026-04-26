@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Mail, Loader2, CheckCircle, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
+import { parseJsonResponse } from '@/lib/fetch-json'
 
 interface NewsletterFormProps {
   source?: string
@@ -31,7 +32,7 @@ export function NewsletterForm({ source = 'blog', variant = 'card' }: Newsletter
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, source }),
       })
-      const data = await res.json()
+      const data = await parseJsonResponse<{ alreadySubscribed?: boolean }>(res)
 
       if (data.alreadySubscribed) {
         toast.info('Vous êtes déjà inscrit à notre newsletter !')

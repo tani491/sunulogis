@@ -68,8 +68,8 @@ export function getCommissionAmount(type: string): number {
 
 // Wave payment info
 export const WAVE_INFO = {
-  number: '773615944',
-  name: 'Halima',
+  number: '778057536',
+  name: 'SunuLogis',
 }
 
 // Payment statuses
@@ -80,7 +80,6 @@ export const PAYMENT_STATUSES = {
 
 // Role labels (French)
 export const ROLE_LABELS: Record<string, string> = {
-  super_admin: 'Super Admin',
   admin: 'Administrateur',
   owner: 'Propriétaire',
   client: 'Client',

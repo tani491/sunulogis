@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
-import { Building2, Users, BedDouble, CalendarDays, Clock, CheckCircle, AlertCircle, Shield, Crown } from 'lucide-react'
+import { Building2, Users, BedDouble, CalendarDays, Clock, CheckCircle, AlertCircle, Shield } from 'lucide-react'
 
 interface PlatformStats {
   totalOwners: number
@@ -19,15 +19,11 @@ interface PlatformStats {
 }
 
 export function AdminOverview() {
-  const { navigate, currentUser } = useAppStore()
+  const { navigate } = useAppStore()
   const [stats, setStats] = useState<PlatformStats | null>(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    fetchStats()
-  }, [])
-
-  const fetchStats = async () => {
+  async function fetchStats() {
     setLoading(true)
     try {
       const res = await fetch('/api/admin')
@@ -41,6 +37,14 @@ export function AdminOverview() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      void fetchStats()
+    }, 0)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [])
 
   if (loading) {
     return (
@@ -62,19 +66,11 @@ export function AdminOverview() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          {currentUser?.role === 'super_admin' ? (
-            <Crown className="h-6 w-6 text-purple-600" />
-          ) : (
-            <Shield className="h-6 w-6 text-primary" />
-          )}
-          {currentUser?.role === 'super_admin' ? 'Super Admin SunuLogis' : 'Administration SunuLogis'}
+          <Shield className="h-6 w-6 text-primary" />
+          Administration SunuLogis
         </h1>
         <p className="text-muted-foreground">
-          {currentUser?.role === 'super_admin' ? (
-            <>Contrôle total : gestion, modération et édition de toutes les données</>
-          ) : (
-            <>Vue d&apos;ensemble de la plateforme</>
-          )}
+          Vue d&apos;ensemble de la plateforme
         </p>
       </div>
 
@@ -168,7 +164,7 @@ export function AdminOverview() {
         </Card>
       </div>
 
-      {/* Quick action for pending approvals - Enhanced for Super Admin moderation */}
+      {/* Quick action for pending approvals */}
       {(stats?.pendingEstablishments || 0) > 0 && (
         <Card className="border-yellow-200 bg-yellow-50">
           <CardContent className="p-4 flex items-center justify-between">
@@ -179,9 +175,7 @@ export function AdminOverview() {
                   {stats?.pendingEstablishments} établissement{stats?.pendingEstablishments !== 1 ? 's' : ''} en attente de validation
                 </p>
                 <p className="text-sm text-yellow-700">
-                  {currentUser?.role === 'super_admin' 
-                    ? 'Examinez les photos et descriptions, corrigez si nécessaire, puis validez pour publication.'
-                    : 'Action requise pour valider les nouveaux établissements.'}
+                  Action requise pour valider les nouveaux établissements.
                 </p>
               </div>
             </div>

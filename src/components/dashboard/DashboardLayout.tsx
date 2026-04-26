@@ -3,7 +3,7 @@
 import { useAppStore, type View } from '@/store/app-store'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { LayoutDashboard, Building2, BedDouble, CalendarDays, Menu, X } from 'lucide-react'
+import { LayoutDashboard, Building2, BedDouble, CalendarDays, Home, Menu, X } from 'lucide-react'
 import { useState } from 'react'
 import { DashboardOverview } from './DashboardOverview'
 import { ManageEstablishment } from './ManageEstablishment'
@@ -29,6 +29,14 @@ function SidebarContent({ subView, onNavigate, onCloseMobile }: SidebarContentPr
   return (
     <div className="space-y-2 p-4">
       <h2 className="text-lg font-bold text-primary mb-4 px-2">Dashboard</h2>
+      <Button
+        variant="ghost"
+        className="w-full justify-start gap-3"
+        onClick={() => { onNavigate('home'); onCloseMobile() }}
+      >
+        <Home className="h-4 w-4" />
+        Accueil
+      </Button>
       {navItems.map((item) => (
         <Button
           key={item.view}

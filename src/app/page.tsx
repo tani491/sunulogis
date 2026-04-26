@@ -14,6 +14,7 @@ import { RegisterPage } from '@/components/auth/RegisterPage'
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout'
 import { AdminLayout } from '@/components/admin/AdminLayout'
 import { AnimatePresence, motion } from 'framer-motion'
+import { parseJsonResponse } from '@/lib/fetch-json'
 
 const pageVariants = {
   initial: { opacity: 0, y: 8 },
@@ -30,11 +31,21 @@ export default function Home() {
   const { currentView, setUser } = useAppStore()
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' })
+  }, [currentView])
+
+  useEffect(() => {
     // Check session on mount
     const checkSession = async () => {
       try {
         const res = await fetch('/api/auth/session')
-        const data = await res.json()
+        const data = await parseJsonResponse<{
+          id: string
+          email: string
+          fullName: string | null
+          role: string
+          phone: string | null
+        } | null>(res)
         if (data && data.id) {
           setUser(data)
         }
@@ -75,6 +86,7 @@ export default function Home() {
       'admin-blog': <AdminLayout />,
       'admin-subscribers': <AdminLayout />,
       'admin-commissions': <AdminLayout />,
+      'admin-settings': <AdminLayout />,
     }
     return views[currentView] || <LandingPage />
   }

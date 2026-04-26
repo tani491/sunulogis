@@ -9,6 +9,7 @@ import { CalendarDays, User, Phone, MessageCircle, Check } from 'lucide-react'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
+import { parseJsonResponse } from '@/lib/fetch-json'
 
 interface Room {
   id: string
@@ -67,7 +68,7 @@ export function BookingForm({ room, establishment, open, onClose }: BookingFormP
         }),
       })
 
-      const data = await res.json()
+      const data = await parseJsonResponse<{ error?: string }>(res)
 
       if (!res.ok) {
         toast.error(data.error || 'Erreur lors de la réservation')

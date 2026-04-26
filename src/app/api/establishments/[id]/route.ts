@@ -27,6 +27,15 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: 'Établissement non trouvé' }, { status: 404 });
     }
 
+    // Non-public establishments are only visible to their owner or an admin
+    if (!establishment.isApproved || establishment.isSuspended) {
+      const user = await getSessionUser();
+      const isOwner = user?.id === establishment.ownerId;
+      if (!isOwner && !isAdminRole(user?.role)) {
+        return NextResponse.json({ error: 'Établissement non trouvé' }, { status: 404 });
+      }
+    }
+
     return NextResponse.json(parseEstablishment(establishment));
   } catch (error) {
     console.error('Get establishment error:', error);
@@ -50,7 +59,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
     const body = await req.json();
 
-    // Admin or Super Admin can edit/approve/suspend any establishment
+    // Admin can edit/approve/suspend any establishment
     if (isAdminRole(user.role)) {
       const establishment = await db.establishment.update({
         where: { id },

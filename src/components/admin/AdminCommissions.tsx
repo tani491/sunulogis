@@ -41,11 +41,7 @@ export function AdminCommissions() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [actionLoading, setActionLoading] = useState<string | null>(null)
 
-  useEffect(() => {
-    fetchCommissions()
-  }, [])
-
-  const fetchCommissions = async () => {
+  async function fetchCommissions() {
     setLoading(true)
     try {
       const res = await fetch('/api/admin/commissions')
@@ -60,6 +56,14 @@ export function AdminCommissions() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      void fetchCommissions()
+    }, 0)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [])
 
   const updatePaymentStatus = async (establishmentId: string, paymentStatus: string) => {
     setActionLoading(establishmentId)

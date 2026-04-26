@@ -1,11 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getSessionUser, isAdminRole } from '@/lib/auth';
+import { establishmentSchema } from '@/lib/validation';
+
+// A03 — Never call JSON.parse without a try-catch; malformed data must not crash the route
+function safeParseImages(raw: unknown): string[] {
+  if (Array.isArray(raw)) return raw;
+  if (typeof raw !== 'string') return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
 
 function parseEstablishment(e: any) {
   return {
     ...e,
-    images: typeof e.images === 'string' ? JSON.parse(e.images) : e.images,
+    images: safeParseImages(e.images),
     minPrice: e.rooms && e.rooms.length > 0
       ? Math.min(...e.rooms.filter((r: any) => r.isAvailable).map((r: any) => r.pricePerNight))
       : null,
@@ -55,9 +68,14 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(ownerEstablishments.map(parseEstablishment));
     }
 
+    // A03 — Validate numeric query params before passing to ORM
+    const minPriceNum = minPrice ? parseInt(minPrice, 10) : null;
+    const maxPriceNum = maxPrice ? parseInt(maxPrice, 10) : null;
+    if ((minPrice && isNaN(minPriceNum!)) || (maxPrice && isNaN(maxPriceNum!))) {
+      return NextResponse.json({ error: 'Paramètre de prix invalide' }, { status: 400 });
+    }
+
     // Public listing: only approved and non-suspended establishments
-    // Note: SQLite doesn't support mode: 'insensitive' but is case-insensitive by default for ASCII.
-    // For PostgreSQL (Supabase), add mode: 'insensitive' to contains filters.
     const establishments = await db.establishment.findMany({
       where: {
         isApproved: true,
@@ -76,10 +94,10 @@ export async function GET(req: NextRequest) {
       include: {
         rooms: {
           where: {
-            ...(minPrice || maxPrice ? {
+            ...(minPriceNum !== null || maxPriceNum !== null ? {
               pricePerNight: {
-                ...(minPrice ? { gte: parseInt(minPrice) } : {}),
-                ...(maxPrice ? { lte: parseInt(maxPrice) } : {}),
+                ...(minPriceNum !== null ? { gte: minPriceNum } : {}),
+                ...(maxPriceNum !== null ? { lte: maxPriceNum } : {}),
               },
             } : {}),
           },
@@ -111,24 +129,27 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { name, type, description, city, region, address, website, phone, images } = body;
 
-    if (!name || !city) {
-      return NextResponse.json({ error: 'Nom et ville requis' }, { status: 400 });
+    // A03 — Validate and sanitize all fields via Zod schema
+    const parsed = establishmentSchema.safeParse(body);
+    if (!parsed.success) {
+      const message = parsed.error.issues[0]?.message ?? 'Données invalides';
+      return NextResponse.json({ error: message }, { status: 400 });
     }
+    const { name, type, description, city, region, address, website, phone, images } = parsed.data;
 
     const establishment = await db.establishment.create({
       data: {
         ownerId: user.id,
         name,
-        type: type || 'auberge',
-        description: description || '',
+        type: type ?? 'auberge',
+        description: description ?? '',
         city,
-        region: region || '',
-        address: address || '',
-        website: website || null,
-        phone: phone || null,
-        images: JSON.stringify(images || []),
+        region: region ?? '',
+        address: address ?? '',
+        website: website ?? null,
+        phone: phone ?? null,
+        images: JSON.stringify(images ?? []),
         isApproved: false,
         isSuspended: false,
       },

@@ -10,6 +10,7 @@ import { ArrowLeft, Calendar, User, BookOpen, Clock } from 'lucide-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import ReactMarkdown from 'react-markdown'
+import { parseJsonResponse } from '@/lib/fetch-json'
 
 interface BlogPost {
   id: string
@@ -55,19 +56,12 @@ export function BlogPostPage() {
   const [recentPosts, setRecentPosts] = useState<RecentPost[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    if (currentBlogSlug) {
-      fetchPost()
-      fetchRecent()
-    }
-  }, [currentBlogSlug])
-
-  const fetchPost = async () => {
+  async function fetchPost() {
     setLoading(true)
     try {
       const res = await fetch(`/api/blog/${currentBlogSlug}`)
       if (res.ok) {
-        const data = await res.json()
+        const data = await parseJsonResponse<BlogPost>(res)
         setPost(data)
       }
     } catch (err) {
@@ -77,15 +71,26 @@ export function BlogPostPage() {
     }
   }
 
-  const fetchRecent = async () => {
+  async function fetchRecent() {
     try {
       const res = await fetch('/api/blog')
-      const data = await res.json()
+      const data = await parseJsonResponse<RecentPost[]>(res)
       setRecentPosts(data.filter((p: RecentPost & { slug: string }) => p.slug !== currentBlogSlug).slice(0, 4))
     } catch (err) {
       console.error(err)
     }
   }
+
+  useEffect(() => {
+    if (currentBlogSlug) {
+      const timeoutId = window.setTimeout(() => {
+        void fetchPost()
+        void fetchRecent()
+      }, 0)
+
+      return () => window.clearTimeout(timeoutId)
+    }
+  }, [currentBlogSlug])
 
   if (loading) {
     return (

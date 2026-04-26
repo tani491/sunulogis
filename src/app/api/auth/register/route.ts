@@ -1,50 +1,50 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { hashPassword, getCookieOptions } from '@/lib/auth';
-import { randomUUID } from 'crypto';
+import { hashPassword, getCookieOptions, createSessionToken } from '@/lib/auth';
+import { rateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
+import { registerSchema } from '@/lib/validation';
 
 export async function POST(req: NextRequest) {
+  // A07 — Brute-force / account-farming protection: 5 registrations per IP per 15 minutes
+  const ip = getClientIp(req);
+  const rl = rateLimit(`register:${ip}`, 5, 15 * 60 * 1000);
+  if (!rl.ok) return rateLimitResponse(rl.resetAt);
+
   try {
     const body = await req.json();
-    const { email, password, fullName, username, phone, role } = body;
 
-    if (!email) {
-      return NextResponse.json({ error: 'Email requis' }, { status: 400 });
+    // A03 — Validate and whitelist all input fields via Zod
+    // Roles are restricted to 'client' | 'owner'; 'admin' cannot be self-assigned
+    const parsed = registerSchema.safeParse(body);
+    if (!parsed.success) {
+      const message = parsed.error.issues[0]?.message ?? 'Données invalides';
+      return NextResponse.json({ error: message }, { status: 400 });
     }
-
-    const userRole = role === 'client' ? 'client' : 'owner';
-
-    // Owners must have a password
-    if (userRole === 'owner' && !password) {
-      return NextResponse.json({ error: 'Le mot de passe est requis pour les propriétaires' }, { status: 400 });
-    }
+    const { email, password, fullName, username, phone, role } = parsed.data;
 
     const existing = await db.profile.findUnique({ where: { email } });
     if (existing) {
       return NextResponse.json({ error: 'Cet email est déjà utilisé' }, { status: 400 });
     }
 
-    // For clients without password, generate a random one
-    const hashedPassword = hashPassword(password || randomUUID());
-
     const profile = await db.profile.create({
       data: {
         email,
-        password: hashedPassword,
-        fullName: fullName || null,
-        username: username || null,
-        phone: phone || null,
-        role: userRole,
+        password: await hashPassword(password),
+        fullName: fullName ?? null,
+        username: username ?? null,
+        phone: phone ?? null,
+        role,
       },
       select: { id: true, email: true, fullName: true, role: true, phone: true },
     });
 
     const response = NextResponse.json(profile);
-    response.cookies.set('ac_session', profile.id, getCookieOptions());
-
+    // A02/A05 — Issue HMAC-signed session token
+    response.cookies.set('ac_session', createSessionToken(profile.id), getCookieOptions());
     return response;
   } catch (error) {
     console.error('Register error:', error);
-    return NextResponse.json({ error: 'Erreur lors de l\'inscription' }, { status: 500 });
+    return NextResponse.json({ error: "Erreur lors de l'inscription" }, { status: 500 });
   }
 }

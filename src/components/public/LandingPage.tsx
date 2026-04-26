@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Building2, Search, MapPin, ArrowRight, Home, Key, CalendarCheck, Users, Star } from 'lucide-react';
 import { getTypeLabel, getTypeColor } from '@/lib/constants';
+import { parseJsonResponse } from '@/lib/fetch-json';
 
 const heroImages = [
   'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&q=80',
@@ -49,8 +50,10 @@ export function LandingPage() {
     const fetchFeatured = async () => {
       try {
         const res = await fetch('/api/establishments');
-        const data = await res.json();
-        setEstablishments(data.slice(0, 6));
+        const data = await parseJsonResponse<Establishment[]>(res);
+        if (Array.isArray(data)) {
+          setEstablishments(data.slice(0, 6));
+        }
       } catch (err) {
         console.error(err);
       } finally {

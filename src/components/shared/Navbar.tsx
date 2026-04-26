@@ -1,12 +1,13 @@
 'use client';
 
+import Image from 'next/image';
 import { useState } from 'react';
 import { useAppStore } from '@/store/app-store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Home, LayoutDashboard, LogOut, Menu, Building2, Search, MapPin, Banknote, ChevronDown, User, Shield, BookOpen } from 'lucide-react';
+import { Home, LayoutDashboard, LogOut, Menu, Search, MapPin, Banknote, ChevronDown, User, Shield, BookOpen } from 'lucide-react';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 
 const regions = [
@@ -35,18 +36,22 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-2 border-green-500 bg-card/95 backdrop-blur-md">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
+      <div className="container mx-auto flex h-[4.75rem] items-center justify-between px-3 sm:h-[5.125rem] sm:px-4 md:h-[5.75rem]">
         {/* Logo */}
         <button
-          onClick={() => navigate(currentUser ? (currentUser.role === 'admin' || currentUser.role === 'super_admin' ? 'admin' : 'dashboard') : 'landing')}
-          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          onClick={() => navigate(currentUser ? (currentUser.role === 'admin' ? 'admin' : 'dashboard') : 'landing')}
+          className="flex min-w-0 max-w-[calc(100vw-5.5rem)] items-center hover:opacity-80 transition-opacity sm:max-w-none"
+          aria-label="Retour à l'accueil SunuLogis"
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Building2 className="h-5 w-5" />
-          </div>
-          <span className="text-lg font-bold tracking-tight">
-            Sunu<span className="text-primary">Logis</span>
-          </span>
+          <Image
+            src="/sunulogis-logo.jpeg"
+            alt="SunuLogis"
+            width={220}
+            height={88}
+            loading="eager"
+            sizes="(max-width: 359px) 136px, (max-width: 419px) 144px, (max-width: 639px) 160px, (max-width: 767px) 188px, 300px"
+            className="h-[48px] w-auto max-w-full object-contain min-[360px]:h-[50px] min-[420px]:h-[52px] sm:h-[58px] md:h-[72px]"
+          />
         </button>
 
         {/* Desktop: Search filters (only on public pages) */}
@@ -59,11 +64,11 @@ export default function Navbar() {
                 value={searchFilters.search}
                 onChange={(e) => setSearchFilters({ search: e.target.value })}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                className="pl-9 h-9"
+                className="h-9 border-green-700 pl-9 transition-all hover:border-primary hover:shadow-[0_0_0_3px_rgba(34,197,94,0.12)] focus-visible:ring-green-700/20"
               />
             </div>
             <Select value={searchFilters.region} onValueChange={(v) => { setSearchFilters({ region: v }); handleSearch(); }}>
-              <SelectTrigger className="w-40 h-9">
+              <SelectTrigger className="h-9 w-40 border-green-700 transition-all hover:border-primary hover:shadow-[0_0_0_3px_rgba(34,197,94,0.12)] focus:ring-green-700/20">
                 <MapPin className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
                 <SelectValue placeholder="Région" />
               </SelectTrigger>
@@ -75,7 +80,7 @@ export default function Navbar() {
               </SelectContent>
             </Select>
             <Select value={searchFilters.priceRange} onValueChange={(v) => { setSearchFilters({ priceRange: v }); handleSearch(); }}>
-              <SelectTrigger className="w-44 h-9">
+              <SelectTrigger className="h-9 w-44 border-green-700 transition-all hover:border-primary hover:shadow-[0_0_0_3px_rgba(34,197,94,0.12)] focus:ring-green-700/20">
                 <Banknote className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
                 <SelectValue placeholder="Budget" />
               </SelectTrigger>
@@ -117,26 +122,37 @@ export default function Navbar() {
                       <p className="text-xs text-primary mt-1 capitalize">{currentUser.role}</p>
                     </div>
                     <div className="p-1">
-                      {(currentUser.role === 'admin' || currentUser.role === 'super_admin') ? (
-                        <Button
-                          variant="ghost"
-                          size="sm"
+                    {currentUser.role === 'admin' ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
                           className="w-full justify-start gap-2"
                           onClick={() => { navigate('admin'); setShowUserMenu(false); }}
                         >
                           <Shield className="h-4 w-4" />
-                          {currentUser.role === 'super_admin' ? 'Super Admin' : 'Panel Admin'}
+                          Panel Admin
                         </Button>
                       ) : (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="w-full justify-start gap-2"
-                          onClick={() => { navigate('dashboard'); setShowUserMenu(false); }}
-                        >
-                          <LayoutDashboard className="h-4 w-4" />
-                          Espace Gestion
-                        </Button>
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="w-full justify-start gap-2"
+                            onClick={() => { navigate('dashboard'); setShowUserMenu(false); }}
+                          >
+                            <LayoutDashboard className="h-4 w-4" />
+                            Espace Gestion
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="w-full justify-start gap-2"
+                            onClick={() => { navigate('home'); setShowUserMenu(false); }}
+                          >
+                            <Home className="h-4 w-4" />
+                            Accueil
+                          </Button>
+                        </>
                       )}
                       <Button
                         variant="ghost"
@@ -177,25 +193,29 @@ export default function Navbar() {
         </div>
 
         {/* Mobile: Menu button */}
-        <div className="flex md:hidden items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2 md:hidden">
           {isPublicPage && (
             <Button
               variant="ghost"
               size="icon"
+              className="h-9 w-9 sm:h-10 sm:w-10"
               onClick={() => setShowFilters(!showFilters)}
             >
-              <Search className="h-5 w-5" />
+              <Search className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
           )}
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Menu className="h-5 w-5" />
+              <Button variant="ghost" size="icon" className="h-9 w-9 sm:h-10 sm:w-10">
+                <Menu className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-72">
               <VisuallyHidden>
                 <SheetTitle>Menu de navigation SunuLogis</SheetTitle>
+                <SheetDescription>
+                  Accedez aux liens principaux et aux actions de navigation de SunuLogis.
+                </SheetDescription>
               </VisuallyHidden>
               <div className="flex flex-col gap-3 mt-8">
                 {currentUser ? (
@@ -204,7 +224,7 @@ export default function Navbar() {
                       <p className="font-medium text-sm">{currentUser.fullName || currentUser.email}</p>
                       <p className="text-xs text-muted-foreground">{currentUser.email}</p>
                     </div>
-                    {(currentUser.role === 'admin' || currentUser.role === 'super_admin') ? (
+                    {currentUser.role === 'admin' ? (
                       <Button
                         variant={currentView.startsWith('admin') ? 'secondary' : 'ghost'}
                         size="sm"
@@ -212,18 +232,29 @@ export default function Navbar() {
                         onClick={() => { navigate('admin'); setMobileOpen(false); }}
                       >
                         <Shield className="h-4 w-4" />
-                        {currentUser.role === 'super_admin' ? 'Super Admin' : 'Panel Admin'}
+                        Panel Admin
                       </Button>
                     ) : (
-                      <Button
-                        variant={currentView.startsWith('dashboard') ? 'secondary' : 'ghost'}
-                        size="sm"
-                        className="w-full justify-start gap-2"
-                        onClick={() => { navigate('dashboard'); setMobileOpen(false); }}
-                      >
-                        <LayoutDashboard className="h-4 w-4" />
-                        Espace Gestion
-                      </Button>
+                      <>
+                        <Button
+                          variant={currentView.startsWith('dashboard') ? 'secondary' : 'ghost'}
+                          size="sm"
+                          className="w-full justify-start gap-2"
+                          onClick={() => { navigate('dashboard'); setMobileOpen(false); }}
+                        >
+                          <LayoutDashboard className="h-4 w-4" />
+                          Espace Gestion
+                        </Button>
+                        <Button
+                          variant={currentView === 'home' ? 'secondary' : 'ghost'}
+                          size="sm"
+                          className="w-full justify-start gap-2"
+                          onClick={() => { navigate('home'); setMobileOpen(false); }}
+                        >
+                          <Home className="h-4 w-4" />
+                          Accueil
+                        </Button>
+                      </>
                     )}
                     <Button
                       variant="ghost"
@@ -273,12 +304,12 @@ export default function Navbar() {
               value={searchFilters.search}
               onChange={(e) => setSearchFilters({ search: e.target.value })}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              className="pl-9 h-9"
+              className="h-9 border-green-700 pl-9 transition-all hover:border-primary hover:shadow-[0_0_0_3px_rgba(34,197,94,0.12)] focus-visible:ring-green-700/20"
             />
           </div>
           <div className="flex gap-2">
             <Select value={searchFilters.region} onValueChange={(v) => { setSearchFilters({ region: v }); handleSearch(); }}>
-              <SelectTrigger className="flex-1 h-9">
+              <SelectTrigger className="h-9 flex-1 border-green-700 transition-all hover:border-primary hover:shadow-[0_0_0_3px_rgba(34,197,94,0.12)] focus:ring-green-700/20">
                 <MapPin className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
                 <SelectValue placeholder="Région" />
               </SelectTrigger>
@@ -290,7 +321,7 @@ export default function Navbar() {
               </SelectContent>
             </Select>
             <Select value={searchFilters.priceRange} onValueChange={(v) => { setSearchFilters({ priceRange: v }); handleSearch(); }}>
-              <SelectTrigger className="flex-1 h-9">
+              <SelectTrigger className="h-9 flex-1 border-green-700 transition-all hover:border-primary hover:shadow-[0_0_0_3px_rgba(34,197,94,0.12)] focus:ring-green-700/20">
                 <Banknote className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
                 <SelectValue placeholder="Budget" />
               </SelectTrigger>

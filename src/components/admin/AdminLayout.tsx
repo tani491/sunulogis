@@ -3,7 +3,7 @@
 import { useAppStore, type View } from '@/store/app-store'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { LayoutDashboard, Building2, Users, Menu, X, Shield, Newspaper, Mail, Banknote, Crown } from 'lucide-react'
+import { LayoutDashboard, Building2, Users, Menu, X, Shield, Newspaper, Mail, Banknote, Settings, BarChart2 } from 'lucide-react'
 import { useState } from 'react'
 import { AdminOverview } from './AdminOverview'
 import { AdminEstablishments } from './AdminEstablishments'
@@ -11,8 +11,10 @@ import { AdminUsers } from './AdminUsers'
 import { AdminBlog } from './AdminBlog'
 import { AdminSubscribers } from './AdminSubscribers'
 import { AdminCommissions } from './AdminCommissions'
+import { AdminSettings } from './AdminSettings'
+import { AdminAnalytics } from './AdminAnalytics'
 
-type SubView = 'admin' | 'admin-stats' | 'admin-establishments' | 'admin-users' | 'admin-blog' | 'admin-subscribers' | 'admin-commissions'
+type SubView = 'admin' | 'admin-stats' | 'admin-establishments' | 'admin-users' | 'admin-blog' | 'admin-subscribers' | 'admin-commissions' | 'admin-settings' | 'admin-analytics'
 
 interface SidebarContentProps {
   subView: SubView
@@ -21,29 +23,22 @@ interface SidebarContentProps {
 }
 
 function SidebarContent({ subView, onNavigate, onCloseMobile }: SidebarContentProps) {
-  const { currentUser } = useAppStore()
-  const isSuperAdmin = currentUser?.role === 'super_admin'
-
   const navItems: { view: SubView; label: string; icon: React.ReactNode }[] = [
     { view: 'admin', label: 'Vue d\'ensemble', icon: <LayoutDashboard className="h-4 w-4" /> },
+    { view: 'admin-analytics', label: 'Analytiques', icon: <BarChart2 className="h-4 w-4" /> },
     { view: 'admin-establishments', label: 'Établissements', icon: <Building2 className="h-4 w-4" /> },
     { view: 'admin-commissions', label: 'Commissions', icon: <Banknote className="h-4 w-4" /> },
     { view: 'admin-users', label: 'Utilisateurs', icon: <Users className="h-4 w-4" /> },
     { view: 'admin-blog', label: 'Blog', icon: <Newspaper className="h-4 w-4" /> },
     { view: 'admin-subscribers', label: 'Newsletter', icon: <Mail className="h-4 w-4" /> },
+    { view: 'admin-settings', label: 'Paramètres', icon: <Settings className="h-4 w-4" /> },
   ]
 
   return (
     <div className="space-y-2 p-4">
       <div className="flex items-center gap-2 mb-4 px-2">
-        {isSuperAdmin ? (
-          <Crown className="h-5 w-5 text-purple-600" />
-        ) : (
-          <Shield className="h-5 w-5 text-primary" />
-        )}
-        <h2 className={`text-lg font-bold ${isSuperAdmin ? 'text-purple-600' : 'text-primary'}`}>
-          {isSuperAdmin ? 'Super Admin' : 'Admin'}
-        </h2>
+        <Shield className="h-5 w-5 text-primary" />
+        <h2 className="text-lg font-bold text-primary">Admin</h2>
       </div>
       {navItems.map((item) => (
         <Button
@@ -63,11 +58,13 @@ function SidebarContent({ subView, onNavigate, onCloseMobile }: SidebarContentPr
 const navLabels: Record<SubView, string> = {
   admin: 'Vue d\'ensemble',
   'admin-stats': 'Statistiques',
+  'admin-analytics': 'Analytiques',
   'admin-establishments': 'Établissements',
   'admin-users': 'Utilisateurs',
   'admin-blog': 'Blog',
   'admin-subscribers': 'Newsletter',
   'admin-commissions': 'Commissions',
+  'admin-settings': 'Paramètres',
 }
 
 export function AdminLayout() {
@@ -78,6 +75,8 @@ export function AdminLayout() {
 
   const renderContent = () => {
     switch (subView) {
+      case 'admin-analytics':
+        return <AdminAnalytics />
       case 'admin-establishments':
         return <AdminEstablishments />
       case 'admin-users':
@@ -88,6 +87,8 @@ export function AdminLayout() {
         return <AdminSubscribers />
       case 'admin-commissions':
         return <AdminCommissions />
+      case 'admin-settings':
+        return <AdminSettings />
       case 'admin-stats':
       case 'admin':
       default:

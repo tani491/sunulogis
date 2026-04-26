@@ -55,7 +55,7 @@ export function ManageEstablishment() {
     }
   }, [currentUser])
 
-  const fetchEstablishments = async () => {
+  async function fetchEstablishments() {
     setLoading(true)
     try {
       const res = await fetch(`/api/establishments?ownerId=${currentUser?.id}`)

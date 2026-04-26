@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { UserPlus, User, Mail, Phone, Lock, Building2, MapPin } from 'lucide-react'
 import { toast } from 'sonner'
+import { parseJsonResponse } from '@/lib/fetch-json'
 
 export function RegisterPage() {
   const { navigate } = useAppStore()
@@ -56,7 +57,7 @@ export function RegisterPage() {
         }),
       })
 
-      const data = await res.json()
+      const data = await parseJsonResponse<{ error?: string }>(res)
 
       if (!res.ok) {
         toast.error(data.error || 'Erreur lors de l\'inscription')

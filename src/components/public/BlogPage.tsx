@@ -10,6 +10,7 @@ import { BookOpen, ArrowRight, Calendar, User, Search } from 'lucide-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { NewsletterForm } from '@/components/shared/NewsletterForm'
+import { parseJsonResponse } from '@/lib/fetch-json'
 
 interface BlogPost {
   id: string
@@ -59,23 +60,27 @@ export function BlogPage() {
   const [loading, setLoading] = useState(true)
   const [activeCategory, setActiveCategory] = useState('all')
 
-  useEffect(() => {
-    fetchPosts()
-  }, [activeCategory])
-
-  const fetchPosts = async () => {
+  async function fetchPosts() {
     setLoading(true)
     try {
       const url = activeCategory !== 'all' ? `/api/blog?category=${activeCategory}` : '/api/blog'
       const res = await fetch(url)
-      const data = await res.json()
-      setPosts(data)
+      const data = await parseJsonResponse<BlogPost[]>(res)
+      if (Array.isArray(data)) setPosts(data)
     } catch (err) {
       console.error(err)
     } finally {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      void fetchPosts()
+    }, 0)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [activeCategory])
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto">

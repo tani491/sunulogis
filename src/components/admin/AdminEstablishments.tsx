@@ -40,7 +40,7 @@ export function AdminEstablishments() {
     fetchEstablishments()
   }, [])
 
-  const fetchEstablishments = async () => {
+  async function fetchEstablishments() {
     setLoading(true)
     try {
       const res = await fetch('/api/admin/establishments')

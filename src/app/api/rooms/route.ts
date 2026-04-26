@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(rooms);
     }
 
-    // Admin/Super Admin: return all rooms
+    // Admin: return all rooms
     if (user && isAdminRole(user.role)) {
       const rooms = await db.room.findMany({
         where: {

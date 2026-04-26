@@ -31,13 +31,7 @@ export function DashboardOverview() {
   const [unpaidCommissions, setUnpaidCommissions] = useState<UnpaidCommission[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    if (currentUser) {
-      fetchStats()
-    }
-  }, [currentUser])
-
-  const fetchStats = async () => {
+  async function fetchStats() {
     setLoading(true)
     try {
       const [establishmentsRes, bookingsRes] = await Promise.all([
@@ -81,6 +75,16 @@ export function DashboardOverview() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (currentUser) {
+      const timeoutId = window.setTimeout(() => {
+        void fetchStats()
+      }, 0)
+
+      return () => window.clearTimeout(timeoutId)
+    }
+  }, [currentUser])
 
   if (loading) {
     return (

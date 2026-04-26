@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
-import { Users, ShieldCheck, Ban, Filter, Crown, Shield } from 'lucide-react'
+import { Users, ShieldCheck, Ban, Filter, Shield } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface User {
@@ -29,11 +29,7 @@ export function AdminUsers() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [actionLoading, setActionLoading] = useState<string | null>(null)
 
-  useEffect(() => {
-    fetchUsers()
-  }, [])
-
-  const fetchUsers = async () => {
+  async function fetchUsers() {
     setLoading(true)
     try {
       const res = await fetch('/api/admin/users')
@@ -47,6 +43,14 @@ export function AdminUsers() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      void fetchUsers()
+    }, 0)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [])
 
   const toggleUserStatus = async (userId: string, isActive: boolean) => {
     setActionLoading(userId)
@@ -74,8 +78,6 @@ export function AdminUsers() {
 
   const getRoleBadge = (role: string) => {
     switch (role) {
-      case 'super_admin':
-        return <Badge className="gap-1 bg-purple-600"><Crown className="h-3 w-3" /> Super Admin</Badge>
       case 'admin':
         return <Badge className="gap-1 bg-red-600"><ShieldCheck className="h-3 w-3" /> Admin</Badge>
       case 'owner':
@@ -119,7 +121,6 @@ export function AdminUsers() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tous les rôles</SelectItem>
-              <SelectItem value="super_admin">Super Admin</SelectItem>
               <SelectItem value="admin">Admins</SelectItem>
               <SelectItem value="owner">Propriétaires</SelectItem>
               <SelectItem value="client">Clients</SelectItem>
@@ -182,42 +183,40 @@ export function AdminUsers() {
                       )}
                     </TableCell>
                     <TableCell className="text-right">
-                      {user.role !== 'super_admin' && (
-                        user.isActive ? (
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button size="sm" variant="outline" className="gap-1 text-destructive hover:text-destructive" disabled={actionLoading === user.id}>
-                                <Ban className="h-3 w-3" />
+                      {user.isActive ? (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button size="sm" variant="outline" className="gap-1 text-destructive hover:text-destructive" disabled={actionLoading === user.id}>
+                              <Ban className="h-3 w-3" />
+                              Désactiver
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Désactiver l&apos;utilisateur ?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Désactiver {user.fullName || user.email} ? Il ne pourra plus se connecter.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Annuler</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => toggleUserStatus(user.id, false)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                                 Désactiver
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Désactiver l&apos;utilisateur ?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Désactiver {user.fullName || user.email} ? Il ne pourra plus se connecter.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Annuler</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => toggleUserStatus(user.id, false)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                                  Désactiver
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        ) : (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="gap-1 text-green-600 hover:text-green-700"
-                            onClick={() => toggleUserStatus(user.id, true)}
-                            disabled={actionLoading === user.id}
-                          >
-                            <ShieldCheck className="h-3 w-3" />
-                            Activer
-                          </Button>
-                        )
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="gap-1 text-green-600 hover:text-green-700"
+                          onClick={() => toggleUserStatus(user.id, true)}
+                          disabled={actionLoading === user.id}
+                        >
+                          <ShieldCheck className="h-3 w-3" />
+                          Activer
+                        </Button>
                       )}
                     </TableCell>
                   </TableRow>

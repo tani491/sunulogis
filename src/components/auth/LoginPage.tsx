@@ -6,8 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { LogIn, Mail, Lock, Building2 } from 'lucide-react'
+import { LogIn, Mail, Lock } from 'lucide-react'
 import { toast } from 'sonner'
+import { parseJsonResponse } from '@/lib/fetch-json'
 
 export function LoginPage() {
   const { navigate, setUser } = useAppStore()
@@ -31,10 +32,25 @@ export function LoginPage() {
         body: JSON.stringify({ email, password }),
       })
 
-      const data = await res.json()
+      const data = await parseJsonResponse<
+        | { error?: string }
+        | {
+            id: string
+            email: string
+            fullName: string | null
+            role: string
+            phone: string | null
+          }
+      >(res)
 
       if (!res.ok) {
-        toast.error(data.error || 'Erreur de connexion')
+        const errorMessage = 'error' in data ? data.error : undefined
+        toast.error(errorMessage || 'Erreur de connexion')
+        return
+      }
+
+      if (!('id' in data)) {
+        toast.error('Réponse de connexion invalide')
         return
       }
 
@@ -42,7 +58,7 @@ export function LoginPage() {
       toast.success(`Bienvenue, ${data.fullName || data.email} !`)
 
       // Navigate based on role
-      if (data.role === 'admin' || data.role === 'super_admin') {
+      if (data.role === 'admin') {
         navigate('admin')
       } else {
         navigate('dashboard')
@@ -114,18 +130,6 @@ export function LoginPage() {
               </button>
             </p>
           </form>
-
-          <div className="mt-6 rounded-lg bg-muted p-3 space-y-1">
-            <p className="text-xs text-muted-foreground text-center">
-              <strong>Demo Propriétaire :</strong> demo@sunulogis.sn / password
-            </p>
-            <p className="text-xs text-muted-foreground text-center">
-              <strong>Demo Admin :</strong> admin@sunulogis.sn / admin123
-            </p>
-            <p className="text-xs text-muted-foreground text-center">
-              <strong>Demo Super Admin :</strong> superadmin@sunulogis.sn / super123
-            </p>
-          </div>
         </CardContent>
       </Card>
     </div>

@@ -1,35 +1,48 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { hashPassword } from '@/lib/auth';
 
-export async function GET() {
+// A04 — Seed endpoint is disabled in production unconditionally.
+// In development it also requires a matching SEED_SECRET header to prevent
+// accidental invocation (e.g. from a scanner or CI pipeline).
+export async function POST(req: NextRequest) {
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ error: 'Accès interdit' }, { status: 403 });
+  }
+
   try {
+    if (process.env.ENABLE_DEMO_SEED !== 'true') {
+      return NextResponse.json({ error: 'Accès interdit' }, { status: 403 });
+    }
+
+    const seedSecret = process.env.SEED_SECRET;
+    if (seedSecret) {
+      const headerSecret = req.headers.get('x-seed-secret');
+      if (headerSecret !== seedSecret) {
+        return NextResponse.json({ error: 'Accès interdit' }, { status: 403 });
+      }
+    }
+
     // Check if data already exists
     const count = await db.establishment.count();
     if (count > 0) {
       return NextResponse.json({ message: 'Données déjà existantes', count });
     }
 
+    // Pre-compute bcrypt hashes (async)
+    const [adminHash, ownerHash] = await Promise.all([
+      hashPassword('admin123'),
+      hashPassword('password'),
+    ]);
+
     // Create admin user
     await db.profile.create({
       data: {
         email: 'admin@sunulogis.sn',
-        password: hashPassword('admin123'),
+        password: adminHash,
         fullName: 'Admin SunuLogis',
         username: 'admin',
         role: 'admin',
-        isActive: true,
-      },
-    });
-
-    // Create super admin user
-    await db.profile.create({
-      data: {
-        email: 'superadmin@sunulogis.sn',
-        password: hashPassword('super123'),
-        fullName: 'Super Admin SunuLogis',
-        username: 'superadmin',
-        role: 'super_admin',
         isActive: true,
       },
     });
@@ -38,7 +51,7 @@ export async function GET() {
     const owner = await db.profile.create({
       data: {
         email: 'demo@sunulogis.sn',
-        password: hashPassword('password'),
+        password: ownerHash,
         fullName: 'Amadou Diallo',
         username: 'amadou',
         phone: '221770000001',
@@ -51,7 +64,7 @@ export async function GET() {
     const owner2 = await db.profile.create({
       data: {
         email: 'fatou@sunulogis.sn',
-        password: hashPassword('password'),
+        password: ownerHash,
         fullName: 'Fatou Ndiaye',
         username: 'fatou',
         phone: '221770000002',
@@ -65,7 +78,7 @@ export async function GET() {
       data: [
         {
           email: 'client1@sunulogis.sn',
-          password: hashPassword('password'),
+          password: ownerHash,
           fullName: 'Moussa Sow',
           phone: '221769876543',
           role: 'client',
@@ -73,7 +86,7 @@ export async function GET() {
         },
         {
           email: 'client2@sunulogis.sn',
-          password: hashPassword('password'),
+          password: ownerHash,
           fullName: 'Aïssatou Ba',
           phone: '221778765432',
           role: 'client',

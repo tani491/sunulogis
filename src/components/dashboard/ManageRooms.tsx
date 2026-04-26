@@ -54,12 +54,12 @@ export function ManageRooms() {
     }
   }, [currentUser])
 
-  const fetchData = async () => {
+  async function fetchData() {
     setLoading(true)
     try {
       const res = await fetch(`/api/establishments?ownerId=${currentUser?.id}`)
       const data = await res.json()
-      setEstablishments(data)
+      if (Array.isArray(data)) setEstablishments(data)
 
       // Get all rooms for user establishments
       const allRooms: Room[] = []

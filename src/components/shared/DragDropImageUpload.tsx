@@ -4,6 +4,7 @@ import { useState, useRef, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { X, Upload, ImagePlus, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { parseJsonResponse } from '@/lib/fetch-json'
 
 interface DragDropImageUploadProps {
   images: string[]
@@ -53,12 +54,12 @@ export function DragDropImageUpload({ images, onImagesChange, maxImages = 8 }: D
       })
 
       if (!res.ok) {
-        const data = await res.json()
+        const data = await parseJsonResponse<{ error?: string }>(res)
         toast.error(data.error || 'Erreur lors du téléchargement')
         return
       }
 
-      const data = await res.json()
+      const data = await parseJsonResponse<{ urls: string[] }>(res)
       onImagesChange([...images, ...data.urls])
       toast.success(`${data.urls.length} image(s) ajoutée(s)`)
     } catch (err) {

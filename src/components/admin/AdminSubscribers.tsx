@@ -23,11 +23,7 @@ export function AdminSubscribers() {
   const [loading, setLoading] = useState(true)
   const [deleting, setDeleting] = useState<string | null>(null)
 
-  useEffect(() => {
-    fetchSubscribers()
-  }, [])
-
-  const fetchSubscribers = async () => {
+  async function fetchSubscribers() {
     setLoading(true)
     try {
       const res = await fetch('/api/subscribers')
@@ -41,6 +37,14 @@ export function AdminSubscribers() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      void fetchSubscribers()
+    }, 0)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [])
 
   const deleteSubscriber = async (id: string) => {
     setDeleting(id)

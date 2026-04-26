@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton'
 import { Search, MapPin, Users, ArrowRight, Building2, Globe, Banknote, SlidersHorizontal } from 'lucide-react'
 import { ESTABLISHMENT_TYPE_FILTERS, REGIONS, PRICE_RANGES, getTypeLabel, getTypeColor } from '@/lib/constants'
+import { parseJsonResponse } from '@/lib/fetch-json'
 
 interface Establishment {
   id: string
@@ -30,11 +31,7 @@ export function HomePage() {
   const [loading, setLoading] = useState(true)
   const [typeFilter, setTypeFilter] = useState<string>('all')
 
-  useEffect(() => {
-    fetchEstablishments()
-  }, [searchFilters.region, searchFilters.priceRange, typeFilter])
-
-  const fetchEstablishments = async () => {
+  async function fetchEstablishments() {
     setLoading(true)
     try {
       const params = new URLSearchParams()
@@ -61,14 +58,22 @@ export function HomePage() {
 
       const url = params.toString() ? `/api/establishments?${params.toString()}` : '/api/establishments'
       const res = await fetch(url)
-      const data = await res.json()
-      setEstablishments(data)
+      const data = await parseJsonResponse<Establishment[]>(res)
+      if (Array.isArray(data)) setEstablishments(data)
     } catch (err) {
       console.error(err)
     } finally {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      void fetchEstablishments()
+    }, 0)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [searchFilters.region, searchFilters.priceRange, typeFilter])
 
   const filteredEstablishments = establishments.filter((e) =>
     !searchFilters.search || e.name.toLowerCase().includes(searchFilters.search.toLowerCase()) || e.city.toLowerCase().includes(searchFilters.search.toLowerCase())

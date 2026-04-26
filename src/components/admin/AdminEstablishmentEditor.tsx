@@ -58,13 +58,7 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
   const [phone, setPhone] = useState('')
   const [images, setImages] = useState<string[]>([])
 
-  useEffect(() => {
-    if (establishmentId) {
-      fetchEstablishment()
-    }
-  }, [establishmentId])
-
-  const fetchEstablishment = async () => {
+  async function fetchEstablishment() {
     setLoading(true)
     try {
       const res = await fetch(`/api/establishments/${establishmentId}`)
@@ -92,6 +86,16 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (establishmentId) {
+      const timeoutId = window.setTimeout(() => {
+        void fetchEstablishment()
+      }, 0)
+
+      return () => window.clearTimeout(timeoutId)
+    }
+  }, [establishmentId])
 
   const handleSave = async () => {
     if (!name.trim() || !city.trim()) {
@@ -223,7 +227,7 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
           <div>
             <h1 className="text-xl font-bold flex items-center gap-2">
               <Pencil className="h-5 w-5 text-primary" />
-              Modification Super Admin
+              Modification administrateur
             </h1>
             <p className="text-sm text-muted-foreground">
               Modifier l&apos;établissement de {establishment.owner?.fullName || 'un propriétaire'}

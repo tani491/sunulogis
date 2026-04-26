@@ -70,7 +70,7 @@ export function AdminBlog() {
     fetchPosts()
   }, [])
 
-  const fetchPosts = async () => {
+  async function fetchPosts() {
     setLoading(true)
     try {
       const res = await fetch('/api/blog/all')

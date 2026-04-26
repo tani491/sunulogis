@@ -36,12 +36,12 @@ export function ManageBookings() {
     fetchBookings()
   }, [statusFilter])
 
-  const fetchBookings = async () => {
+  async function fetchBookings() {
     setLoading(true)
     try {
       const res = await fetch(statusFilter && statusFilter !== 'all' ? `/api/bookings?status=${statusFilter}` : '/api/bookings')
       const data = await res.json()
-      setBookings(data)
+      if (Array.isArray(data)) setBookings(data)
     } catch (err) {
       console.error(err)
     } finally {
