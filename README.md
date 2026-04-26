@@ -176,7 +176,7 @@ npm run dev
 Ouvrir un navigateur sur : **http://localhost:3000/api/seed**
 
 Cela crée automatiquement :
-- 1 admin, 2 propriétaires, 2 clients
+- 1 admin, 2 propriétaires, 2 clients   
 - 6 établissements (5 approuvés, 1 en attente)
 - 16 chambres
 - 3 réservations
