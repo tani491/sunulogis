@@ -65,7 +65,7 @@ export async function POST(request: Request) {
       const buffer = Buffer.from(await file.arrayBuffer())
 
       const { error } = await supabaseAdmin.storage
-        .from(BUCKET)
+        .from('hostels')
         .upload(filename, buffer, { contentType: file.type, upsert: false })
 
       if (error) {
@@ -73,7 +73,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Erreur lors du téléchargement' }, { status: 500 })
       }
 
-      const { data } = supabaseAdmin.storage.from(BUCKET).getPublicUrl(filename)
+      const { data } = supabaseAdmin.storage.from('hostels').getPublicUrl(filename)
       urls.push(data.publicUrl)
     }
 
