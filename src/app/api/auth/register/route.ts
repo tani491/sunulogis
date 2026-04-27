@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     const profile = await db.profile.create({
       data: {
         email,
-        password: await hashPassword(password),
+       password: password ? await hashPassword(password) : null,
         fullName: fullName ?? null,
         username: username ?? null,
         phone: phone ?? null,

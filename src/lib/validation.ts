@@ -18,7 +18,7 @@ const passwordSchema = z
 
 export const registerSchema = z.object({
   email: z.string().email('Email invalide').max(254),
-  password: passwordSchema,
+ password: passwordSchema.optional().or(z.literal('')),
   fullName: z.string().max(100).optional(),
   username: z
     .string()
