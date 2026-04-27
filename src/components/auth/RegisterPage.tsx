@@ -12,7 +12,7 @@ import { parseJsonResponse } from '@/lib/fetch-json'
 
 export function RegisterPage() {
   const { navigate , setUser} = useAppStore()
-  const [role, setRole] = useState<'client' | 'owner'>('owner')
+  const [role, setRole] = useState<'client' | 'owner'>('client')
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
