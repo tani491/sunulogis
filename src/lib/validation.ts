@@ -17,22 +17,15 @@ const passwordSchema = z
   );
 
 export const registerSchema = z.object({
-  email: z.string().email('Email invalide').max(254),
- password: passwordSchema.optional().or(z.literal('')),
-  fullName: z.string().max(100).optional(),
-  username: z
-    .string()
-    .max(50)
-    .regex(/^[a-zA-Z0-9_-]*$/, "Nom d'utilisateur invalide (lettres, chiffres, _ et - uniquement)")
-    .optional(),
-  phone: z
-    .string()
-    .max(20)
-    .regex(/^\+?[\d\s\-()]*$/, 'Numéro de téléphone invalide')
-    .optional(),
-  // Only 'client' and 'owner' are allowed; admin accounts cannot be self-created
-  role: z.enum(['client', 'owner']).default('client'),
-});
+  email: z.string().email("Email invalide"),
+  fullName: z.string().min(2, "Nom requis"),
+  role: z.enum(['client', 'owner', 'admin']),
+  // .optional() accepte si le champ n'existe pas
+  // .or(z.literal('')) accepte si le champ est un texte vide ""
+  password: z.string().optional().or(z.literal('')), 
+  username: z.string().optional().or(z.literal('')),
+  phone: z.string().optional().or(z.literal('')),
+})
 
 export const changePasswordSchema = z.object({
   currentPassword: z.string().min(1, 'Mot de passe actuel requis').max(128),

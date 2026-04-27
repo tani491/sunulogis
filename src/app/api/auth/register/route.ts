@@ -27,18 +27,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Cet email est déjà utilisé' }, { status: 400 });
     }
 
-    const profile = await db.profile.create({
+  const profile = await db.profile.create({
       data: {
         email,
-       password: password ? await hashPassword(password) : null,
-        fullName: fullName ?? null,
-        username: username ?? null,
-        phone: phone ?? null,
+        password: password ? await hashPassword(password) : null,
+        fullName,
+        username: username || null, // Utilise || null pour éviter le undefined
+        phone: phone || null,      // Idem ici
         role,
       },
-      select: { id: true, email: true, fullName: true, role: true, phone: true },
     });
-
     const response = NextResponse.json(profile);
     // A02/A05 — Issue HMAC-signed session token
     response.cookies.set('ac_session', createSessionToken(profile.id), getCookieOptions());
