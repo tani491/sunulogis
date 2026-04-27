@@ -38,8 +38,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Compte désactivé' }, { status: 403 });
     }
 
+   // Plus besoin de migration, on utilise 'admin' directement
     if (profile.role === 'super_admin') {
-      await db.profile.update({ where: { id: profile.id }, data: { role: 'admin' } });
       profile.role = 'admin';
     }
 

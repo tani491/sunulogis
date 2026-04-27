@@ -77,7 +77,7 @@ export async function getSessionUser() {
       select: { id: true, email: true, fullName: true, role: true, phone: true },
     });
 
-    if (profile?.role === 'super_admin') {
+    if (profile?.role === 'admin') {
       await db.profile.update({ where: { id: profile.id }, data: { role: 'admin' } });
       return { ...profile, role: 'admin' };
     }
