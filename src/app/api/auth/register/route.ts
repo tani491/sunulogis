@@ -37,10 +37,25 @@ export async function POST(req: NextRequest) {
         role,
       },
     });
-    const response = NextResponse.json(profile);
-    // A02/A05 — Issue HMAC-signed session token
+   // --- À METTRE JUSTE ICI (Ligne 39) ---
+    
+    // On crée un objet "user" propre (on n'envoie pas le mot de passe au navigateur)
+    const user = {
+      id: profile.id,
+      email: profile.email,
+      fullName: profile.fullName,
+      role: profile.role,
+      username: profile.username,
+    };
+
+    const response = NextResponse.json(user);
+    
+    // On donne le badge de connexion (le cookie)
     response.cookies.set('ac_session', createSessionToken(profile.id), getCookieOptions());
+    
     return response;
+
+    // --- FIN DU BLOC ---
   } catch (error) {
     console.error('Register error:', error);
     return NextResponse.json({ error: "Erreur lors de l'inscription" }, { status: 500 });

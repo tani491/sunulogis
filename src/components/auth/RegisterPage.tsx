@@ -11,7 +11,7 @@ import { toast } from 'sonner'
 import { parseJsonResponse } from '@/lib/fetch-json'
 
 export function RegisterPage() {
-  const { navigate } = useAppStore()
+  const { navigate , setUser} = useAppStore()
   const [role, setRole] = useState<'client' | 'owner'>('owner')
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
@@ -57,15 +57,22 @@ export function RegisterPage() {
         }),
       })
 
-      const data = await parseJsonResponse<{ error?: string }>(res)
+      const data = await parseJsonResponse<any>(res)
 
       if (!res.ok) {
         toast.error(data.error || 'Erreur lors de l\'inscription')
         return
       }
 
-      toast.success('Inscription réussie ! Connectez-vous maintenant.')
-      navigate('login')
+      // On change le message pour dire que c'est automatique
+      toast.success('Inscription réussie ! Bienvenue sur SunuLogis.')
+      
+      // TRÈS IMPORTANT : On connecte l'utilisateur dans l'interface
+      // (Il faut s'assurer que 'setUser' est bien importé du store plus haut)
+      setUser(data); 
+      
+      // On redirige vers l'accueil au lieu de la page de connexion
+      navigate('home');
     } catch (err) {
       console.error(err)
       toast.error('Erreur de connexion au serveur')
