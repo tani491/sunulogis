@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
     }
 
    // Plus besoin de migration, on utilise 'admin' directement
-    if (profile.role === 'super_admin') {
+    if (profile.role === 'admin') {
       profile.role = 'admin';
     }
 
