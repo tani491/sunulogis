@@ -35,7 +35,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-2 border-green-500 bg-card/95 backdrop-blur-md">
+    <header className="sticky top-0 z-50 w-full bg-card/95 backdrop-blur-md">
       <div className="container mx-auto flex h-[4.75rem] items-center justify-between px-3 sm:h-[5.125rem] sm:px-4 md:h-[5.75rem]">
         
         {/* MODIFICATION 1: LOGO - Aiguillage précis selon le rôle */}
