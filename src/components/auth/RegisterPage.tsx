@@ -72,7 +72,11 @@ export function RegisterPage() {
       setUser(data); 
       
       // On redirige vers l'accueil au lieu de la page de connexion
-      navigate('home');
+      if (data.role === 'owner') {
+          navigate('dashboard');
+      } else {
+          navigate('home');
+      }
     } catch (err) {
       console.error(err)
       toast.error('Erreur de connexion au serveur')

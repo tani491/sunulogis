@@ -37,9 +37,10 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full border-2 border-green-500 bg-card/95 backdrop-blur-md">
       <div className="container mx-auto flex h-[4.75rem] items-center justify-between px-3 sm:h-[5.125rem] sm:px-4 md:h-[5.75rem]">
-        {/* Logo */}
+        
+        {/* MODIFICATION 1: LOGO - Aiguillage précis selon le rôle */}
         <button
-          onClick={() => navigate(currentUser ? (currentUser.role === 'admin' ? 'admin' : 'dashboard') : 'landing')}
+          onClick={() => navigate(currentUser ? (currentUser.role === 'admin' ? 'admin' : (currentUser.role === 'owner' ? 'dashboard' : 'home')) : 'landing')}
           className="flex min-w-0 max-w-[calc(100vw-5.5rem)] items-center hover:opacity-80 transition-opacity sm:max-w-none"
           aria-label="Retour à l'accueil SunuLogis"
         >
@@ -122,10 +123,12 @@ export default function Navbar() {
                       <p className="text-xs text-primary mt-1 capitalize">{currentUser.role}</p>
                     </div>
                     <div className="p-1">
-                    {currentUser.role === 'admin' ? (
-                      <Button
-                        variant="ghost"
-                        size="sm"
+                      
+                      {/* MODIFICATION 2: MENU DESKTOP - Séparation stricte des accès */}
+                      {currentUser.role === 'admin' ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           className="w-full justify-start gap-2"
                           onClick={() => { navigate('admin'); setShowUserMenu(false); }}
                         >
@@ -134,15 +137,17 @@ export default function Navbar() {
                         </Button>
                       ) : (
                         <>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="w-full justify-start gap-2"
-                            onClick={() => { navigate('dashboard'); setShowUserMenu(false); }}
-                          >
-                            <LayoutDashboard className="h-4 w-4" />
-                            Espace Gestion
-                          </Button>
+                          {currentUser.role === 'owner' && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="w-full justify-start gap-2"
+                              onClick={() => { navigate('dashboard'); setShowUserMenu(false); }}
+                            >
+                              <LayoutDashboard className="h-4 w-4" />
+                              Espace Gestion
+                            </Button>
+                          )}
                           <Button
                             variant="ghost"
                             size="sm"
@@ -154,6 +159,7 @@ export default function Navbar() {
                           </Button>
                         </>
                       )}
+
                       <Button
                         variant="ghost"
                         size="sm"
@@ -214,7 +220,7 @@ export default function Navbar() {
               <VisuallyHidden>
                 <SheetTitle>Menu de navigation SunuLogis</SheetTitle>
                 <SheetDescription>
-                  Accedez aux liens principaux et aux actions de navigation de SunuLogis.
+                  Accédez aux liens principaux et aux actions de navigation de SunuLogis.
                 </SheetDescription>
               </VisuallyHidden>
               <div className="flex flex-col gap-3 mt-8">
@@ -224,6 +230,8 @@ export default function Navbar() {
                       <p className="font-medium text-sm">{currentUser.fullName || currentUser.email}</p>
                       <p className="text-xs text-muted-foreground">{currentUser.email}</p>
                     </div>
+
+                    {/* MODIFICATION 3: MENU MOBILE - Séparation stricte des accès */}
                     {currentUser.role === 'admin' ? (
                       <Button
                         variant={currentView.startsWith('admin') ? 'secondary' : 'ghost'}
@@ -236,15 +244,17 @@ export default function Navbar() {
                       </Button>
                     ) : (
                       <>
-                        <Button
-                          variant={currentView.startsWith('dashboard') ? 'secondary' : 'ghost'}
-                          size="sm"
-                          className="w-full justify-start gap-2"
-                          onClick={() => { navigate('dashboard'); setMobileOpen(false); }}
-                        >
-                          <LayoutDashboard className="h-4 w-4" />
-                          Espace Gestion
-                        </Button>
+                        {currentUser.role === 'owner' && (
+                          <Button
+                            variant={currentView.startsWith('dashboard') ? 'secondary' : 'ghost'}
+                            size="sm"
+                            className="w-full justify-start gap-2"
+                            onClick={() => { navigate('dashboard'); setMobileOpen(false); }}
+                          >
+                            <LayoutDashboard className="h-4 w-4" />
+                            Espace Gestion
+                          </Button>
+                        )}
                         <Button
                           variant={currentView === 'home' ? 'secondary' : 'ghost'}
                           size="sm"
@@ -256,6 +266,7 @@ export default function Navbar() {
                         </Button>
                       </>
                     )}
+
                     <Button
                       variant="ghost"
                       size="sm"
