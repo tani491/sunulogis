@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
       const message = parsed.error.issues[0]?.message ?? 'Données invalides';
       return NextResponse.json({ error: message }, { status: 400 });
     }
-    const { email, password, fullName, username, phone, role } = parsed.data;
+    const { email, password, fullName, username, phone, role, isSubscribed } = parsed.data;
 
     const existing = await db.profile.findUnique({ where: { email } });
     if (existing) {
@@ -35,6 +35,8 @@ export async function POST(req: NextRequest) {
         username: username || null, // Utilise || null pour éviter le undefined
         phone: phone || null,      // Idem ici
         role,
+        // La nouvelle ligne :
+        isSubscribed: !!isSubscribed,
       },
     });
    // --- À METTRE JUSTE ICI (Ligne 39) ---

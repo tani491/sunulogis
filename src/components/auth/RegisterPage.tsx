@@ -18,6 +18,7 @@ export function RegisterPage() {
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [isSubscribed, setIsSubscribed] = useState(false)
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,6 +55,7 @@ export function RegisterPage() {
           phone,
           password: role === 'owner' ? password : undefined,
           role,
+          isSubscribed,
         }),
       })
 
@@ -215,6 +217,19 @@ export function RegisterPage() {
                 En tant que voyageur, vous pouvez réserver sans mot de passe. Vous recevrez vos confirmations par WhatsApp.
               </p>
             )}
+
+            <div className="flex items-center space-x-2 py-2">
+              <input 
+                type="checkbox" 
+                id="newsletter" 
+                checked={isSubscribed}
+                onChange={(e) => setIsSubscribed(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+              />
+              <Label htmlFor="newsletter" className="text-xs text-muted-foreground cursor-pointer leading-none">
+                Je souhaite recevoir les bons plans et actualités de SunuLogis par email
+              </Label>
+            </div>
 
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Inscription en cours...' : 'S\'inscrire'}

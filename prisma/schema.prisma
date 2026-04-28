@@ -18,6 +18,7 @@ model Profile {
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  isSubscribed Boolean @default(false)
 
   establishments Establishment[]
   posts          BlogPost[]

@@ -20,11 +20,11 @@ export const registerSchema = z.object({
   email: z.string().email("Email invalide"),
   fullName: z.string().min(2, "Nom requis"),
   role: z.enum(['client', 'owner', 'admin']),
-  // .optional() accepte si le champ n'existe pas
-  // .or(z.literal('')) accepte si le champ est un texte vide ""
-  password: z.string().optional().or(z.literal('')), 
+  password: z.string().optional().or(z.literal('')),
   username: z.string().optional().or(z.literal('')),
   phone: z.string().optional().or(z.literal('')),
+  // La nouvelle ligne :
+  isSubscribed: z.boolean().optional(),
 })
 
 export const changePasswordSchema = z.object({

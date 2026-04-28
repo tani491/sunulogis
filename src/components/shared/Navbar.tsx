@@ -36,7 +36,7 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 w-full bg-card/95 backdrop-blur-md">
-      <div className="container mx-auto flex h-[4.75rem] items-center justify-between px-3 sm:h-[5.125rem] sm:px-4 md:h-[5.75rem]">
+      <div className="container mx-auto flex h-19 items-center justify-between px-3 sm:h-20.5 sm:px-4 md:h-23">
         
         {/* MODIFICATION 1: LOGO - Aiguillage précis selon le rôle */}
         <button
@@ -51,7 +51,7 @@ export default function Navbar() {
             height={88}
             loading="eager"
             sizes="(max-width: 359px) 136px, (max-width: 419px) 144px, (max-width: 639px) 160px, (max-width: 767px) 188px, 300px"
-            className="h-[48px] w-auto max-w-full object-contain min-[360px]:h-[50px] min-[420px]:h-[52px] sm:h-[58px] md:h-[72px]"
+            className="h-12 w-auto max-w-full object-contain min-[360px]:h-12.5 min-[420px]:h-13 sm:h-14.5 md:h-18"
           />
         </button>
 
@@ -110,7 +110,7 @@ export default function Navbar() {
                 <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10">
                   <User className="h-4 w-4 text-primary" />
                 </div>
-                <span className="max-w-[120px] truncate">{currentUser.fullName || currentUser.email}</span>
+                <span className="max-w-30 truncate">{currentUser.fullName || currentUser.email}</span>
                 <ChevronDown className="h-3 w-3" />
               </Button>
               {showUserMenu && (
