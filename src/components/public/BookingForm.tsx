@@ -86,7 +86,7 @@ export function BookingForm({ room, establishment, open, onClose }: BookingFormP
   }
 
   const getWhatsAppLink = () => {
-    const message = `Bonjour, je suis ${guestName}. Je souhaite réserver la chambre ${room.name} du ${format(new Date(startDate), 'dd MMMM yyyy', { locale: fr })} au ${format(new Date(endDate), 'dd MMMM yyyy', { locale: fr })}. Merci de confirmer.`
+    const message = `Bonjour, je suis ${guestName}. J'ai vu votre offre dans SunuLogis et Je souhaite réserver la chambre ${room.name} du ${format(new Date(startDate), 'dd MMMM yyyy', { locale: fr })} au ${format(new Date(endDate), 'dd MMMM yyyy', { locale: fr })}. Merci de confirmer.`
     const phone = establishment.phone?.replace(/^(\+)/, '') || ''
     return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
   }
