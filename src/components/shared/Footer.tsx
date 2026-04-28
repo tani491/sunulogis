@@ -102,7 +102,7 @@ export default function Footer() {
               width={220}
               height={88}
               sizes="160px"
-              className="h-[52px] w-auto object-contain"
+              className="h-13 w-auto object-contain"
             />
             <p className="text-sm text-muted-foreground leading-relaxed">
               La plateforme de reservation d&apos;hebergements au Senegal — auberges, hotels, appartements, villas et lodges dans les 14 regions.
