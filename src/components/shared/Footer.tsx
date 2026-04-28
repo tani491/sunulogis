@@ -76,9 +76,9 @@ export default function Footer() {
       const data = await parseJsonResponse<{ alreadySubscribed?: boolean }>(res)
 
       if (data.alreadySubscribed) {
-        toast.info('Vous êtes déjà inscrit à notre newsletter !')
+        toast.info('Vous etes deja inscrit a notre newsletter !')
       } else {
-        toast.success('Inscription réussie ! Bienvenue dans la communauté SunuLogis.')
+        toast.success('Inscription reussie ! Bienvenue dans la communaute SunuLogis.')
       }
       setEmail('')
     } catch (err) {
@@ -94,7 +94,7 @@ export default function Footer() {
       <div className="container mx-auto px-4 pt-10 pb-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-6">
 
-          {/* Brand + réseaux sociaux */}
+          {/* Brand + reseaux sociaux */}
           <div className="space-y-4 md:col-span-1">
             <Image
               src="/sunulogis-logo.jpeg"
@@ -105,23 +105,43 @@ export default function Footer() {
               className="h-[52px] w-auto object-contain"
             />
             <p className="text-sm text-muted-foreground leading-relaxed">
-              La plateforme de réservation d&apos;hébergements au Sénégal — auberges, hôtels, appartements, villas et lodges dans les 14 régions.
+              La plateforme de reservation d&apos;hebergements au Senegal — auberges, hotels, appartements, villas et lodges dans les 14 regions.
             </p>
 
-            {/* Réseaux sociaux */}
-            <div className="flex items-center gap-2 pt-1">
-              {socialLinks.map(({ label, href, icon: Icon, hoverClass }) => (
-                <a
-                  key={label}
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={label}
-                  className={`flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted-foreground transition-all duration-200 ${hoverClass}`}
-                >
-                  <Icon className="h-4 w-4" />
-                </a>
-              ))}
+            {/* Reseaux sociaux */}
+            <div className="flex items-center gap-5 py-2">
+              {/* Facebook - Bleu Officiel */}
+              <a 
+                href="https://www.facebook.com/SunuLogis" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="transition-transform hover:scale-110" 
+                aria-label="Suivez SunuLogis sur Facebook"
+              >
+                <FacebookIcon className="h-6 w-6 text-[#1877F2]" /> 
+              </a>
+
+              {/* Instagram - Rose/Rouge Officiel */}
+              <a 
+                href="https://www.instagram.com/sunulogis/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="transition-transform hover:scale-110" 
+                aria-label="Suivez SunuLogis sur Instagram"
+              >
+                <InstagramIcon className="h-6 w-6 text-[#E4405F]" />
+              </a>
+
+              {/* TikTok - Noir Officiel */}
+              <a 
+                href="https://tiktok.com/@sunulogis8" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="transition-transform hover:scale-110" 
+                aria-label="Suivez SunuLogis sur TikTok"
+              >
+                <TikTokIcon className="h-6 w-6 text-black" />
+              </a>
             </div>
           </div>
 
@@ -131,9 +151,9 @@ export default function Footer() {
             <ul className="space-y-2.5">
               {[
                 { label: 'Accueil', view: 'home' as const },
-                { label: 'Établissements', view: 'home' as const },
+                { label: 'Etablissements', view: 'home' as const },
                 { label: 'Blog', view: 'blog' as const },
-                { label: 'Devenir propriétaire', view: 'register' as const },
+                { label: 'Devenir proprietaire', view: 'register' as const },
               ].map(({ label, view }) => (
                 <li key={label}>
                   <button
@@ -153,7 +173,7 @@ export default function Footer() {
             <ul className="space-y-3">
               <li className="flex items-start gap-2 text-sm text-muted-foreground">
                 <MapPin className="h-4 w-4 mt-0.5 shrink-0 text-primary" />
-                Dakar, Sénégal
+                Dakar, Senegal
               </li>
               <li className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Mail className="h-4 w-4 shrink-0 text-primary" />
@@ -169,7 +189,7 @@ export default function Footer() {
               </li>
             </ul>
 
-            {/* Réseaux sociaux (dupliqués dans Contact sur mobile) */}
+            {/* Reseaux sociaux dupliques */}
             <div className="hidden md:flex flex-col gap-2 pt-1">
               <p className="text-xs text-muted-foreground">Suivez-nous</p>
               <div className="flex gap-2">
@@ -186,14 +206,14 @@ export default function Footer() {
                   </a>
                 ))}
               </div>
-            </div>
+          </div>
           </div>
 
           {/* Newsletter */}
           <div className="space-y-4">
             <h4 className="font-semibold text-sm tracking-wide uppercase text-foreground/60">Newsletter</h4>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Offres exclusives et bons plans hébergement au Sénégal directement dans votre boîte mail.
+              Offres exclusives et bons plans hebergement au Senegal directement dans votre boite mail.
             </p>
             <form onSubmit={handleSubscribe} className="space-y-2">
               <Input
@@ -218,12 +238,12 @@ export default function Footer() {
               </p>
             </form>
           </div>
-        </div>
+          </div>
 
         {/* Barre du bas */}
         <div className="mt-8 border-t border-border pt-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
-            Fait avec <Heart className="h-3 w-3 text-red-500 fill-red-500 mx-0.5" /> au Sénégal &mdash; &copy; {new Date().getFullYear()} SunuLogis
+            Fait avec <Heart className="h-3 w-3 text-red-500 fill-red-500 mx-0.5" /> au Senegal &mdash; &copy; {new Date().getFullYear()} SunuLogis
           </span>
           <div className="flex items-center gap-4">
             {socialLinks.map(({ label, href, icon: Icon }) => (
@@ -240,7 +260,7 @@ export default function Footer() {
               </a>
             ))}
           </div>
-        </div>
+      </div>
       </div>
     </footer>
   )
