@@ -1,4 +1,4 @@
-'use client'
+ 'use client'
 
 import { useState, useEffect } from 'react'
 import { useAppStore } from '@/store/app-store'
@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Building2, Save, Plus, Globe, Phone, MapPin, CheckCircle, Clock, AlertCircle } from 'lucide-react'
+import { Building2, Save, Plus, Globe, Phone, MapPin, CheckCircle, Clock, AlertCircle, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { DragDropImageUpload } from '@/components/shared/DragDropImageUpload'
 import { ESTABLISHMENT_TYPES, REGIONS, getTypeLabel } from '@/lib/constants'
@@ -94,6 +94,28 @@ export function ManageEstablishment() {
     setImages(est.images || [])
     setEditingId(est.id)
     setShowCreate(true)
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Êtes-vous sûr de vouloir supprimer cet établissement ? Cette action est irréversible.")) {
+      return
+    }
+
+    try {
+      const res = await fetch(`/api/establishments/${id}`, {
+        method: 'DELETE',
+      })
+
+      if (res.ok) {
+        toast.success("Établissement supprimé")
+        setEstablishments(prev => prev.filter(e => e.id !== id))
+      } else {
+        const data = await res.json()
+        toast.error(data.error || "Erreur lors de la suppression")
+      }
+    } catch (error) {
+      toast.error("Erreur de connexion au serveur")
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -310,9 +332,15 @@ export function ManageEstablishment() {
                 </div>
                 <p className="text-sm text-muted-foreground line-clamp-2">{est.description}</p>
                 {est.address && <p className="text-xs text-muted-foreground">{est.address}</p>}
-                <Button size="sm" variant="outline" onClick={() => startEdit(est)}>
-                  Modifier
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button size="sm" variant="outline" onClick={() => startEdit(est)}>
+                    Modifier
+                  </Button>
+                  <Button size="sm" variant="destructive" onClick={() => handleDelete(est.id)} className="gap-2">
+                    <Trash2 className="h-4 w-4" />
+                    Supprimer
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))}
