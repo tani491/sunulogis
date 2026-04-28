@@ -337,7 +337,7 @@ export function ManageEstablishment() {
                     Modifier
                   </Button>
                   <Button size="sm" variant="destructive" onClick={() => handleDelete(est.id)} className="gap-2">
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-2 w-2" />
                     Supprimer
                   </Button>
                 </div>
