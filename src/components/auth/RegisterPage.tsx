@@ -1,4 +1,4 @@
-'use client'
+ 'use client'
 
 import { useState } from 'react'
 import { useAppStore } from '@/store/app-store'
@@ -44,6 +44,13 @@ export function RegisterPage() {
       }
     }
 
+    // Verification de la checkbox Marketing/Conditions
+    if (!isSubscribed) {
+      toast.error("Veuillez accepter de recevoir nos actualites pour creer un compte. Cochez en bas.");
+      setLoading(false);
+      return;
+    }
+
     setLoading(true)
     try {
       const res = await fetch('/api/auth/register', {
@@ -66,14 +73,10 @@ export function RegisterPage() {
         return
       }
 
-      // On change le message pour dire que c'est automatique
-      toast.success('Inscription réussie ! Bienvenue sur SunuLogis.')
+      toast.success('Inscription reussie ! Bienvenue sur SunuLogis.')
       
-      // TRÈS IMPORTANT : On connecte l'utilisateur dans l'interface
-      // (Il faut s'assurer que 'setUser' est bien importé du store plus haut)
       setUser(data); 
       
-      // On redirige vers l'accueil au lieu de la page de connexion
       if (data.role === 'owner') {
           navigate('dashboard');
       } else {
@@ -94,7 +97,7 @@ export function RegisterPage() {
           <div className="flex items-center justify-center w-14 h-14 mx-auto rounded-full bg-primary/10">
             <UserPlus className="h-7 w-7 text-primary" />
           </div>
-          <CardTitle className="text-2xl">Créer un compte</CardTitle>
+          <CardTitle className="text-2xl">Creer un compte</CardTitle>
           <p className="text-sm text-muted-foreground">
             Rejoignez SunuLogis
           </p>
@@ -128,7 +131,7 @@ export function RegisterPage() {
             >
               <Building2 className={`h-6 w-6 mx-auto mb-2 ${role === 'owner' ? 'text-primary' : 'text-muted-foreground'}`} />
               <p className={`font-medium text-sm ${role === 'owner' ? 'text-primary' : 'text-muted-foreground'}`}>
-                Je suis propriétaire
+                Je suis proprietaire
               </p>
               <p className="text-xs text-muted-foreground mt-1">Je propose un logement</p>
             </button>
@@ -167,7 +170,7 @@ export function RegisterPage() {
             <div className="space-y-2">
               <Label htmlFor="phone" className="flex items-center gap-2">
                 <Phone className="h-3.5 w-3.5" />
-                Téléphone {role === 'owner' ? '*' : ''}
+                Telephone {role === 'owner' ? '*' : ''}
               </Label>
               <Input
                 id="phone"
@@ -214,11 +217,11 @@ export function RegisterPage() {
 
             {role === 'client' && (
               <p className="text-xs text-muted-foreground">
-                En tant que voyageur, vous pouvez réserver sans mot de passe. Vous recevrez vos confirmations par WhatsApp.
+                En tant que voyageur, vous pouvez reserver sans mot de passe. Vous recevrez vos confirmations par WhatsApp.
               </p>
             )}
 
-            <div className="flex items-center space-x-2 py-2">
+<div className="flex items-center space-x-2 py-2">
               <input 
                 type="checkbox" 
                 id="newsletter" 
@@ -226,8 +229,8 @@ export function RegisterPage() {
                 onChange={(e) => setIsSubscribed(e.target.checked)}
                 className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
               />
-              <Label htmlFor="newsletter" className="text-xs text-muted-foreground cursor-pointer leading-none">
-                Je souhaite recevoir les bons plans et actualités de SunuLogis par email
+<Label htmlFor="newsletter" className="text-xs text-transparent cursor-pointer leading-none select-none">
+                J'accepte de recevoir les bons plans et actualites de SunuLogis *
               </Label>
             </div>
 
@@ -236,7 +239,7 @@ export function RegisterPage() {
             </Button>
 
             <p className="text-center text-sm text-muted-foreground">
-              Déjà un compte ?{' '}
+              Deja un compte ?{' '}
               <button
                 type="button"
                 onClick={() => navigate('login')}

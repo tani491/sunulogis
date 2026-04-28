@@ -1,4 +1,4 @@
-'use client';
+'use client'; 
 
 import Image from 'next/image';
 import { useState } from 'react';
@@ -12,8 +12,8 @@ import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 
 const regions = [
   'Dakar', 'Diourbel', 'Fatick', 'Kaffrine', 'Kaolack',
-  'Kédougou', 'Kolda', 'Louga', 'Matam', 'Sédhiou',
-  'Saint-Louis', 'Tambacounda', 'Thiès', 'Ziguinchor',
+  'Kedougou', 'Kolda', 'Louga', 'Matam', 'Sedhiou',
+  'Saint-Louis', 'Tambacounda', 'Thies', 'Ziguinchor',
 ];
 
 export default function Navbar() {
@@ -35,14 +35,14 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-card/95 backdrop-blur-md">
+<header className="sticky top-0 z-50 w-full bg-white/60 backdrop-blur-2xl border-b border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.08)]">
       <div className="container mx-auto flex h-19 items-center justify-between px-3 sm:h-20.5 sm:px-4 md:h-23">
         
-        {/* MODIFICATION 1: LOGO - Aiguillage précis selon le rôle */}
+        {/* LOGO - Aiguillage precis selon le role */}
         <button
           onClick={() => navigate(currentUser ? (currentUser.role === 'admin' ? 'admin' : (currentUser.role === 'owner' ? 'dashboard' : 'home')) : 'landing')}
           className="flex min-w-0 max-w-[calc(100vw-5.5rem)] items-center hover:opacity-80 transition-opacity sm:max-w-none"
-          aria-label="Retour à l'accueil SunuLogis"
+          aria-label="Retour a l'accueil SunuLogis"
         >
           <Image
             src="/sunulogis-logo.jpeg"
@@ -61,7 +61,7 @@ export default function Navbar() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Rechercher un établissement..."
+                placeholder="Rechercher un etablissement..."
                 value={searchFilters.search}
                 onChange={(e) => setSearchFilters({ search: e.target.value })}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -71,10 +71,10 @@ export default function Navbar() {
             <Select value={searchFilters.region} onValueChange={(v) => { setSearchFilters({ region: v }); handleSearch(); }}>
               <SelectTrigger className="h-9 w-40 border-green-700 transition-all hover:border-primary hover:shadow-[0_0_0_3px_rgba(34,197,94,0.12)] focus:ring-green-700/20">
                 <MapPin className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
-                <SelectValue placeholder="Région" />
+                <SelectValue placeholder="Region" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Toutes les régions</SelectItem>
+                <SelectItem value="all">Toutes les regions</SelectItem>
                 {regions.map((r) => (
                   <SelectItem key={r} value={r}>{r}</SelectItem>
                 ))}
@@ -124,7 +124,6 @@ export default function Navbar() {
                     </div>
                     <div className="p-1">
                       
-                      {/* MODIFICATION 2: MENU DESKTOP - Séparation stricte des accès */}
                       {currentUser.role === 'admin' ? (
                         <Button
                           variant="ghost"
@@ -137,6 +136,7 @@ export default function Navbar() {
                         </Button>
                       ) : (
                         <>
+                          {/* Affiche uniquement pour les proprietaires */}
                           {currentUser.role === 'owner' && (
                             <Button
                               variant="ghost"
@@ -148,6 +148,8 @@ export default function Navbar() {
                               Espace Gestion
                             </Button>
                           )}
+                          
+                          {/* Affiche pour TOUT LE MONDE (Client et Proprio) */}
                           <Button
                             variant="ghost"
                             size="sm"
@@ -156,6 +158,17 @@ export default function Navbar() {
                           >
                             <Home className="h-4 w-4" />
                             Accueil
+                          </Button>
+
+                          {/* LE BOUTON BLOG ICI */}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="w-full justify-start gap-2"
+                            onClick={() => { navigate('blog'); setShowUserMenu(false); }}
+                          >
+                            <BookOpen className="h-4 w-4" />
+                            Blog
                           </Button>
                         </>
                       )}
@@ -167,7 +180,7 @@ export default function Navbar() {
                         onClick={handleLogout}
                       >
                         <LogOut className="h-4 w-4" />
-                        Déconnexion
+                        Deconnexion
                       </Button>
                     </div>
                   </div>
@@ -220,7 +233,7 @@ export default function Navbar() {
               <VisuallyHidden>
                 <SheetTitle>Menu de navigation SunuLogis</SheetTitle>
                 <SheetDescription>
-                  Accédez aux liens principaux et aux actions de navigation de SunuLogis.
+                  Accedez aux liens principaux et aux actions de navigation de SunuLogis.
                 </SheetDescription>
               </VisuallyHidden>
               <div className="flex flex-col gap-3 mt-8">
@@ -231,7 +244,6 @@ export default function Navbar() {
                       <p className="text-xs text-muted-foreground">{currentUser.email}</p>
                     </div>
 
-                    {/* MODIFICATION 3: MENU MOBILE - Séparation stricte des accès */}
                     {currentUser.role === 'admin' ? (
                       <Button
                         variant={currentView.startsWith('admin') ? 'secondary' : 'ghost'}
@@ -244,6 +256,7 @@ export default function Navbar() {
                       </Button>
                     ) : (
                       <>
+                        {/* Uniquement Proprio */}
                         {currentUser.role === 'owner' && (
                           <Button
                             variant={currentView.startsWith('dashboard') ? 'secondary' : 'ghost'}
@@ -255,6 +268,7 @@ export default function Navbar() {
                             Espace Gestion
                           </Button>
                         )}
+                        
                         <Button
                           variant={currentView === 'home' ? 'secondary' : 'ghost'}
                           size="sm"
@@ -263,6 +277,17 @@ export default function Navbar() {
                         >
                           <Home className="h-4 w-4" />
                           Accueil
+                        </Button>
+
+                        {/* LE BOUTON BLOG ICI EN MOBILE */}
+                        <Button
+                          variant={currentView === 'blog' ? 'secondary' : 'ghost'}
+                          size="sm"
+                          className="w-full justify-start gap-2"
+                          onClick={() => { navigate('blog'); setMobileOpen(false); }}
+                        >
+                          <BookOpen className="h-4 w-4" />
+                          Blog
                         </Button>
                       </>
                     )}
@@ -274,7 +299,7 @@ export default function Navbar() {
                       onClick={() => { handleLogout(); setMobileOpen(false); }}
                     >
                       <LogOut className="h-4 w-4" />
-                      Déconnexion
+                      Deconnexion
                     </Button>
                   </>
                 ) : (
@@ -307,11 +332,11 @@ export default function Navbar() {
 
       {/* Mobile: Search filters dropdown */}
       {isPublicPage && showFilters && (
-        <div className="md:hidden border-t bg-card/95 backdrop-blur-md px-4 py-3 space-y-2">
+<div className="md:hidden border-t bg-white/60 backdrop-blur-2xl px-4 py-3 space-y-2">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Rechercher un établissement..."
+              placeholder="Rechercher un etablissement..."
               value={searchFilters.search}
               onChange={(e) => setSearchFilters({ search: e.target.value })}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -322,7 +347,7 @@ export default function Navbar() {
             <Select value={searchFilters.region} onValueChange={(v) => { setSearchFilters({ region: v }); handleSearch(); }}>
               <SelectTrigger className="h-9 flex-1 border-green-700 transition-all hover:border-primary hover:shadow-[0_0_0_3px_rgba(34,197,94,0.12)] focus:ring-green-700/20">
                 <MapPin className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
-                <SelectValue placeholder="Région" />
+                <SelectValue placeholder="Region" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Toutes</SelectItem>
@@ -351,3 +376,4 @@ export default function Navbar() {
     </header>
   );
 }
+
