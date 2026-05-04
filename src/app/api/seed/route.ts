@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db"; // Utilisation de 'db' pour correspondre à ton projet
 import bcrypt from "bcryptjs";
 
 export async function GET() {
@@ -8,14 +8,14 @@ export async function GET() {
     const hashedPassword = await bcrypt.hash("TonMotDePasseDakar2026!", 10);
 
     // 2. On crée (ou met à jour) l'Admin dans la table User
-    const admin = await prisma.user.upsert({
-      where: { email: "admin@sunulogis.sn" }, // METS TON EMAIL ICI
+    const admin = await db.user.upsert({
+      where: { email: "ton-email@exemple.com" }, // METS TON EMAIL ICI
       update: {
         role: "admin",
         password: hashedPassword,
       },
       create: {
-        email: "admin@sunulogis.sn", // METS TON EMAIL ICI
+        email: "ton-email@exemple.com", // METS TON EMAIL ICI
         name: "Admin SunuLogis",
         password: hashedPassword,
         role: "admin",
@@ -28,7 +28,7 @@ export async function GET() {
       admin: admin.email 
     });
   } catch (error) {
-    console.error(error);
+    console.error("Seed Error:", error);
     return NextResponse.json({ error: "Erreur de seeding" }, { status: 500 });
   }
 }
