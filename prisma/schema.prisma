@@ -7,18 +7,18 @@ datasource db {
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
-model Profile {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  username  String?
-  fullName  String?
-  role      String   @default("owner") // "client", "owner", "admin"
-  password  String?
-  phone     String?
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  isSubscribed Boolean @default(false)
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?   // fullName
+  password      String?
+  role          String    @default("owner") // "client", "owner", "admin"
+  phone         String?
+  isActive      Boolean   @default(true)
+  isSubscribed  Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   establishments Establishment[]
   posts          BlogPost[]
@@ -28,40 +28,40 @@ model Profile {
 }
 
 model Establishment {
-  id            String   @id @default(cuid())
-  ownerId       String
-  name          String
-  type          String   @default("auberge") // "auberge", "hotel", "appartement", "appartement_meuble", "lodge", "loft", "villa", "maison_a_vendre"
-  description   String   @default("")
-  city          String
-  region        String   @default("")
-  address       String   @default("")
-  images        String   @default("[]")
-  website       String?
-  phone         String?
-  isApproved     Boolean   @default(false)
-  isSuspended    Boolean   @default(false)
-  isFeatured     Boolean   @default(false)
-  isVerified     Boolean   @default(false)
-  paymentPending Boolean   @default(false)
-  boostExpiry    DateTime?
-  commission     Int       @default(0)
-  paymentStatus  String    @default("en_attente")
-  viewsCount     Int       @default(0)
-  clicksCount    Int       @default(0)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id              String   @id @default(cuid())
+  ownerId         String
+  name            String
+  type            String   @default("auberge")
+  description     String   @default("")
+  city            String
+  region          String   @default("")
+  address         String   @default("")
+  images          String   @default("[]")
+  website         String?
+  phone           String?
+  
+  // --- SYSTÈME FREEMIUM (PRO) ---
+  isFeatured      Boolean  @default(false)
+  isVerified      Boolean  @default(false)
+  paymentPending  Boolean  @default(false)
+  boostExpiry     DateTime?
+  viewsCount      Int      @default(0)
+  clicksCount     Int      @default(0)
 
-  owner Profile @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  isApproved      Boolean  @default(false)
+  isSuspended     Boolean  @default(false)
+  commission      Int      @default(0)
+  paymentStatus   String   @default("en_attente")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  owner User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   rooms Room[]
 
   @@index([ownerId])
   @@index([type])
   @@index([city])
-  @@index([region])
   @@index([isApproved])
-  @@index([isFeatured])
-  @@index([paymentStatus])
 }
 
 model Room {
@@ -78,7 +78,6 @@ model Room {
   bookings      Booking[]
 
   @@index([establishmentId])
-  @@index([isAvailable])
 }
 
 model Booking {
@@ -88,60 +87,23 @@ model Booking {
   guestPhone String
   startDate  DateTime
   endDate    DateTime
-  status     String   @default("pending") // "pending", "confirmed", "cancelled"
+  status     String   @default("pending")
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
   room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
-
-  @@index([roomId])
-  @@index([status])
-  @@index([startDate])
 }
 
 model BlogPost {
   id          String   @id @default(cuid())
   title       String
   slug        String   @unique
-  excerpt     String   @default("")
   content     String   @default("")
-  coverImage  String?
-  category    String   @default("general")
-  isPublished Boolean  @default(false)
   authorId    String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  author Profile @relation(fields: [authorId], references: [id], onDelete: Cascade)
-
-  @@index([slug])
-  @@index([category])
-  @@index([isPublished])
-  @@index([authorId])
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
 }
 
-model Subscriber {
-  id            String   @id @default(cuid())
-  email         String   @unique
-  consentStatus Boolean  @default(true)
-  source        String   @default("footer") // "footer", "blog", "landing"
-  createdAt     DateTime @default(now())
-
-  @@index([email])
-  @@index([source])
-}
-
-model PageView {
-  id        String   @id @default(cuid())
-  path      String
-  referrer  String?
-  source    String   @default("direct") // "direct", "search", "social", "referral"
-  medium    String?  // "google", "facebook", "twitter", "instagram", "linkedin", "tiktok", etc.
-  country   String?
-  createdAt DateTime @default(now())
-
-  @@index([path])
-  @@index([source])
-  @@index([country])
-  @@index([createdAt])
-}
+// Garde tes modèles Subscriber, PageView si tu en as besoins
