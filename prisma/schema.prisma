@@ -25,7 +25,8 @@ model User {
 
   @@index([role])
   @@index([isActive])
-}
+} 
+
 
 model Establishment {
   id              String   @id @default(cuid())
@@ -106,4 +107,18 @@ model BlogPost {
   author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
 }
 
+model PageView {
+  id        String   @id @default(cuid())
+  path      String
+  referrer  String?
+  source    String   @default("direct") // "direct", "search", "social", "referral"
+  medium    String?  // "google", "facebook", "twitter", "instagram", "linkedin", "tiktok", etc.
+  country   String?
+  createdAt DateTime @default(now())
+
+  @@index([path])
+  @@index([source])
+  @@index([country])
+  @@index([createdAt])
+}
 // Garde tes modèles Subscriber, PageView si tu en as besoins
