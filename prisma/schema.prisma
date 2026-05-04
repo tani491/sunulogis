@@ -39,12 +39,18 @@ model Establishment {
   images        String   @default("[]")
   website       String?
   phone         String?
-  isApproved    Boolean  @default(false)
-  isSuspended   Boolean  @default(false)
-  commission    Int      @default(0)
-  paymentStatus String   @default("en_attente") // "en_attente", "paye"
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  isApproved     Boolean   @default(false)
+  isSuspended    Boolean   @default(false)
+  isFeatured     Boolean   @default(false)
+  isVerified     Boolean   @default(false)
+  paymentPending Boolean   @default(false)
+  boostExpiry    DateTime?
+  commission     Int       @default(0)
+  paymentStatus  String    @default("en_attente")
+  viewsCount     Int       @default(0)
+  clicksCount    Int       @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   owner Profile @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   rooms Room[]
@@ -54,6 +60,7 @@ model Establishment {
   @@index([city])
   @@index([region])
   @@index([isApproved])
+  @@index([isFeatured])
   @@index([paymentStatus])
 }
 

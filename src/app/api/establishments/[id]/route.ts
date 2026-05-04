@@ -86,7 +86,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 
-    const { name, type, description, city, region, address, website, phone, images } = body;
+    const { name, type, description, city, region, address, website, phone, images, paymentPending } = body;
 
     const establishment = await db.establishment.update({
       where: { id },
@@ -100,6 +100,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         ...(website !== undefined && { website }),
         ...(phone !== undefined && { phone }),
         ...(images !== undefined && { images: JSON.stringify(images) }),
+        ...(paymentPending === true && { paymentPending: true }),
       },
       include: { rooms: true },
     });

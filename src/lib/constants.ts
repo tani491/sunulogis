@@ -103,3 +103,52 @@ export const PRICE_RANGES = [
   { value: '50000-100000', label: '50 000 - 100 000 FCFA' },
   { value: '100000+', label: '100 000+ FCFA' },
 ] as const
+
+// Freemium visibility packs
+export const VISIBILITY_PACKS = [
+  {
+    id: 'starter',
+    name: 'Standard',
+    price: 0,
+    currency: 'FCFA',
+    period: 'mois',
+    color: 'gray',
+    features: [
+      { label: 'Annonce en ligne', included: true },
+      { label: 'Photos (jusqu\'à 8)', included: true },
+      { label: 'Statistiques de vues', included: true },
+      { label: 'Statistiques de clics WhatsApp', included: false },
+      { label: 'Badge "Vérifié"', included: false },
+      { label: 'Mise en avant (Featured)', included: false },
+      { label: 'Priorité dans les résultats', included: false },
+      { label: 'Support prioritaire', included: false },
+    ],
+  },
+  {
+    id: 'pro',
+    name: 'Sunu Pro',
+    price: 15000,
+    currency: 'FCFA',
+    period: 'mois',
+    color: 'emerald',
+    badge: 'Recommandé',
+    features: [
+      { label: 'Annonce en ligne', included: true },
+      { label: 'Photos (jusqu\'à 8)', included: true },
+      { label: 'Statistiques de vues', included: true },
+      { label: 'Statistiques de clics WhatsApp', included: true },
+      { label: 'Badge "Vérifié"', included: true },
+      { label: 'Mise en avant (Featured)', included: true },
+      { label: 'Priorité dans les résultats', included: true },
+      { label: 'Support prioritaire', included: true },
+    ],
+  },
+] as const
+
+export const PRO_FEATURES = [
+  'Statistiques de clics WhatsApp',
+  'Badge Vérifié',
+  'Mise en avant dans les résultats',
+  'Priorité de classement',
+  'Support prioritaire',
+] as const

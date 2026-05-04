@@ -49,6 +49,7 @@ export async function POST(req: NextRequest) {
       fullName: profile.fullName,
       role: profile.role,
       phone: profile.phone,
+      isSubscribed: profile.isSubscribed,
     };
 
     const response = NextResponse.json(user);

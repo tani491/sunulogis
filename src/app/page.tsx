@@ -45,6 +45,7 @@ export default function Home() {
           fullName: string | null
           role: string
           phone: string | null
+          isSubscribed: boolean
         } | null>(res)
         if (data && data.id) {
           setUser(data)

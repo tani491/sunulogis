@@ -1,9 +1,8 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getSessionUser, isAdminRole } from '@/lib/auth';
-import { COMMISSION_RATES, getCommissionAmount } from '@/lib/constants';
+import { getCommissionAmount } from '@/lib/constants';
 
-// GET - All commissions data (admin only)
 export async function GET() {
   try {
     const user = await getSessionUser();
@@ -13,15 +12,21 @@ export async function GET() {
 
     const establishments = await db.establishment.findMany({
       where: { isApproved: true },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        type: true,
+        city: true,
+        region: true,
+        commission: true,
+        paymentStatus: true,
         owner: { select: { id: true, fullName: true, email: true, phone: true } },
-        rooms: { select: { id: true } },
+        _count: { select: { rooms: true } },
       },
       orderBy: { createdAt: 'desc' },
     });
 
-    // Calculate commission for each establishment
-    const commissionsData = establishments.map((est) => {
+    const commissions = establishments.map((est) => {
       const expectedCommission = getCommissionAmount(est.type);
       return {
         id: est.id,
@@ -30,7 +35,7 @@ export async function GET() {
         city: est.city,
         region: est.region,
         owner: est.owner,
-        roomsCount: est.rooms.length,
+        roomsCount: est._count.rooms,
         expectedCommission,
         currentCommission: est.commission,
         paymentStatus: est.paymentStatus,
@@ -38,48 +43,43 @@ export async function GET() {
       };
     });
 
-    // Stats
-    const totalExpected = commissionsData.reduce((sum, e) => sum + e.expectedCommission, 0);
-    const totalPaid = commissionsData.filter((e) => e.isPaid).reduce((sum, e) => sum + e.expectedCommission, 0);
-    const totalUnpaid = totalExpected - totalPaid;
-    const unpaidCount = commissionsData.filter((e) => !e.isPaid).length;
+    const totalExpected = commissions.reduce((sum, e) => sum + e.expectedCommission, 0);
+    const totalPaid = commissions.filter(e => e.isPaid).reduce((sum, e) => sum + e.expectedCommission, 0);
 
     return NextResponse.json({
-      commissions: commissionsData,
+      commissions,
       stats: {
-        totalEstablishments: commissionsData.length,
+        totalEstablishments: commissions.length,
         totalExpected,
         totalPaid,
-        totalUnpaid,
-        unpaidCount,
+        totalUnpaid: totalExpected - totalPaid,
+        unpaidCount: commissions.filter(e => !e.isPaid).length,
       },
     });
   } catch (error) {
-    console.error('Commissions error:', error);
+    console.error('[COMMISSIONS_GET_ERROR]', error);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   }
 }
 
-// PUT - Update payment status (admin only)
-export async function PUT(request: Request) {
+export async function PUT(req: NextRequest) {
   try {
     const user = await getSessionUser();
     if (!user || !isAdminRole(user.role)) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 
-    const body = await request.json();
+    const body = await req.json();
     const { establishmentId, paymentStatus } = body;
 
-    if (!establishmentId || !paymentStatus) {
-      return NextResponse.json({ error: 'Données manquantes' }, { status: 400 });
+    if (!establishmentId || typeof establishmentId !== 'string') {
+      return NextResponse.json({ error: 'establishmentId requis' }, { status: 400 });
     }
 
     if (!['en_attente', 'paye'].includes(paymentStatus)) {
       return NextResponse.json({ error: 'Statut invalide' }, { status: 400 });
     }
 
-    // Get establishment type to determine commission amount
     const establishment = await db.establishment.findUnique({
       where: { id: establishmentId },
       select: { type: true },
@@ -91,7 +91,7 @@ export async function PUT(request: Request) {
 
     const commissionAmount = getCommissionAmount(establishment.type);
 
-    const updated = await db.establishment.update({
+    await db.establishment.update({
       where: { id: establishmentId },
       data: {
         paymentStatus,
@@ -99,9 +99,13 @@ export async function PUT(request: Request) {
       },
     });
 
-    return NextResponse.json({ message: 'Statut mis à jour', establishment: updated });
+    return NextResponse.json({
+      id: establishmentId,
+      paymentStatus,
+      commission: paymentStatus === 'paye' ? commissionAmount : 0,
+    });
   } catch (error) {
-    console.error('Update commission error:', error);
+    console.error('[COMMISSIONS_PUT_ERROR]', error);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   }
 }

@@ -74,7 +74,7 @@ export async function getSessionUser() {
 
     const profile = await db.profile.findUnique({
       where: { id: userId },
-      select: { id: true, email: true, fullName: true, role: true, phone: true },
+      select: { id: true, email: true, fullName: true, role: true, phone: true, isSubscribed: true },
     });
 
     if (profile?.role === 'admin') {

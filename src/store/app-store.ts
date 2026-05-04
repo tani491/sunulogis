@@ -29,6 +29,7 @@ interface CurrentUser {
   fullName: string | null;
   role: string;
   phone: string | null;
+  isSubscribed: boolean;
 }
 
 interface SearchFilters {

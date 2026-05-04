@@ -47,11 +47,24 @@ export function EstablishmentDetailPage() {
       const res = await fetch(`/api/establishments/${currentEstablishmentId}`)
       const data = await parseJsonResponse<Establishment>(res)
       setEstablishment(data)
+      void fetch(`/api/establishments/${currentEstablishmentId}/track`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'view' }),
+      })
     } catch (err) {
       console.error(err)
     } finally {
       setLoading(false)
     }
+  }
+
+  function trackWhatsApp(id: string) {
+    void fetch(`/api/establishments/${id}/track`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'whatsapp' }),
+    })
   }
 
   useEffect(() => {
@@ -372,6 +385,7 @@ export function EstablishmentDetailPage() {
                   variant="outline"
                   onClick={() => {
                     if (whatsappInfoLink) {
+                      trackWhatsApp(establishment.id)
                       window.open(whatsappInfoLink, '_blank')
                     }
                   }}

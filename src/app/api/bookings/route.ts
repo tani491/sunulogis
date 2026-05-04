@@ -1,45 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getSessionUser } from '@/lib/auth';
+import { rateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
-    const roomId = searchParams.get('roomId');
-    const status = searchParams.get('status');
-
     const user = await getSessionUser();
     if (!user) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
-    // Get all establishments owned by user
-    const userEstablishments = await db.establishment.findMany({
-      where: { ownerId: user.id },
-      select: { id: true },
-    });
-    const establishmentIds = userEstablishments.map(e => e.id);
-
-    if (establishmentIds.length === 0) {
-      return NextResponse.json([]);
-    }
-
-    // Get rooms in those establishments
-    const userRooms = await db.room.findMany({
-      where: { establishmentId: { in: establishmentIds } },
-      select: { id: true },
-    });
-    const roomIds = userRooms.map(r => r.id);
-
     const bookings = await db.booking.findMany({
       where: {
-        ...(roomIds.length > 0 ? { roomId: { in: roomIds } } : {}),
-        ...(roomId ? { roomId } : {}),
-        ...(status ? { status } : {}),
-      },
-      include: {
         room: {
-          select: { id: true, name: true, establishment: { select: { id: true, name: true } } },
+          establishment: { ownerId: user.id },
+        },
+      },
+      select: {
+        id: true,
+        guestName: true,
+        guestPhone: true,
+        startDate: true,
+        endDate: true,
+        status: true,
+        createdAt: true,
+        room: {
+          select: {
+            id: true,
+            name: true,
+            establishment: { select: { id: true, name: true } },
+          },
         },
       },
       orderBy: { createdAt: 'desc' },
@@ -47,12 +37,16 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(bookings);
   } catch (error) {
-    console.error('Get bookings error:', error);
+    console.error('[BOOKINGS_GET_ERROR]', error);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   }
 }
 
 export async function POST(req: NextRequest) {
+  const ip = getClientIp(req);
+  const rl = rateLimit(`booking:${ip}`, 10, 60 * 60 * 1000);
+  if (!rl.ok) return rateLimitResponse(rl.resetAt);
+
   try {
     const body = await req.json();
     const { roomId, guestName, guestPhone, startDate, endDate } = body;
@@ -61,16 +55,31 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Tous les champs sont requis' }, { status: 400 });
     }
 
+    if (typeof roomId !== 'string' || typeof guestName !== 'string' || typeof guestPhone !== 'string') {
+      return NextResponse.json({ error: 'Données invalides' }, { status: 400 });
+    }
+
     const start = new Date(startDate);
     const end = new Date(endDate);
 
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      return NextResponse.json({ error: 'Dates invalides' }, { status: 400 });
+    }
+
     if (start >= end) {
-      return NextResponse.json({ error: 'La date de départ doit être après la date d\'arrivée' }, { status: 400 });
+      return NextResponse.json(
+        { error: "La date de départ doit être après la date d'arrivée" },
+        { status: 400 }
+      );
+    }
+
+    if (start < new Date()) {
+      return NextResponse.json({ error: "La date d'arrivée ne peut pas être dans le passé" }, { status: 400 });
     }
 
     const room = await db.room.findUnique({
       where: { id: roomId },
-      include: { establishment: { select: { phone: true } } },
+      select: { id: true, isAvailable: true },
     });
 
     if (!room || !room.isAvailable) {
@@ -78,24 +87,27 @@ export async function POST(req: NextRequest) {
     }
 
     const booking = await db.booking.create({
-      data: {
-        roomId,
-        guestName,
-        guestPhone,
-        startDate: start,
-        endDate: end,
-        status: 'pending',
-      },
-      include: {
+      data: { roomId, guestName, guestPhone, startDate: start, endDate: end, status: 'pending' },
+      select: {
+        id: true,
+        guestName: true,
+        startDate: true,
+        endDate: true,
+        status: true,
         room: {
-          select: { id: true, name: true, pricePerNight: true, establishment: { select: { id: true, name: true, phone: true } } },
+          select: {
+            id: true,
+            name: true,
+            pricePerNight: true,
+            establishment: { select: { id: true, name: true } },
+          },
         },
       },
     });
 
-    return NextResponse.json(booking);
+    return NextResponse.json(booking, { status: 201 });
   } catch (error) {
-    console.error('Create booking error:', error);
+    console.error('[BOOKINGS_POST_ERROR]', error);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   }
 }
