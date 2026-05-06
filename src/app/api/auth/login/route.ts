@@ -32,10 +32,11 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    const dummyHash = '$2b$12$invalidhashfortimingequalisation.xxxxxxxxxxxxxxxxxxxxxx';
+    // Hash bcrypt valide (de "x") utilisé pour égaliser le timing quand l'utilisateur n'existe pas
+    const dummyHash = '$2b$12$abcdefghijklmnopqrstuOmJ4hYU9HgMBDR8JfOZ1V.G3sBKNUS9q';
     const passwordValid = user?.password
       ? await verifyPassword(password, user.password)
-      : await verifyPassword(password, dummyHash).then(() => false);
+      : await verifyPassword(password, dummyHash).then(() => false).catch(() => false);
 
     if (!user || !passwordValid) {
       return NextResponse.json({ error: 'Email ou mot de passe incorrect' }, { status: 401 });
