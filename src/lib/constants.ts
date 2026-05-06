@@ -66,15 +66,14 @@ export function getCommissionAmount(type: string): number {
   return COMMISSION_RATES[type] || 1000
 }
 
-// Wave payment info
+// Wave payment info — Wave Business (773615944)
 export const WAVE_INFO = {
-  number: '778057536',
+  number: '773615944',
   name: 'SunuLogis',
 }
 
-// Lien direct Wave Pay pour l'abonnement Sunu Pro (15 000 FCFA)
-export const WAVE_PAY_LINK =
-  'https://pay.wave.com/pay?amount=15000&currency=XOF&receive_amount=true&receiver=778057536&label=SunuLogis%20Pro'
+// Lien marchand Wave Business pour l'abonnement Sunu Pro (15 000 FCFA)
+export const WAVE_PAY_LINK = 'https://pay.wave.com/m/M_sn_sOEITXNn4hV_/c/sn/'
 
 // Prix abonnement Sunu Pro mensuel
 export const PRO_PRICE = 15000
@@ -148,7 +147,7 @@ export const VISIBILITY_PACKS = [
       { label: 'Mise en avant (Featured)', included: true },
       { label: 'Priorité dans les résultats', included: true },
       { label: 'Support prioritaire', included: true },
-      { label: 'Création de contenu pour vous + diffusion sur nos réseaux sociaux pour attirer des clients', included: true },
+      { label: 'Création de contenu pour vous tout en postant vos biens dans nos réseaux sociaux', included: true },
     ],
   },
 ] as const
