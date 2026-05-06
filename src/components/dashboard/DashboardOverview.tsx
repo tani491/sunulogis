@@ -176,21 +176,24 @@ export function DashboardOverview() {
         )}
       </div>
 
-      {/* Pro upsell banner for free users */}
+      {/* Pro upsell banner for free users — contraste renforcé */}
       {!isPro && (
-        <Card className="border-emerald-200 bg-linear-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-950/20 overflow-hidden">
+        <Card className="border-2 border-emerald-700 bg-linear-to-r from-emerald-100 to-teal-100 dark:from-emerald-900/50 dark:to-teal-900/50 overflow-hidden shadow-sm">
           <CardContent className="p-4">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-emerald-500/10 shrink-0">
-                <Star className="h-5 w-5 text-emerald-600" />
+              <div className="flex items-center justify-center w-11 h-11 rounded-full bg-emerald-700 shrink-0">
+                <Star className="h-5 w-5 text-white" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-emerald-800 dark:text-emerald-300">
+                <p className="font-bold text-base sm:text-lg text-emerald-950 dark:text-emerald-50">
                   Débloquez tout le potentiel de vos annonces
                 </p>
-                <div className="flex flex-wrap gap-1.5 mt-1.5">
+                <div className="flex flex-wrap gap-1.5 mt-2">
                   {PRO_FEATURES.map(f => (
-                    <span key={f} className="text-[11px] bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded-full">
+                    <span
+                      key={f}
+                      className="text-xs bg-emerald-700 text-white dark:bg-emerald-600 px-2.5 py-1 rounded-full font-semibold"
+                    >
                       {f}
                     </span>
                   ))}
@@ -198,7 +201,7 @@ export function DashboardOverview() {
               </div>
               <Button
                 size="sm"
-                className="shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white"
+                className="shrink-0 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold shadow-md"
                 onClick={() => setShowPlanModal(true)}
               >
                 Voir les plans

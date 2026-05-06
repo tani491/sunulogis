@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Home, LayoutDashboard, LogOut, Menu, Search, MapPin, Banknote, ChevronDown, User, Shield, BookOpen } from 'lucide-react';
+import { Home, LayoutDashboard, LogOut, Menu, Search, MapPin, Banknote, ChevronDown, User, Shield, BookOpen, ChevronLeft } from 'lucide-react';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 
 const regions = [
@@ -17,7 +17,8 @@ const regions = [
 ];
 
 export default function Navbar() {
-  const { currentUser, navigate, logout, currentView, searchFilters, setSearchFilters } = useAppStore();
+  const { currentUser, navigate, logout, currentView, searchFilters, setSearchFilters, goBack, viewHistory } = useAppStore();
+  const canGoBack = viewHistory.length > 0;
   const [mobileOpen, setMobileOpen] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -38,22 +39,38 @@ export default function Navbar() {
 <header className="sticky top-0 z-50 w-full bg-white/60 backdrop-blur-2xl border-b border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.08)]">
       <div className="container mx-auto flex h-19 items-center justify-between px-3 sm:h-20.5 sm:px-4 md:h-23">
         
-        {/* LOGO - Aiguillage precis selon le role */}
-        <button
-          onClick={() => navigate(currentUser ? (currentUser.role === 'admin' ? 'admin' : (currentUser.role === 'owner' ? 'dashboard' : 'home')) : 'landing')}
-          className="flex min-w-0 max-w-[calc(100vw-5.5rem)] items-center hover:opacity-80 transition-opacity sm:max-w-none"
-          aria-label="Retour a l'accueil SunuLogis"
-        >
-          <Image
-            src="/sunulogis-logo.jpeg"
-            alt="SunuLogis"
-            width={220}
-            height={88}
-            loading="eager"
-            sizes="(max-width: 359px) 136px, (max-width: 419px) 144px, (max-width: 639px) 160px, (max-width: 767px) 188px, 300px"
-            className="h-12 w-auto max-w-full object-contain min-[360px]:h-12.5 min-[420px]:h-13 sm:h-14.5 md:h-18"
-          />
-        </button>
+        {/* Bouton retour + Logo + Nom */}
+        <div className="flex min-w-0 items-center gap-1 sm:gap-2">
+          {canGoBack && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => goBack()}
+              aria-label="Page précédente"
+              className="h-9 w-9 shrink-0 rounded-full hover:bg-emerald-100 text-emerald-800"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
+          )}
+          <button
+            onClick={() => navigate(currentUser ? (currentUser.role === 'admin' ? 'admin' : (currentUser.role === 'owner' ? 'dashboard' : 'home')) : 'landing')}
+            className="flex min-w-0 max-w-[calc(100vw-7rem)] items-center gap-2 hover:opacity-80 transition-opacity sm:max-w-none"
+            aria-label="Aller à l'accueil SunuLogis"
+          >
+            <Image
+              src="/sunulogis-logo.jpeg"
+              alt="SunuLogis"
+              width={220}
+              height={88}
+              loading="eager"
+              sizes="(max-width: 359px) 40px, (max-width: 639px) 44px, 56px"
+              className="h-10 w-10 sm:h-11 sm:w-11 md:h-14 md:w-14 rounded-lg object-cover shrink-0"
+            />
+            <span className="font-extrabold tracking-tight text-emerald-900 text-xl sm:text-2xl md:text-3xl truncate">
+              SunuLogis
+            </span>
+          </button>
+        </div>
 
         {/* Desktop: Search filters (only on public pages) */}
         {isPublicPage && (

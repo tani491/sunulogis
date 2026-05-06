@@ -42,12 +42,15 @@ interface SearchFilters {
 
 interface AppState {
   currentView: View;
+  viewHistory: View[];
   currentUser: CurrentUser | null;
   currentEstablishmentId: string | null;
   currentBlogSlug: string | null;
   searchFilters: SearchFilters;
   isLoading: boolean;
   navigate: (view: View) => void;
+  goBack: () => void;
+  canGoBack: () => boolean;
   setUser: (user: CurrentUser | null) => void;
   logout: () => void;
   selectEstablishment: (id: string) => void;
@@ -56,8 +59,11 @@ interface AppState {
   setLoading: (loading: boolean) => void;
 }
 
-export const useAppStore = create<AppState>((set) => ({
+const MAX_HISTORY = 20;
+
+export const useAppStore = create<AppState>((set, get) => ({
   currentView: 'landing',
+  viewHistory: [],
   currentUser: null,
   currentEstablishmentId: null,
   currentBlogSlug: null,
@@ -68,11 +74,45 @@ export const useAppStore = create<AppState>((set) => ({
     type: 'all',
   },
   isLoading: true,
-  navigate: (view) => startTransition(() => set({ currentView: view })),
+  navigate: (view) =>
+    startTransition(() =>
+      set((state) => {
+        if (state.currentView === view) return state;
+        const next = [...state.viewHistory, state.currentView];
+        const trimmed = next.length > MAX_HISTORY ? next.slice(-MAX_HISTORY) : next;
+        return { currentView: view, viewHistory: trimmed };
+      })
+    ),
+  goBack: () =>
+    startTransition(() =>
+      set((state) => {
+        if (state.viewHistory.length === 0) return state;
+        const previous = state.viewHistory[state.viewHistory.length - 1];
+        return {
+          currentView: previous,
+          viewHistory: state.viewHistory.slice(0, -1),
+        };
+      })
+    ),
+  canGoBack: () => get().viewHistory.length > 0,
   setUser: (user) => set({ currentUser: user, isLoading: false }),
-  logout: () => startTransition(() => set({ currentUser: null, currentView: 'landing' })),
-  selectEstablishment: (id) => startTransition(() => set({ currentEstablishmentId: id, currentView: 'establishment-detail' })),
-  selectBlogPost: (slug) => startTransition(() => set({ currentBlogSlug: slug, currentView: 'blog-post' })),
+  logout: () => startTransition(() => set({ currentUser: null, currentView: 'landing', viewHistory: [] })),
+  selectEstablishment: (id) =>
+    startTransition(() =>
+      set((state) => ({
+        currentEstablishmentId: id,
+        currentView: 'establishment-detail',
+        viewHistory: [...state.viewHistory, state.currentView].slice(-MAX_HISTORY),
+      }))
+    ),
+  selectBlogPost: (slug) =>
+    startTransition(() =>
+      set((state) => ({
+        currentBlogSlug: slug,
+        currentView: 'blog-post',
+        viewHistory: [...state.viewHistory, state.currentView].slice(-MAX_HISTORY),
+      }))
+    ),
   setSearchFilters: (filters) => set((state) => ({
     searchFilters: { ...state.searchFilters, ...filters },
   })),

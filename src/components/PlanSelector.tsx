@@ -47,7 +47,13 @@ export function PlanSelector({ onSelectPro, compact = false }: PlanSelectorProps
     } catch {
       // on continue même si la requête échoue : le paiement Wave reste prioritaire
     }
-    window.location.href = WAVE_PAY_LINK
+    // URL brute, sans encodage — ouverture en nouvel onglet, fallback même fenêtre
+    const opened = window.open(WAVE_PAY_LINK, '_blank', 'noopener')
+    if (!opened) {
+      window.location.href = WAVE_PAY_LINK
+    } else {
+      setRedirecting(false)
+    }
   }
 
   const handleDeclare = async (e: React.FormEvent) => {

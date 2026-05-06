@@ -181,7 +181,7 @@ export function AdminCommissions() {
                           year: 'numeric',
                         })}
                       </TableCell>
-                      <TableCell className="text-xs text-muted-foreground max-w-[180px] truncate">
+                      <TableCell className="text-xs text-muted-foreground max-w-45 truncate">
                         {p.transactionDetails || '—'}
                       </TableCell>
                       <TableCell className="text-right font-semibold">
