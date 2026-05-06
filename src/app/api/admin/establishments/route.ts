@@ -9,6 +9,7 @@ function parseEstablishment(e: any) {
     minPrice: e.rooms && e.rooms.length > 0
       ? Math.min(...e.rooms.filter((r: any) => r.isAvailable).map((r: any) => r.pricePerNight))
       : null,
+    owner: e.owner ? { ...e.owner, fullName: e.owner.name ?? e.owner.fullName } : e.owner,
   };
 }
 
@@ -21,7 +22,7 @@ export async function GET() {
 
     const establishments = await db.establishment.findMany({
       include: {
-        owner: { select: { id: true, fullName: true, email: true, phone: true } },
+        owner: { select: { id: true, name: true, email: true, phone: true } },
         rooms: { select: { id: true, isAvailable: true, pricePerNight: true } },
       },
       orderBy: { createdAt: 'desc' },
@@ -60,7 +61,7 @@ export async function PUT(req: NextRequest) {
         ...(isSuspended !== undefined && { isSuspended }),
       },
       include: {
-        owner: { select: { id: true, fullName: true, email: true } },
+        owner: { select: { id: true, name: true, email: true } },
         rooms: { select: { id: true } },
       },
     });

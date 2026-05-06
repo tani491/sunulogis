@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    await db.profile.update({
+    await db.user.update({
       where: { id: establishment.ownerId },
       data: { isSubscribed: true },
     });

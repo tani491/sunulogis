@@ -18,7 +18,7 @@ export async function GET() {
       totalRooms,
       totalBookings,
     ] = await Promise.all([
-      db.profile.count({ where: { role: 'owner' } }),
+      db.user.count({ where: { role: 'owner' } }),
       db.establishment.count(),
       db.establishment.count({ where: { isApproved: true, isSuspended: false } }),
       db.establishment.count({ where: { isApproved: false } }),

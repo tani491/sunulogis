@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
 
     if (!establishment.paymentPending) {
       return NextResponse.json(
-        { error: 'Aucune déclaration de paiement en attente pour cet établissement' },
+        { error: 'Aucune déclaration de paiement en attente' },
         { status: 409 }
       );
     }
@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
           boostExpiry,
         },
       }),
-      db.profile.update({
+      db.user.update({
         where: { id: establishment.ownerId },
         data: { isSubscribed: true },
       }),

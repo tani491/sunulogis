@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
         ...(category && category !== 'all' ? { category } : {}),
       },
       include: {
-        author: { select: { id: true, fullName: true, email: true } },
+        author: { select: { id: true, name: true, email: true } },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
         authorId: user.id,
       },
       include: {
-        author: { select: { id: true, fullName: true, email: true } },
+        author: { select: { id: true, name: true, email: true } },
       },
     });
 

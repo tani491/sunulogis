@@ -1,34 +1,43 @@
-import { NextResponse } from "next/server";
-import { db } from "@/lib/db"; // Utilisation de 'db' pour correspondre à ton projet
-import bcrypt from "bcryptjs";
+import { NextResponse } from 'next/server';
+import { db } from '@/lib/db';
+import { hashPassword } from '@/lib/auth';
+
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'admin@sunulogis.sn';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? 'Admin@SunuLogis2026!';
 
 export async function GET() {
-  try {
-    // 1. On crée le mot de passe crypté
-    const hashedPassword = await bcrypt.hash("TonMotDePasseDakar2026!", 10);
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ error: 'Route désactivée en production' }, { status: 403 });
+  }
 
-    // 2. On crée (ou met à jour) l'Admin dans la table User
+  try {
+    const hashed = await hashPassword(ADMIN_PASSWORD);
+
     const admin = await db.user.upsert({
-      where: { email: "ton-email@exemple.com" }, // METS TON EMAIL ICI
+      where: { email: ADMIN_EMAIL },
       update: {
-        role: "admin",
-        password: hashedPassword,
+        name: 'Admin SunuLogis',
+        role: 'admin',
+        password: hashed,
+        isActive: true,
       },
       create: {
-        email: "ton-email@exemple.com", // METS TON EMAIL ICI
-        name: "Admin SunuLogis",
-        password: hashedPassword,
-        role: "admin",
+        email: ADMIN_EMAIL,
+        name: 'Admin SunuLogis',
+        password: hashed,
+        role: 'admin',
+        isActive: true,
       },
+      select: { id: true, email: true, role: true },
     });
 
-    return NextResponse.json({ 
-      success: true, 
-      message: "Base de données initialisée !", 
-      admin: admin.email 
+    return NextResponse.json({
+      success: true,
+      message: 'Admin créé / mis à jour avec succès',
+      admin: admin.email,
     });
   } catch (error) {
-    console.error("Seed Error:", error);
-    return NextResponse.json({ error: "Erreur de seeding" }, { status: 500 });
+    console.error('[SEED_ERROR]', error);
+    return NextResponse.json({ error: 'Erreur de seeding' }, { status: 500 });
   }
 }

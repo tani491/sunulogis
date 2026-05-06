@@ -32,7 +32,7 @@ export async function GET() {
         owner: {
           select: {
             id: true,
-            fullName: true,
+            name: true,
             email: true,
             phone: true,
           },
@@ -48,6 +48,8 @@ export async function GET() {
 
     const subscriptions = establishments.map(e => ({
       ...e,
+      fullName: e.owner?.name,
+      owner: e.owner ? { ...e.owner, fullName: e.owner.name } : null,
       subscriptionActive: e.isFeatured && e.boostExpiry ? isAfter(e.boostExpiry, now) : false,
       subscriptionPrice: PRO_PRICE,
     }));

@@ -9,60 +9,58 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  name          String?   // fullName
-  password      String?
-  role          String    @default("owner") // "client", "owner", "admin"
-  phone         String?
-  isActive      Boolean   @default(true)
-  isSubscribed  Boolean   @default(false)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  password     String?
+  role         String   @default("owner")
+  phone        String?
+  isActive     Boolean  @default(true)
+  isSubscribed Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   establishments Establishment[]
   posts          BlogPost[]
 
   @@index([role])
   @@index([isActive])
-} 
-
+}
 
 model Establishment {
-  id              String   @id @default(cuid())
-  ownerId         String
-  name            String
-  type            String   @default("auberge")
-  description     String   @default("")
-  city            String
-  region          String   @default("")
-  address         String   @default("")
-  images          String   @default("[]")
-  website         String?
-  phone           String?
-  
-  // --- SYSTÈME FREEMIUM (PRO) ---
-  isFeatured      Boolean  @default(false)
-  isVerified      Boolean  @default(false)
-  paymentPending  Boolean  @default(false)
-  boostExpiry     DateTime?
-  viewsCount      Int      @default(0)
-  clicksCount     Int      @default(0)
+  id             String    @id @default(cuid())
+  ownerId        String
+  name           String
+  type           String    @default("auberge")
+  description    String    @default("")
+  city           String
+  region         String    @default("")
+  address        String    @default("")
+  images         String    @default("[]")
+  website        String?
+  phone          String?
+  isFeatured     Boolean   @default(false)
+  isVerified     Boolean   @default(false)
+  paymentPending Boolean   @default(false)
+  boostExpiry    DateTime?
+  viewsCount     Int       @default(0)
+  clicksCount    Int       @default(0)
+  isApproved     Boolean   @default(false)
+  isSuspended    Boolean   @default(false)
+  commission     Int       @default(0)
+  paymentStatus  String    @default("en_attente")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
-  isApproved      Boolean  @default(false)
-  isSuspended     Boolean  @default(false)
-  commission      Int      @default(0)
-  paymentStatus   String   @default("en_attente")
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  owner User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  owner User  @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   rooms Room[]
 
   @@index([ownerId])
   @@index([type])
   @@index([city])
   @@index([isApproved])
+  @@index([isFeatured])
+  @@index([paymentStatus])
 }
 
 model Room {
@@ -79,6 +77,7 @@ model Room {
   bookings      Booking[]
 
   @@index([establishmentId])
+  @@index([isAvailable])
 }
 
 model Booking {
@@ -93,26 +92,50 @@ model Booking {
   updatedAt  DateTime @updatedAt
 
   room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@index([roomId])
+  @@index([status])
+  @@index([startDate])
 }
 
 model BlogPost {
   id          String   @id @default(cuid())
   title       String
   slug        String   @unique
+  excerpt     String   @default("")
   content     String   @default("")
+  coverImage  String?
+  category    String   @default("general")
+  isPublished Boolean  @default(false)
   authorId    String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([slug])
+  @@index([category])
+  @@index([isPublished])
+  @@index([authorId])
+}
+
+model Subscriber {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  consentStatus Boolean  @default(true)
+  source        String   @default("footer")
+  createdAt     DateTime @default(now())
+
+  @@index([email])
+  @@index([source])
 }
 
 model PageView {
   id        String   @id @default(cuid())
   path      String
   referrer  String?
-  source    String   @default("direct") // "direct", "search", "social", "referral"
-  medium    String?  // "google", "facebook", "twitter", "instagram", "linkedin", "tiktok", etc.
+  source    String   @default("direct")
+  medium    String?
   country   String?
   createdAt DateTime @default(now())
 
@@ -121,4 +144,3 @@ model PageView {
   @@index([country])
   @@index([createdAt])
 }
-// Garde tes modèles Subscriber, PageView si tu en as besoins

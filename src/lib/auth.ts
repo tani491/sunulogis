@@ -5,9 +5,6 @@ import { db } from './db';
 
 const BCRYPT_ROUNDS = 12;
 
-// SESSION_SECRET must be set in production via environment variable.
-// Generate one with: node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
-// Evaluated lazily so `next build` does not throw at module load time.
 function getSecret(): string {
   const s = process.env.SESSION_SECRET;
   if (!s && process.env.NODE_ENV === 'production') {
@@ -16,8 +13,6 @@ function getSecret(): string {
   return s ?? 'dev-only-secret-replace-in-production';
 }
 
-// ── Password helpers ──────────────────────────────────────────────────────────
-
 export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, BCRYPT_ROUNDS);
 }
@@ -25,10 +20,6 @@ export async function hashPassword(password: string): Promise<string> {
 export async function verifyPassword(password: string, hash: string): Promise<boolean> {
   return bcrypt.compare(password, hash);
 }
-
-// ── HMAC-signed session token ─────────────────────────────────────────────────
-// Format: <userId>.<issuedAt>.<hmac-sha256>
-// Prevents cookie forgery: knowing a userId alone is not enough to forge a session.
 
 export function createSessionToken(userId: string): string {
   const secret = getSecret();
@@ -48,20 +39,16 @@ function verifySessionToken(token: string): string | null {
   try {
     const sigBuf = Buffer.from(sig, 'hex');
     const expBuf = Buffer.from(expected, 'hex');
-    // Constant-time comparison to prevent timing attacks
     if (sigBuf.length !== expBuf.length) return null;
     if (!timingSafeEqual(sigBuf, expBuf)) return null;
   } catch {
     return null;
   }
 
-  // payload is "<userId>.<issuedAt>" — extract userId (may itself contain dots for UUID)
   const firstDot = payload.indexOf('.');
   if (firstDot === -1) return null;
   return payload.slice(0, firstDot);
 }
-
-// ── Session helpers ───────────────────────────────────────────────────────────
 
 export async function getSessionUser() {
   try {
@@ -72,17 +59,29 @@ export async function getSessionUser() {
     const userId = verifySessionToken(session.value);
     if (!userId) return null;
 
-    const profile = await db.profile.findUnique({
+    const user = await db.user.findUnique({
       where: { id: userId },
-      select: { id: true, email: true, fullName: true, role: true, phone: true, isSubscribed: true },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        phone: true,
+        isActive: true,
+        isSubscribed: true,
+      },
     });
 
-    if (profile?.role === 'admin') {
-      await db.profile.update({ where: { id: profile.id }, data: { role: 'admin' } });
-      return { ...profile, role: 'admin' };
-    }
+    if (!user || !user.isActive) return null;
 
-    return profile;
+    return {
+      id: user.id,
+      email: user.email,
+      fullName: user.name,
+      role: user.role,
+      phone: user.phone,
+      isSubscribed: user.isSubscribed,
+    };
   } catch {
     return null;
   }
@@ -97,13 +96,11 @@ export function getCookieOptions() {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax' as const,
-    // 24-hour session (was 7 days — reduced to limit exposure window)
     maxAge: 60 * 60 * 24,
     path: '/',
   };
 }
 
-/** Return cookie options that immediately expire the session cookie. */
 export function getExpiredCookieOptions() {
   return { ...getCookieOptions(), maxAge: 0 };
 }

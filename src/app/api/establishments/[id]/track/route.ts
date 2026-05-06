@@ -22,6 +22,15 @@ export async function POST(
       return NextResponse.json({ ok: true });
     }
 
+    const exists = await db.establishment.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+
+    if (!exists) {
+      return NextResponse.json({ ok: true });
+    }
+
     await db.establishment.update({
       where: { id },
       data: type === 'view'

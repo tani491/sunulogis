@@ -26,7 +26,7 @@ export async function PATCH(req: NextRequest) {
   const { currentPassword, newPassword } = parsed.data;
 
   try {
-    const profile = await db.profile.findUnique({ where: { id: user.id } });
+    const profile = await db.user.findUnique({ where: { id: user.id } });
     if (!profile?.password) {
       return NextResponse.json({ error: 'Utilisateur introuvable' }, { status: 404 });
     }
@@ -36,7 +36,7 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: 'Mot de passe actuel incorrect' }, { status: 401 });
     }
 
-    await db.profile.update({
+    await db.user.update({
       where: { id: user.id },
       data: { password: await hashPassword(newPassword) },
     });

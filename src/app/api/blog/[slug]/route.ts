@@ -8,7 +8,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
     const post = await db.blogPost.findUnique({
       where: { slug },
       include: {
-        author: { select: { id: true, fullName: true, email: true } },
+        author: { select: { id: true, name: true, email: true } },
       },
     });
 
@@ -45,7 +45,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ slug
         ...(isPublished !== undefined ? { isPublished } : {}),
       },
       include: {
-        author: { select: { id: true, fullName: true, email: true } },
+        author: { select: { id: true, name: true, email: true } },
       },
     });
 

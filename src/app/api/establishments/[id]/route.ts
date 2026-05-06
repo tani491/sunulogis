@@ -9,6 +9,7 @@ function parseEstablishment(e: any) {
     minPrice: e.rooms && e.rooms.length > 0
       ? Math.min(...e.rooms.filter((r: any) => r.isAvailable).map((r: any) => r.pricePerNight))
       : null,
+    owner: e.owner ? { ...e.owner, fullName: e.owner.name ?? e.owner.fullName } : e.owner,
   };
 }
 
@@ -19,7 +20,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       where: { id },
       include: {
         rooms: { orderBy: { createdAt: 'desc' } },
-        owner: { select: { id: true, fullName: true, phone: true } },
+        owner: { select: { id: true, name: true, phone: true } },
       },
     });
 

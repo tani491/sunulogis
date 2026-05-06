@@ -22,6 +22,7 @@ function parseEstablishment(e: any) {
     minPrice: e.rooms && e.rooms.length > 0
       ? Math.min(...e.rooms.filter((r: any) => r.isAvailable).map((r: any) => r.pricePerNight))
       : null,
+    owner: e.owner ? { ...e.owner, fullName: e.owner.name ?? e.owner.fullName } : e.owner,
   };
 }
 
@@ -60,7 +61,7 @@ export async function GET(req: NextRequest) {
         },
         include: {
           rooms: true,
-          owner: { select: { id: true, fullName: true } },
+          owner: { select: { id: true, name: true } },
         },
         orderBy: { createdAt: 'desc' },
       });
@@ -102,7 +103,7 @@ export async function GET(req: NextRequest) {
             } : {}),
           },
         },
-        owner: { select: { id: true, fullName: true } },
+        owner: { select: { id: true, name: true } },
       },
       orderBy: { createdAt: 'desc' },
     });

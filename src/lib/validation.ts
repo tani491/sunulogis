@@ -1,7 +1,5 @@
 import { z } from 'zod';
 
-// ── Auth ──────────────────────────────────────────────────────────────────────
-
 export const loginSchema = z.object({
   email: z.string().email('Email invalide').max(254),
   password: z.string().min(1, 'Mot de passe requis').max(128),
@@ -17,22 +15,17 @@ const passwordSchema = z
   );
 
 export const registerSchema = z.object({
-  email: z.string().email("Email invalide"),
-  fullName: z.string().min(2, "Nom requis"),
-  role: z.enum(['client', 'owner', 'admin']),
+  email: z.string().email('Email invalide').max(254),
+  fullName: z.string().min(2, 'Nom requis').max(200),
+  role: z.enum(['client', 'owner']),
   password: z.string().optional().or(z.literal('')),
-  username: z.string().optional().or(z.literal('')),
-  phone: z.string().optional().or(z.literal('')),
-  // La nouvelle ligne :
-  isSubscribed: z.boolean().optional(),
-})
+  phone: z.string().max(20).optional().or(z.literal('')),
+});
 
 export const changePasswordSchema = z.object({
   currentPassword: z.string().min(1, 'Mot de passe actuel requis').max(128),
   newPassword: passwordSchema,
 });
-
-// ── Establishments ────────────────────────────────────────────────────────────
 
 export const establishmentSchema = z.object({
   name: z.string().min(1, 'Nom requis').max(200),
@@ -50,8 +43,6 @@ export const establishmentSchema = z.object({
     .optional(),
   images: z.array(z.string().url()).max(10).optional(),
 });
-
-// ── Types ─────────────────────────────────────────────────────────────────────
 
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
