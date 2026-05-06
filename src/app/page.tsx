@@ -87,8 +87,9 @@ export default function Home() {
       'admin-blog': <AdminLayout />,
       'admin-subscribers': <AdminLayout />,
       'admin-commissions': <AdminLayout />,
-      'admin-settings': <AdminLayout />,  
-      'admin-analytics': <AdminLayout />
+      'admin-settings': <AdminLayout />,
+      'admin-analytics': <AdminLayout />,
+      'admin-subscription-requests': <AdminLayout />,
     }
     return views[currentView] || <LandingPage />
   }

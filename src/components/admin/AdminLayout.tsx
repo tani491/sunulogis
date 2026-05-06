@@ -3,7 +3,7 @@
 import { useAppStore, type View } from '@/store/app-store'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { LayoutDashboard, Building2, Users, Menu, X, Shield, Newspaper, Mail, Banknote, Settings, BarChart2 } from 'lucide-react'
+import { LayoutDashboard, Building2, Users, Menu, X, Shield, Newspaper, Mail, Settings, BarChart2, CreditCard, Zap } from 'lucide-react'
 import { useState } from 'react'
 import { AdminOverview } from './AdminOverview'
 import { AdminEstablishments } from './AdminEstablishments'
@@ -13,8 +13,9 @@ import { AdminSubscribers } from './AdminSubscribers'
 import { AdminCommissions } from './AdminCommissions'
 import { AdminSettings } from './AdminSettings'
 import { AdminAnalytics } from './AdminAnalytics'
+import { AdminSubscriptionRequests } from './AdminSubscriptionRequests'
 
-type SubView = 'admin' | 'admin-stats' | 'admin-establishments' | 'admin-users' | 'admin-blog' | 'admin-subscribers' | 'admin-commissions' | 'admin-settings' | 'admin-analytics'
+type SubView = 'admin' | 'admin-stats' | 'admin-establishments' | 'admin-users' | 'admin-blog' | 'admin-subscribers' | 'admin-commissions' | 'admin-settings' | 'admin-analytics' | 'admin-subscription-requests'
 
 interface SidebarContentProps {
   subView: SubView
@@ -27,7 +28,8 @@ function SidebarContent({ subView, onNavigate, onCloseMobile }: SidebarContentPr
     { view: 'admin', label: 'Vue d\'ensemble', icon: <LayoutDashboard className="h-4 w-4" /> },
     { view: 'admin-analytics', label: 'Analytiques', icon: <BarChart2 className="h-4 w-4" /> },
     { view: 'admin-establishments', label: 'Établissements', icon: <Building2 className="h-4 w-4" /> },
-    { view: 'admin-commissions', label: 'Commissions', icon: <Banknote className="h-4 w-4" /> },
+    { view: 'admin-subscription-requests', label: 'Demandes Pro', icon: <CreditCard className="h-4 w-4" /> },
+    { view: 'admin-commissions', label: 'Revenus Pro', icon: <Zap className="h-4 w-4" /> },
     { view: 'admin-users', label: 'Utilisateurs', icon: <Users className="h-4 w-4" /> },
     { view: 'admin-blog', label: 'Blog', icon: <Newspaper className="h-4 w-4" /> },
     { view: 'admin-subscribers', label: 'Newsletter', icon: <Mail className="h-4 w-4" /> },
@@ -63,7 +65,8 @@ const navLabels: Record<SubView, string> = {
   'admin-users': 'Utilisateurs',
   'admin-blog': 'Blog',
   'admin-subscribers': 'Newsletter',
-  'admin-commissions': 'Commissions',
+  'admin-commissions': 'Revenus Pro',
+  'admin-subscription-requests': 'Demandes Pro',
   'admin-settings': 'Paramètres',
 }
 
@@ -87,6 +90,8 @@ export function AdminLayout() {
         return <AdminSubscribers />
       case 'admin-commissions':
         return <AdminCommissions />
+      case 'admin-subscription-requests':
+        return <AdminSubscriptionRequests />
       case 'admin-settings':
         return <AdminSettings />
       case 'admin-stats':

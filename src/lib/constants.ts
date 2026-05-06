@@ -72,6 +72,13 @@ export const WAVE_INFO = {
   name: 'SunuLogis',
 }
 
+// Lien direct Wave Pay pour l'abonnement Sunu Pro (15 000 FCFA)
+export const WAVE_PAY_LINK =
+  'https://pay.wave.com/pay?amount=15000&currency=XOF&receive_amount=true&receiver=778057536&label=SunuLogis%20Pro'
+
+// Prix abonnement Sunu Pro mensuel
+export const PRO_PRICE = 15000
+
 // Payment statuses
 export const PAYMENT_STATUSES = {
   en_attente: 'En attente',
@@ -141,6 +148,7 @@ export const VISIBILITY_PACKS = [
       { label: 'Mise en avant (Featured)', included: true },
       { label: 'Priorité dans les résultats', included: true },
       { label: 'Support prioritaire', included: true },
+      { label: 'Création de contenu pour vous + diffusion sur nos réseaux sociaux pour attirer des clients', included: true },
     ],
   },
 ] as const
@@ -151,4 +159,5 @@ export const PRO_FEATURES = [
   'Mise en avant dans les résultats',
   'Priorité de classement',
   'Support prioritaire',
+  'Création de contenu + diffusion réseaux sociaux',
 ] as const

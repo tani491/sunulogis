@@ -21,7 +21,8 @@ export type View =
   | 'admin-subscribers'
   | 'admin-commissions'
   | 'admin-settings'
-  | 'admin-analytics';
+  | 'admin-analytics'
+  | 'admin-subscription-requests';
 
 interface CurrentUser {
   id: string;

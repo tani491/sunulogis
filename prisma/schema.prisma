@@ -20,11 +20,28 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  establishments Establishment[]
-  posts          BlogPost[]
+  establishments       Establishment[]
+  posts                BlogPost[]
+  subscriptionRequests SubscriptionRequest[]
 
   @@index([role])
   @@index([isActive])
+}
+
+model SubscriptionRequest {
+  id                 String   @id @default(cuid())
+  userId             String
+  amount             Int      @default(15000)
+  status             String   @default("PENDING")
+  transactionDetails String   @default("")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
 }
 
 model Establishment {
