@@ -43,7 +43,7 @@ export async function PUT(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { establishmentId, isApproved, isSuspended, isFeatured } = body;
+    const { establishmentId, isApproved, isSuspended } = body;
 
     if (!establishmentId) {
       return NextResponse.json({ error: 'establishmentId requis' }, { status: 400 });
@@ -59,7 +59,6 @@ export async function PUT(req: NextRequest) {
       data: {
         ...(isApproved !== undefined && { isApproved }),
         ...(isSuspended !== undefined && { isSuspended }),
-        ...(isFeatured !== undefined && { isFeatured }),
       },
       include: {
         owner: { select: { id: true, name: true, email: true } },

@@ -26,13 +26,27 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   try {
     const user = await getSessionUser();
-    if (!user || !isAdminRole(user.role)) {
+    if (!user) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 
     const { slug } = await params;
     const body = await req.json();
-    const { title, excerpt, content, coverImage, category, isPublished, status } = body;
+    const { title, excerpt, content, coverImage, category, isPublished } = body;
+
+    const existing = await db.blogPost.findUnique({
+      where: { slug },
+      select: { authorId: true },
+    });
+
+    if (!existing) {
+      return NextResponse.json({ error: 'Article non trouvé' }, { status: 404 });
+    }
+
+    const canEdit = isAdminRole(user.role) || (user.role === 'owner' && user.isSubscribed && existing.authorId === user.id);
+    if (!canEdit) {
+      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+    }
 
     const post = await db.blogPost.update({
       where: { slug },
@@ -42,8 +56,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ slug
         ...(content !== undefined ? { content } : {}),
         ...(coverImage !== undefined ? { coverImage } : {}),
         ...(category !== undefined ? { category } : {}),
-        ...(isPublished !== undefined ? { isPublished } : {}),
-        ...(status !== undefined ? { status } : {}),
+        ...(isAdminRole(user.role) && isPublished !== undefined ? { isPublished } : {}),
+        ...(user.role === 'owner' ? { isPublished: true } : {}),
       },
       include: {
         author: { select: { id: true, name: true, email: true } },
@@ -60,11 +74,25 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ slug
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   try {
     const user = await getSessionUser();
-    if (!user || !isAdminRole(user.role)) {
+    if (!user) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 
     const { slug } = await params;
+    const existing = await db.blogPost.findUnique({
+      where: { slug },
+      select: { authorId: true },
+    });
+
+    if (!existing) {
+      return NextResponse.json({ error: 'Article non trouvé' }, { status: 404 });
+    }
+
+    const canDelete = isAdminRole(user.role) || (user.role === 'owner' && user.isSubscribed && existing.authorId === user.id);
+    if (!canDelete) {
+      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+    }
+
     await db.blogPost.delete({ where: { slug } });
 
     return NextResponse.json({ message: 'Article supprimé' });

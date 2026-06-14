@@ -76,6 +76,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
           ...(body.website !== undefined && { website: body.website }),
           ...(body.phone !== undefined && { phone: body.phone }),
           ...(body.images !== undefined && { images: JSON.stringify(body.images) }),
+          ...(body.isFeatured !== undefined && existing.isApproved && { isFeatured: body.isFeatured }),
         },
         include: { rooms: true },
       });

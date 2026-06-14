@@ -6,6 +6,24 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const category = searchParams.get('category');
+    const mine = searchParams.get('mine') === 'true';
+
+    if (mine) {
+      const user = await getSessionUser();
+      if (!user || !(user.role === 'owner' && user.isSubscribed)) {
+        return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+      }
+
+      const posts = await db.blogPost.findMany({
+        where: { authorId: user.id },
+        include: {
+          author: { select: { id: true, name: true, email: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      return NextResponse.json(posts);
+    }
 
     const posts = await db.blogPost.findMany({
       where: {
@@ -53,8 +71,7 @@ export async function POST(req: NextRequest) {
         content: content || '',
         coverImage: coverImage || null,
         category: category || 'general',
-        isPublished: isAdminRole(user.role) ? Boolean(isPublished) : false,
-        status: isAdminRole(user.role) && isPublished ? 'APPROVED' : 'PENDING',
+        isPublished: isAdminRole(user.role) ? Boolean(isPublished) : true,
         authorId: user.id,
       },
       include: {

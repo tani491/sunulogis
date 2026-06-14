@@ -140,7 +140,6 @@ model BlogPost {
   coverImage  String?
   category    String   @default("general")
   isPublished Boolean  @default(false)
-  status      String   @default("PENDING")
   authorId    String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -150,7 +149,6 @@ model BlogPost {
   @@index([slug])
   @@index([category])
   @@index([isPublished])
-  @@index([status])
   @@index([authorId])
 }
 

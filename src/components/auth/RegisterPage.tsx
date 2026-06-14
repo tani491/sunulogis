@@ -30,15 +30,17 @@ export function RegisterPage() {
       return
     }
 
+    if (!password) {
+      toast.error('Le mot de passe est requis')
+      return
+    }
+
+    if (password.length < 6) {
+      toast.error('Le mot de passe doit contenir au moins 6 caractères')
+      return
+    }
+
     if (role === 'owner') {
-      if (!password) {
-        toast.error('Le mot de passe est requis pour les propriétaires')
-        return
-      }
-      if (password.length < 6) {
-        toast.error('Le mot de passe doit contenir au moins 6 caractères')
-        return
-      }
       if (password !== confirmPassword) {
         toast.error('Les mots de passe ne correspondent pas')
         return
@@ -46,7 +48,7 @@ export function RegisterPage() {
     }
 
     // Verification de la checkbox Marketing/Conditions
-    if (!isSubscribed) {
+    if (role === 'owner' && !isSubscribed) {
       toast.error("Veuillez accepter de recevoir nos actualites pour creer un compte. Cochez en bas.");
       setLoading(false);
       return;
@@ -60,8 +62,8 @@ export function RegisterPage() {
         body: JSON.stringify({
           email,
           fullName,
-          phone,
-          password: role === 'owner' ? password : undefined,
+          phone: role === 'owner' ? phone : undefined,
+          password,
           role,
           isSubscribed,
         }),
@@ -161,55 +163,57 @@ export function RegisterPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="votre@email.sn"
+                placeholder="votre@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
 
+            {role === 'owner' && (
+              <div className="space-y-2">
+                <Label htmlFor="phone" className="flex items-center gap-2">
+                  <Phone className="h-3.5 w-3.5" />
+                  Telephone *
+                </Label>
+                <Input
+                  id="phone"
+                  placeholder="221770000000"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  required
+                />
+              </div>
+            )}
+
             <div className="space-y-2">
-              <Label htmlFor="phone" className="flex items-center gap-2">
-                <Phone className="h-3.5 w-3.5" />
-                Telephone {role === 'owner' ? '*' : ''}
+              <Label htmlFor="password" className="flex items-center gap-2">
+                <Lock className="h-3.5 w-3.5" />
+                Mot de passe *
               </Label>
-              <Input
-                id="phone"
-                placeholder="221770000000"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                required={role === 'owner'}
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pr-11"
+                  required
+                />
+                <button
+                  type="button"
+                  aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                  onClick={() => setShowPassword((value) => !value)}
+                  className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-muted-foreground hover:text-foreground"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
             </div>
 
             {role === 'owner' && (
               <>
-                <div className="space-y-2">
-                  <Label htmlFor="password" className="flex items-center gap-2">
-                    <Lock className="h-3.5 w-3.5" />
-                    Mot de passe *
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      id="password"
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder="••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="pr-11"
-                      required
-                    />
-                    <button
-                      type="button"
-                      aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
-                      onClick={() => setShowPassword((value) => !value)}
-                      className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-muted-foreground hover:text-foreground"
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="confirmPassword" className="flex items-center gap-2">
                     <Lock className="h-3.5 w-3.5" />
@@ -240,22 +244,24 @@ export function RegisterPage() {
 
             {role === 'client' && (
               <p className="text-xs text-muted-foreground">
-                En tant que voyageur, vous pouvez reserver sans mot de passe. Vous recevrez vos confirmations par WhatsApp.
+                En tant que voyageur, votre compte utilise uniquement votre nom, votre email et votre mot de passe.
               </p>
             )}
 
-<div className="flex items-center space-x-2 py-2">
-              <input 
-                type="checkbox" 
-                id="newsletter" 
-                checked={isSubscribed}
-                onChange={(e) => setIsSubscribed(e.target.checked)}
-                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
-              />
-<Label htmlFor="newsletter" className="text-xs text-transparent cursor-pointer leading-none select-none">
-                J'accepte de recevoir les bons plans et actualites de SunuLogis *
-              </Label>
-            </div>
+            {role === 'owner' && (
+              <div className="flex items-center space-x-2 py-2">
+                <input
+                  type="checkbox"
+                  id="newsletter"
+                  checked={isSubscribed}
+                  onChange={(e) => setIsSubscribed(e.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                />
+                <Label htmlFor="newsletter" className="text-xs text-transparent cursor-pointer leading-none select-none">
+                  J'accepte de recevoir les bons plans et actualites de SunuLogis *
+                </Label>
+              </div>
+            )}
 
             <Button type="submit" className="w-full h-auto py-3 text-lg font-bold" disabled={loading}>
               {loading ? 'Inscription en cours...' : 'S\'inscrire'}

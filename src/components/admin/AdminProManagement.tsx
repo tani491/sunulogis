@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
-import { Ban, Bell, Crown, Users } from 'lucide-react'
+import { Ban, Bell, Crown, ShieldCheck, Users } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface ProUser {
@@ -49,7 +49,7 @@ export function AdminProManagement() {
     return () => window.clearTimeout(timeoutId)
   }, [])
 
-  const updateProUser = async (userId: string, action: 'suspend' | 'remind') => {
+  const updateProUser = async (userId: string, action: 'suspend' | 'unsuspend' | 'remind') => {
     setActionLoading(`${userId}:${action}`)
     try {
       const res = await fetch('/api/admin/pro-users', {
@@ -64,7 +64,13 @@ export function AdminProManagement() {
         return
       }
 
-      toast.success(action === 'suspend' ? 'Abonnement suspendu' : 'Rappel envoyé')
+      const message =
+        action === 'suspend'
+          ? 'Abonnement suspendu'
+          : action === 'unsuspend'
+            ? 'Abonnement réactivé'
+            : 'Rappel envoyé'
+      toast.success(message)
       await fetchUsers()
     } catch (error) {
       console.error(error)
@@ -188,6 +194,17 @@ export function AdminProManagement() {
                             </AlertDialogFooter>
                           </AlertDialogContent>
                         </AlertDialog>
+
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="gap-1 text-emerald-700 border-emerald-300 hover:bg-emerald-50"
+                          disabled={user.isSubscribed || actionLoading === `${user.id}:unsuspend`}
+                          onClick={() => updateProUser(user.id, 'unsuspend')}
+                        >
+                          <ShieldCheck className="h-3.5 w-3.5" />
+                          Désuspendre
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>

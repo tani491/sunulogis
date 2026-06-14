@@ -18,7 +18,7 @@ export const registerSchema = z.object({
   email: z.string().email('Email invalide').max(254),
   fullName: z.string().min(2, 'Nom requis').max(200),
   role: z.enum(['client', 'owner']),
-  password: z.string().optional().or(z.literal('')),
+  password: z.string().min(6, 'Le mot de passe doit contenir au moins 6 caractères').max(128),
   phone: z.string().max(20).optional().or(z.literal('')),
 });
 

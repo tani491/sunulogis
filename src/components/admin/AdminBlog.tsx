@@ -13,7 +13,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { DragDropImageUpload } from '@/components/shared/DragDropImageUpload'
-import { BookOpen, Plus, Pencil, Trash2, Newspaper, CheckCircle, XCircle } from 'lucide-react'
+import { Plus, Pencil, Trash2, Newspaper } from 'lucide-react'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
@@ -27,7 +27,6 @@ interface BlogPost {
   coverImage: string | null
   category: string
   isPublished: boolean
-  status: 'PENDING' | 'APPROVED' | 'REJECTED' | string
   createdAt: string
   author: { fullName: string | null }
 }
@@ -56,7 +55,6 @@ export function AdminBlog() {
   const [showDialog, setShowDialog] = useState(false)
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null)
   const [saving, setSaving] = useState(false)
-  const [actionLoading, setActionLoading] = useState<string | null>(null)
 
   // Form
   const [title, setTitle] = useState('')
@@ -143,7 +141,6 @@ export function AdminBlog() {
         coverImage: coverImages[0] || null,
         category,
         isPublished,
-        status: isPublished ? 'APPROVED' : 'PENDING',
       }
 
       if (editingPost) {
@@ -197,45 +194,11 @@ export function AdminBlog() {
     }
   }
 
-  const moderatePost = async (slug: string, status: 'APPROVED' | 'REJECTED') => {
-    setActionLoading(`${slug}:${status}`)
-    try {
-      const res = await fetch(`/api/blog/${slug}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          status,
-          isPublished: status === 'APPROVED',
-        }),
-      })
-
-      if (!res.ok) {
-        const data = await res.json()
-        toast.error(data.error || 'Erreur')
-        return
-      }
-
-      toast.success(status === 'APPROVED' ? 'Article approuvé' : 'Article rejeté')
-      await fetchPosts()
-    } catch (err) {
-      console.error(err)
-      toast.error('Erreur serveur')
-    } finally {
-      setActionLoading(null)
-    }
-  }
-
   const getCategoryLabel = (cat: string) => {
     return blogCategories.find(c => c.value === cat)?.label || cat
   }
 
   const getStatusBadge = (post: BlogPost) => {
-    if (post.status === 'REJECTED') {
-      return <Badge variant="destructive">Rejeté</Badge>
-    }
-    if (post.status === 'PENDING') {
-      return <Badge className="bg-yellow-100 text-yellow-800">En attente</Badge>
-    }
     if (post.isPublished) {
       return <Badge className="bg-green-100 text-green-800">Publié</Badge>
     }
@@ -251,8 +214,6 @@ export function AdminBlog() {
     )
   }
 
-  const pendingPosts = posts.filter((post) => post.status === 'PENDING')
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -265,56 +226,6 @@ export function AdminBlog() {
           Nouvel article
         </Button>
       </div>
-
-      <Card className="border-yellow-200 bg-yellow-50/60">
-        <CardContent className="p-4 space-y-4">
-          <div>
-            <h2 className="font-semibold flex items-center gap-2">
-              <BookOpen className="h-4 w-4 text-yellow-700" />
-              Modération Blog
-            </h2>
-            <p className="text-sm text-yellow-800">
-              {pendingPosts.length} article{pendingPosts.length !== 1 ? 's' : ''} en attente.
-            </p>
-          </div>
-
-          {pendingPosts.length > 0 && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-              {pendingPosts.map((post) => (
-                <div key={post.id} className="rounded-lg border bg-white p-3 space-y-3">
-                  <div className="space-y-1">
-                    <p className="font-semibold">{post.title}</p>
-                    <p className="text-sm text-muted-foreground line-clamp-3">
-                      {post.excerpt || 'Aucun extrait renseigné.'}
-                    </p>
-                  </div>
-                  <div className="flex flex-col sm:flex-row gap-2 sm:justify-end">
-                    <Button
-                      size="sm"
-                      className="gap-1 bg-green-600 hover:bg-green-700"
-                      disabled={actionLoading === `${post.slug}:APPROVED`}
-                      onClick={() => moderatePost(post.slug, 'APPROVED')}
-                    >
-                      <CheckCircle className="h-4 w-4" />
-                      Approuver
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="gap-1 text-destructive hover:text-destructive"
-                      disabled={actionLoading === `${post.slug}:REJECTED`}
-                      onClick={() => moderatePost(post.slug, 'REJECTED')}
-                    >
-                      <XCircle className="h-4 w-4" />
-                      Rejeter
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
       {posts.length === 0 ? (
         <Card>

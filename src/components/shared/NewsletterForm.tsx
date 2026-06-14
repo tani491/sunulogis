@@ -54,7 +54,7 @@ export function NewsletterForm({ source = 'blog', variant = 'card' }: Newsletter
       <form onSubmit={handleSubscribe} className="flex gap-2">
         <Input
           type="email"
-          placeholder="votre@email.sn"
+          placeholder="votre@email.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="h-9 text-sm max-w-xs"
@@ -92,7 +92,7 @@ export function NewsletterForm({ source = 'blog', variant = 'card' }: Newsletter
             <form onSubmit={handleSubscribe} className="flex gap-2">
               <Input
                 type="email"
-                placeholder="votre@email.sn"
+                placeholder="votre@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="h-10"

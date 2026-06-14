@@ -72,7 +72,7 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
   const [website, setWebsite] = useState('')
   const [phone, setPhone] = useState('')
   const [images, setImages] = useState<string[]>([])
-  const [featureOnApprove, setFeatureOnApprove] = useState(false)
+  const [isFeatured, setIsFeatured] = useState(false)
 
   async function fetchEstablishment() {
     setLoading(true)
@@ -90,7 +90,7 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
         setWebsite(data.website || '')
         setPhone(data.phone || '')
         setImages(data.images || [])
-        setFeatureOnApprove(data.isFeatured || false)
+        setIsFeatured(data.isFeatured || false)
       } else {
         toast.error('Établissement non trouvé')
         onClose()
@@ -135,6 +135,7 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
         body: JSON.stringify({
           name, type, description, city, region, address,
           website: website || null, phone: phone || null, images,
+          ...(establishment?.isApproved ? { isFeatured } : {}),
         }),
       })
 
@@ -158,7 +159,7 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
       const res = await fetch('/api/admin/establishments', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ establishmentId, isApproved: true, isFeatured: featureOnApprove }),
+        body: JSON.stringify({ establishmentId, isApproved: true }),
       })
       if (res.ok) {
         toast.success('Établissement approuvé et publié')
@@ -295,20 +296,6 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
                         Approuver <strong>{establishment.name}</strong> ? Il sera visible publiquement sur le site après validation.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
-                    <div className="flex items-center gap-2 rounded-lg border p-3">
-                      <Checkbox
-                        id="admin-feature-on-approve"
-                        checked={featureOnApprove}
-                        onCheckedChange={(checked) => setFeatureOnApprove(checked === true)}
-                      />
-                      <label
-                        htmlFor="admin-feature-on-approve"
-                        className="flex items-center gap-2 text-sm font-medium leading-none cursor-pointer"
-                      >
-                        <Star className="h-4 w-4 text-amber-500" />
-                        Mettre cet établissement en vedette
-                      </label>
-                    </div>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Annuler</AlertDialogCancel>
                       <AlertDialogAction onClick={handleApprove} className="bg-green-600 hover:bg-green-700">
@@ -511,6 +498,23 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
                 <Input id="admin-phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="221770000000" />
               </div>
             </div>
+
+            {establishment.isApproved && (
+              <div className="flex items-center gap-2 rounded-lg border p-3">
+                <Checkbox
+                  id="admin-featured"
+                  checked={isFeatured}
+                  onCheckedChange={(checked) => setIsFeatured(checked === true)}
+                />
+                <label
+                  htmlFor="admin-featured"
+                  className="flex items-center gap-2 text-sm font-medium leading-none cursor-pointer"
+                >
+                  <Star className="h-4 w-4 text-amber-500" />
+                  Mettre cet établissement en vedette
+                </label>
+              </div>
+            )}
 
             {/* Image management */}
             <div className="space-y-2">

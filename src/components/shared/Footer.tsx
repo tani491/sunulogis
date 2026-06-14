@@ -218,7 +218,7 @@ export default function Footer() {
             <form onSubmit={handleSubscribe} className="space-y-2">
               <Input
                 type="email"
-                placeholder="contact@sunulogis.sn"
+                placeholder="contact@sunulogis.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="h-9 border-green-500/60 focus-visible:ring-green-500/30 text-sm"

@@ -39,21 +39,26 @@ export async function PUT(req: NextRequest) {
     }
 
     const body = await req.json().catch(() => ({}));
-    const { userId, action } = body as { userId?: string; action?: 'suspend' | 'remind' };
+    const { userId, action } = body as { userId?: string; action?: 'suspend' | 'unsuspend' | 'remind' };
 
     if (!userId || !action) {
       return NextResponse.json({ error: 'userId et action requis' }, { status: 400 });
     }
 
-    if (!['suspend', 'remind'].includes(action)) {
+    if (!['suspend', 'unsuspend', 'remind'].includes(action)) {
       return NextResponse.json({ error: 'Action invalide' }, { status: 400 });
     }
 
+    const updateData =
+      action === 'suspend'
+        ? { isSubscribed: false }
+        : action === 'unsuspend'
+          ? { isSubscribed: true, paymentReminder: false }
+          : { paymentReminder: true };
+
     const updated = await db.user.update({
       where: { id: userId },
-      data: action === 'suspend'
-        ? { isSubscribed: false }
-        : { paymentReminder: true },
+      data: updateData,
       select: {
         id: true,
         email: true,
