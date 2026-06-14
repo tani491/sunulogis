@@ -15,6 +15,19 @@ import { toast } from 'sonner'
 import { DragDropImageUpload } from '@/components/shared/DragDropImageUpload'
 import { ESTABLISHMENT_TYPES, REGIONS, getTypeLabel } from '@/lib/constants'
 
+const DAKAR_NEIGHBORHOODS = [
+  'Keur Massar',
+  'Ouakam',
+  'Médina',
+  'Almadies',
+  'Ngor',
+  'Plateau',
+  'Liberté 6',
+  'Sacré-Cœur',
+  'Mermoz',
+  'Hann Maristes',
+]
+
 interface Establishment {
   id: string
   name: string
@@ -48,6 +61,13 @@ export function ManageEstablishment() {
   const [phone, setPhone] = useState('')
   const [images, setImages] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
+
+  const handleRegionChange = (value: string) => {
+    setRegion(value)
+    if (value === 'Dakar' && !DAKAR_NEIGHBORHOODS.includes(address)) {
+      setAddress('')
+    }
+  }
 
   useEffect(() => {
     if (currentUser) {
@@ -238,7 +258,7 @@ export function ManageEstablishment() {
 
                 <div className="space-y-2">
                   <Label htmlFor="region">Région</Label>
-                  <Select value={region} onValueChange={setRegion}>
+                  <Select value={region} onValueChange={handleRegionChange}>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Sélectionner une région" />
                     </SelectTrigger>
@@ -251,8 +271,21 @@ export function ManageEstablishment() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="address">Adresse</Label>
-                  <Input id="address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="45 Rue Carnot, Plateau" />
+                  <Label htmlFor="address">{region === 'Dakar' ? 'Quartier' : 'Adresse'}</Label>
+                  {region === 'Dakar' ? (
+                    <Select value={address} onValueChange={setAddress}>
+                      <SelectTrigger id="address" className="w-full">
+                        <SelectValue placeholder="Selectionner un quartier" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {DAKAR_NEIGHBORHOODS.map((neighborhood) => (
+                          <SelectItem key={neighborhood} value={neighborhood}>{neighborhood}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Input id="address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="45 Rue Carnot, Plateau" />
+                  )}
                 </div>
               </div>
 

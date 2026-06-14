@@ -2,20 +2,19 @@
 
 import { useState, useEffect } from 'react'
 import { useAppStore } from '@/store/app-store'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Progress } from '@/components/ui/progress'
 import {
-  BedDouble, CalendarDays, CheckCircle, Clock, Building2, Plus,
-  AlertCircle, AlertTriangle, Lock, Eye, MessageCircle, Zap,
-  Shield, Star, TrendingUp, Sparkles,
+  CalendarDays, CheckCircle, Clock, Building2, Plus,
+  AlertCircle, Lock, Eye, MessageCircle, Zap,
+  Shield, Star, Sparkles,
 } from 'lucide-react'
-import { COMMISSION_RATES, getTypeLabel, WAVE_INFO, PRO_FEATURES } from '@/lib/constants'
+import { COMMISSION_RATES, getTypeLabel, PRO_FEATURES } from '@/lib/constants'
 import { format, isAfter } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { toast } from 'sonner'
 import { PlanSelector } from '@/components/PlanSelector'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
@@ -45,12 +44,19 @@ interface Stats {
   pendingEstablishments: number
 }
 
+function LockedMetricOverlay() {
+  return (
+    <div className="absolute inset-0 flex items-center justify-center bg-white/70 dark:bg-black/50 backdrop-blur-[1px] group-hover:bg-white/80 transition-colors">
+      <Lock className="h-10 w-10 text-amber-500 drop-shadow-sm transition-transform duration-300 ease-in-out group-hover:scale-110 group-hover:rotate-3" />
+    </div>
+  )
+}
+
 export function DashboardOverview() {
   const { navigate, currentUser } = useAppStore()
   const [stats, setStats] = useState<Stats | null>(null)
   const [establishments, setEstablishments] = useState<EstablishmentStats[]>([])
   const [loading, setLoading] = useState(true)
-  const [declaringId, setDeclaringId] = useState<string | null>(null)
   const [showPlanModal, setShowPlanModal] = useState(false)
 
   const isPro = currentUser?.isSubscribed === true
@@ -98,29 +104,6 @@ export function DashboardOverview() {
     }
   }
 
-  async function declarePayment(establishmentId: string) {
-    setDeclaringId(establishmentId)
-    try {
-      const res = await fetch(`/api/establishments/${establishmentId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paymentPending: true }),
-      })
-      if (res.ok) {
-        toast.success('Paiement déclaré ! L\'admin va vérifier votre paiement Wave.')
-        setEstablishments(prev =>
-          prev.map(e => e.id === establishmentId ? { ...e, paymentPending: true } : e)
-        )
-      } else {
-        toast.error('Erreur lors de la déclaration')
-      }
-    } catch {
-      toast.error('Erreur de connexion')
-    } finally {
-      setDeclaringId(null)
-    }
-  }
-
   useEffect(() => {
     if (currentUser) {
       const t = window.setTimeout(() => void fetchStats(), 0)
@@ -140,7 +123,6 @@ export function DashboardOverview() {
     )
   }
 
-  const unpaidCommissions = establishments.filter(e => e.isApproved && e.paymentStatus !== 'paye')
   const totalViewsAll = establishments.reduce((s, e) => s + e.viewsCount, 0)
 
   return (
@@ -211,40 +193,6 @@ export function DashboardOverview() {
         </Card>
       )}
 
-      {/* Unpaid commission alert */}
-      {unpaidCommissions.length > 0 && (
-        <Card className="border-red-200 bg-red-50 dark:bg-red-950/20">
-          <CardContent className="p-4 space-y-3">
-            <div className="flex items-start gap-3">
-              <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5 shrink-0" />
-              <div className="space-y-1">
-                <p className="font-semibold text-red-800 dark:text-red-300">Commission en attente</p>
-                <p className="text-sm text-red-700 dark:text-red-400">
-                  Réglez via <strong>Wave au {WAVE_INFO.number}</strong> puis déclarez le paiement
-                </p>
-              </div>
-            </div>
-            <div className="space-y-2 pl-8">
-              {unpaidCommissions.map(est => (
-                <div key={est.id} className="flex items-center justify-between bg-white/60 dark:bg-white/5 rounded-lg px-3 py-2">
-                  <div>
-                    <p className="text-sm font-medium">{est.name}</p>
-                    <p className="text-xs text-muted-foreground">{getTypeLabel(est.type)}</p>
-                  </div>
-                  <p className="text-sm font-bold text-red-700">{est.commission.toLocaleString()} FCFA</p>
-                </div>
-              ))}
-              <div className="flex items-center justify-between bg-white/80 dark:bg-white/10 rounded-lg px-3 py-2 border border-red-200">
-                <p className="text-sm font-semibold text-red-800 dark:text-red-300">Total</p>
-                <p className="text-base font-bold text-red-800 dark:text-red-300">
-                  {unpaidCommissions.reduce((s, e) => s + e.commission, 0).toLocaleString()} FCFA
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Stats cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         <Card>
@@ -258,15 +206,21 @@ export function DashboardOverview() {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card
+          className={!isPro ? 'relative overflow-hidden cursor-pointer group' : ''}
+          onClick={!isPro ? () => setShowPlanModal(true) : undefined}
+        >
           <CardContent className="p-4 flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100 shrink-0">
-              <Eye className="h-5 w-5 text-blue-600" />
+            <div className={!isPro ? 'flex items-center gap-3 blur-sm select-none pointer-events-none' : 'flex items-center gap-3'}>
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100 shrink-0">
+                <Eye className="h-5 w-5 text-blue-600" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs text-muted-foreground">Vues totales</p>
+                <p className="text-xl font-bold">{totalViewsAll.toLocaleString()}</p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <p className="text-xs text-muted-foreground">Vues totales</p>
-              <p className="text-xl font-bold">{totalViewsAll.toLocaleString()}</p>
-            </div>
+            {!isPro && <LockedMetricOverlay />}
           </CardContent>
         </Card>
         <Card>
@@ -294,7 +248,7 @@ export function DashboardOverview() {
       </div>
 
       {/* Pending approval */}
-      {(stats?.pendingEstablishments || 0) > 0 && (
+      {!isPro && (stats?.pendingEstablishments || 0) > 0 && (
         <Card className="border-yellow-200 bg-yellow-50 dark:bg-yellow-950/20">
           <CardContent className="p-4 flex items-center gap-3">
             <AlertCircle className="h-5 w-5 text-yellow-600 shrink-0" />
@@ -359,87 +313,50 @@ export function DashboardOverview() {
                     </div>
 
                     {/* Stats row */}
-                    <div className="grid grid-cols-2 gap-3">
-                      {/* Views - visible to all */}
-                      <div className="rounded-xl bg-blue-50 dark:bg-blue-950/20 p-3 space-y-1">
-                        <div className="flex items-center gap-1.5 text-blue-600">
-                          <Eye className="h-4 w-4" />
-                          <span className="text-xs font-semibold uppercase tracking-wide">Vues</span>
-                        </div>
-                        <p className="text-2xl font-bold text-blue-700">{est.viewsCount.toLocaleString()}</p>
-                        <Progress value={Math.min((est.viewsCount / 100) * 100, 100)} className="h-1 bg-blue-100" />
-                      </div>
-
-                      {/* WhatsApp clicks - LOCKED for non-pro */}
-                      {isPro ? (
-                        <div className="rounded-xl bg-green-50 dark:bg-green-950/20 p-3 space-y-1">
-                          <div className="flex items-center gap-1.5 text-green-600">
-                            <MessageCircle className="h-4 w-4" />
-                            <span className="text-xs font-semibold uppercase tracking-wide">Clics WhatsApp</span>
-                          </div>
-                          <p className="text-2xl font-bold text-green-700">{est.clicksCount.toLocaleString()}</p>
-                          <Progress value={Math.min((est.clicksCount / 50) * 100, 100)} className="h-1 bg-green-100" />
-                        </div>
-                      ) : (
+                    <div className="space-y-2">
+                      <div className="grid grid-cols-2 gap-3">
                         <div
-                          className="relative rounded-xl bg-gray-100 dark:bg-gray-800/40 p-3 space-y-1 overflow-hidden cursor-pointer group"
-                          onClick={() => setShowPlanModal(true)}
+                          className={!isPro ? 'relative rounded-xl bg-blue-50 dark:bg-blue-950/20 p-3 space-y-1 overflow-hidden cursor-pointer group' : 'rounded-xl bg-blue-50 dark:bg-blue-950/20 p-3 space-y-1'}
+                          onClick={!isPro ? () => setShowPlanModal(true) : undefined}
                         >
-                          {/* Blurred content behind */}
-                          <div className="blur-sm select-none pointer-events-none">
-                            <div className="flex items-center gap-1.5 text-gray-400">
+                          <div className={!isPro ? 'blur-sm select-none pointer-events-none' : ''}>
+                            <div className="flex items-center gap-1.5 text-blue-600">
+                              <Eye className="h-4 w-4" />
+                              <span className="text-xs font-semibold uppercase tracking-wide">Vues</span>
+                            </div>
+                            <p className="text-2xl font-bold text-blue-700">{est.viewsCount.toLocaleString()}</p>
+                            <Progress value={Math.min((est.viewsCount / 100) * 100, 100)} className="h-1 bg-blue-100" />
+                          </div>
+                          {!isPro && <LockedMetricOverlay />}
+                        </div>
+
+                        <div
+                          className={!isPro ? 'relative rounded-xl bg-green-50 dark:bg-green-950/20 p-3 space-y-1 overflow-hidden cursor-pointer group' : 'rounded-xl bg-green-50 dark:bg-green-950/20 p-3 space-y-1'}
+                          onClick={!isPro ? () => setShowPlanModal(true) : undefined}
+                        >
+                          <div className={!isPro ? 'blur-sm select-none pointer-events-none' : ''}>
+                            <div className="flex items-center gap-1.5 text-green-600">
                               <MessageCircle className="h-4 w-4" />
                               <span className="text-xs font-semibold uppercase tracking-wide">Clics WhatsApp</span>
                             </div>
-                            <p className="text-2xl font-bold text-gray-300">••</p>
-                            <Progress value={40} className="h-1 bg-gray-200" />
+                            <p className="text-2xl font-bold text-green-700">{est.clicksCount.toLocaleString()}</p>
+                            <Progress value={Math.min((est.clicksCount / 50) * 100, 100)} className="h-1 bg-green-100" />
                           </div>
-                          {/* Lock overlay */}
-                          <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-white/70 dark:bg-black/50 backdrop-blur-[1px] group-hover:bg-white/80 transition-colors">
-                            <div className="flex items-center justify-center w-7 h-7 rounded-full bg-emerald-500 text-white">
-                              <Lock className="h-3.5 w-3.5" />
-                            </div>
-                            <span className="text-[11px] font-semibold text-emerald-700 text-center leading-tight px-1">
-                              Débloquer avec<br />Sunu Pro
-                            </span>
-                          </div>
+                          {!isPro && <LockedMetricOverlay />}
                         </div>
+                      </div>
+
+                      {!isPro && (
+                        <button
+                          type="button"
+                          onClick={() => setShowPlanModal(true)}
+                          className="text-xs font-medium text-emerald-700 hover:text-emerald-800 hover:underline"
+                        >
+                          Débloquer mes statistiques avec SunuPro
+                        </button>
                       )}
                     </div>
 
-                    {/* Payment declaration */}
-                    {est.isApproved && est.paymentStatus !== 'paye' && (
-                      <div className="border border-dashed border-emerald-300 rounded-lg p-3 bg-emerald-50/50 dark:bg-emerald-950/10">
-                        {est.paymentPending ? (
-                          <div className="flex items-center gap-2 text-emerald-700">
-                            <Clock className="h-4 w-4 shrink-0" />
-                            <div>
-                              <p className="text-sm font-medium">Paiement en cours de vérification</p>
-                              <p className="text-xs text-emerald-600/80">L&apos;admin va valider votre paiement Wave</p>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                            <div>
-                              <p className="text-sm font-medium text-emerald-800 dark:text-emerald-300">
-                                Activez Sunu Pro pour cette annonce
-                              </p>
-                              <p className="text-xs text-emerald-600/80">
-                                Envoyez 5 000 FCFA via Wave au {WAVE_INFO.number}
-                              </p>
-                            </div>
-                            <Button
-                              size="sm"
-                              className="shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white"
-                              disabled={declaringId === est.id}
-                              onClick={() => declarePayment(est.id)}
-                            >
-                              {declaringId === est.id ? 'Envoi...' : 'Déclarer le paiement'}
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    )}
                   </CardContent>
                 </Card>
               )

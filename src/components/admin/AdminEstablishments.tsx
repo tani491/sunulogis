@@ -5,10 +5,11 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
-import { Building2, Check, X, Ban, ShieldCheck, Filter, MapPin, Pencil, Eye, Clock, MessageSquare } from 'lucide-react'
+import { Building2, Check, X, Ban, ShieldCheck, Filter, MapPin, Pencil, Eye, Clock, MessageSquare, Star } from 'lucide-react'
 import { toast } from 'sonner'
 import { ESTABLISHMENT_TYPE_FILTERS, getTypeLabel, getTypeColor } from '@/lib/constants'
 import { AdminEstablishmentEditor } from './AdminEstablishmentEditor'
@@ -23,6 +24,7 @@ interface Establishment {
   images: string[]
   isApproved: boolean
   isSuspended: boolean
+  isFeatured: boolean
   minPrice: number | null
   owner: { id: string; fullName: string; email: string; phone?: string | null }
   rooms: { id: string }[]
@@ -35,6 +37,7 @@ export function AdminEstablishments() {
   const [typeFilter, setTypeFilter] = useState<string>('all')
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [featuredOnApprove, setFeaturedOnApprove] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
     fetchEstablishments()
@@ -55,7 +58,7 @@ export function AdminEstablishments() {
     }
   }
 
-  const updateEstablishment = async (establishmentId: string, updates: { isApproved?: boolean; isSuspended?: boolean }) => {
+  const updateEstablishment = async (establishmentId: string, updates: { isApproved?: boolean; isSuspended?: boolean; isFeatured?: boolean }) => {
     setActionLoading(establishmentId)
     try {
       const res = await fetch('/api/admin/establishments', {
@@ -245,12 +248,14 @@ export function AdminEstablishments() {
                         <Button
                           size="sm"
                           variant="outline"
-                          className="gap-1 text-primary hover:text-primary"
+                          className="h-9 w-9 p-0 sm:w-auto sm:px-3 sm:gap-1 text-primary hover:text-primary"
                           onClick={() => setEditingId(est.id)}
                           disabled={actionLoading === est.id}
+                          aria-label={!est.isApproved ? 'Examiner' : 'Modifier'}
+                          title={!est.isApproved ? 'Examiner' : 'Modifier'}
                         >
                           <Pencil className="h-3 w-3" />
-                          {!est.isApproved ? 'Examiner' : 'Modifier'}
+                          <span className="hidden sm:inline">{!est.isApproved ? 'Examiner' : 'Modifier'}</span>
                         </Button>
 
                         {!est.isApproved && (
@@ -268,9 +273,31 @@ export function AdminEstablishments() {
                                   Approuver {est.name} ? Il sera visible publiquement sur le site.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
+                              <div className="flex items-center gap-2 rounded-lg border p-3">
+                                <Checkbox
+                                  id={`feature-${est.id}`}
+                                  checked={featuredOnApprove[est.id] ?? false}
+                                  onCheckedChange={(checked) =>
+                                    setFeaturedOnApprove((prev) => ({ ...prev, [est.id]: checked === true }))
+                                  }
+                                />
+                                <label
+                                  htmlFor={`feature-${est.id}`}
+                                  className="flex items-center gap-2 text-sm font-medium leading-none cursor-pointer"
+                                >
+                                  <Star className="h-4 w-4 text-amber-500" />
+                                  Mettre en avant cette annonce
+                                </label>
+                              </div>
                               <AlertDialogFooter>
                                 <AlertDialogCancel>Annuler</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => updateEstablishment(est.id, { isApproved: true })} className="bg-green-600 hover:bg-green-700">
+                                <AlertDialogAction
+                                  onClick={() => updateEstablishment(est.id, {
+                                    isApproved: true,
+                                    isFeatured: featuredOnApprove[est.id] === true,
+                                  })}
+                                  className="bg-green-600 hover:bg-green-700"
+                                >
                                   Valider
                                 </AlertDialogAction>
                               </AlertDialogFooter>

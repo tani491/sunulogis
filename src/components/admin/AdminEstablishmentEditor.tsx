@@ -7,10 +7,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { Separator } from '@/components/ui/separator'
-import { Pencil, Save, X, Globe, Phone, MapPin, CheckCircle, Ban, ShieldCheck, Clock, Trash2, ImagePlus } from 'lucide-react'
+import { Pencil, Save, X, Globe, Phone, MapPin, CheckCircle, Ban, ShieldCheck, Clock, Trash2, ImagePlus, Star } from 'lucide-react'
 import { toast } from 'sonner'
 import { DragDropImageUpload } from '@/components/shared/DragDropImageUpload'
 import { ESTABLISHMENT_TYPES, REGIONS, getTypeLabel, getTypeColor, WAVE_INFO, getCommissionAmount, PAYMENT_STATUSES } from '@/lib/constants'
@@ -28,6 +29,7 @@ interface Establishment {
   phone?: string
   isApproved: boolean
   isSuspended: boolean
+  isFeatured: boolean
   commission: number
   paymentStatus: string
   ownerId: string
@@ -57,6 +59,7 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
   const [website, setWebsite] = useState('')
   const [phone, setPhone] = useState('')
   const [images, setImages] = useState<string[]>([])
+  const [featureOnApprove, setFeatureOnApprove] = useState(false)
 
   async function fetchEstablishment() {
     setLoading(true)
@@ -74,6 +77,7 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
         setWebsite(data.website || '')
         setPhone(data.phone || '')
         setImages(data.images || [])
+        setFeatureOnApprove(data.isFeatured || false)
       } else {
         toast.error('Établissement non trouvé')
         onClose()
@@ -134,7 +138,7 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
       const res = await fetch('/api/admin/establishments', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ establishmentId, isApproved: true }),
+        body: JSON.stringify({ establishmentId, isApproved: true, isFeatured: featureOnApprove }),
       })
       if (res.ok) {
         toast.success('Établissement approuvé et publié')
@@ -271,6 +275,20 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
                         Approuver <strong>{establishment.name}</strong> ? Il sera visible publiquement sur le site après validation.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
+                    <div className="flex items-center gap-2 rounded-lg border p-3">
+                      <Checkbox
+                        id="admin-feature-on-approve"
+                        checked={featureOnApprove}
+                        onCheckedChange={(checked) => setFeatureOnApprove(checked === true)}
+                      />
+                      <label
+                        htmlFor="admin-feature-on-approve"
+                        className="flex items-center gap-2 text-sm font-medium leading-none cursor-pointer"
+                      >
+                        <Star className="h-4 w-4 text-amber-500" />
+                        Mettre en avant cette annonce
+                      </label>
+                    </div>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Annuler</AlertDialogCancel>
                       <AlertDialogAction onClick={handleApprove} className="bg-green-600 hover:bg-green-700">
