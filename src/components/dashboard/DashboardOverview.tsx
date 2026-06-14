@@ -199,6 +199,9 @@ export function DashboardOverview() {
                       {f}
                     </span>
                   ))}
+                  <span className="text-xs bg-emerald-700 text-white dark:bg-emerald-600 px-2.5 py-1 rounded-full font-semibold">
+                    Création et Publication de votre Blog ou celle de votre entreprise
+                  </span>
                 </div>
               </div>
               <Button

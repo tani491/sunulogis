@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Check, X, Zap, Shield, Star, TrendingUp, Headphones, Eye, Image, Globe, Megaphone, CheckCircle2, Loader2 } from 'lucide-react'
+import { Check, X, Zap, Shield, Star, TrendingUp, Headphones, Eye, Image as ImageIcon, Globe, Megaphone, CheckCircle2, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -10,7 +10,7 @@ import { VISIBILITY_PACKS, WAVE_INFO, WAVE_PAY_LINK } from '@/lib/constants'
 
 const FEATURE_ICONS: Record<string, React.ReactNode> = {
   'Annonce en ligne':                    <Globe className="h-4 w-4" />,
-  "Photos (jusqu'à 8)":                 <Image className="h-4 w-4" />,
+  "Photos (jusqu'à 8)":                 <ImageIcon className="h-4 w-4" />,
   'Statistiques de vues':               <Eye className="h-4 w-4" />,
   'Statistiques de clics WhatsApp':     <TrendingUp className="h-4 w-4" />,
   'Badge "Vérifié"':                    <Shield className="h-4 w-4" />,
@@ -18,6 +18,19 @@ const FEATURE_ICONS: Record<string, React.ReactNode> = {
   'Priorité dans les résultats':        <Zap className="h-4 w-4" />,
   'Support prioritaire':                <Headphones className="h-4 w-4" />,
   'Création de contenu pour vous tout en postant vos biens dans nos réseaux sociaux': <Megaphone className="h-4 w-4" />,
+}
+
+const BLOG_FEATURE = 'Création et Publication de votre Blog ou celle de votre entreprise'
+
+function getCleanWavePayLink() {
+  try {
+    const url = new URL(WAVE_PAY_LINK)
+    url.search = ''
+    url.hash = ''
+    return url.toString()
+  } catch {
+    return WAVE_PAY_LINK.split('?')[0].split('#')[0]
+  }
 }
 
 interface PlanSelectorProps {
@@ -35,7 +48,7 @@ export function PlanSelector({ onSelectPro, compact = false }: PlanSelectorProps
   const handlePayWave = () => {
     if (redirecting) return
     setRedirecting(true)
-    window.location.href = WAVE_PAY_LINK
+    window.location.href = getCleanWavePayLink()
   }
 
   const handleDeclare = async (e: React.FormEvent) => {
@@ -107,6 +120,14 @@ export function PlanSelector({ onSelectPro, compact = false }: PlanSelectorProps
                 </span>
               </li>
             ))}
+            <li className="flex items-start gap-2 text-xs sm:text-sm">
+              <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-500">
+                <X className="h-2.5 w-2.5" />
+              </span>
+              <span className="leading-snug text-muted-foreground line-through">
+                {BLOG_FEATURE}
+              </span>
+            </li>
           </ul>
 
           <Button variant="outline" className="w-full h-9 text-sm" disabled>
@@ -153,6 +174,14 @@ export function PlanSelector({ onSelectPro, compact = false }: PlanSelectorProps
                 </span>
               </li>
             ))}
+            <li className="flex items-start gap-2 text-sm sm:text-base">
+              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-700 text-white">
+                <Check className="h-3 w-3" />
+              </span>
+              <span className="text-emerald-950 dark:text-emerald-50 font-semibold leading-snug">
+                {BLOG_FEATURE}
+              </span>
+            </li>
           </ul>
 
           {/* CTA Wave Business */}

@@ -30,17 +30,15 @@ export function RegisterPage() {
       return
     }
 
-    if (!password) {
-      toast.error('Le mot de passe est requis')
-      return
-    }
-
-    if (password.length < 6) {
-      toast.error('Le mot de passe doit contenir au moins 6 caractères')
-      return
-    }
-
     if (role === 'owner') {
+      if (!password) {
+        toast.error('Le mot de passe est requis pour les propriétaires')
+        return
+      }
+      if (password.length < 6) {
+        toast.error('Le mot de passe doit contenir au moins 6 caractères')
+        return
+      }
       if (password !== confirmPassword) {
         toast.error('Les mots de passe ne correspondent pas')
         return
@@ -63,7 +61,7 @@ export function RegisterPage() {
           email,
           fullName,
           phone: role === 'owner' ? phone : undefined,
-          password,
+          password: role === 'owner' ? password : undefined,
           role,
           isSubscribed,
         }),
@@ -186,34 +184,34 @@ export function RegisterPage() {
               </div>
             )}
 
-            <div className="space-y-2">
-              <Label htmlFor="password" className="flex items-center gap-2">
-                <Lock className="h-3.5 w-3.5" />
-                Mot de passe *
-              </Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pr-11"
-                  required
-                />
-                <button
-                  type="button"
-                  aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
-                  onClick={() => setShowPassword((value) => !value)}
-                  className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-muted-foreground hover:text-foreground"
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-            </div>
-
             {role === 'owner' && (
               <>
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="flex items-center gap-2">
+                    <Lock className="h-3.5 w-3.5" />
+                    Mot de passe *
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="pr-11"
+                      required
+                    />
+                    <button
+                      type="button"
+                      aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                      onClick={() => setShowPassword((value) => !value)}
+                      className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-muted-foreground hover:text-foreground"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="confirmPassword" className="flex items-center gap-2">
                     <Lock className="h-3.5 w-3.5" />
@@ -244,7 +242,7 @@ export function RegisterPage() {
 
             {role === 'client' && (
               <p className="text-xs text-muted-foreground">
-                En tant que voyageur, votre compte utilise uniquement votre nom, votre email et votre mot de passe.
+                En tant que voyageur, votre compte utilise uniquement votre nom et votre email.
               </p>
             )}
 
@@ -267,16 +265,17 @@ export function RegisterPage() {
               {loading ? 'Inscription en cours...' : 'S\'inscrire'}
             </Button>
 
-            <p className="text-center text-sm text-muted-foreground">
-              Deja un compte ?{' '}
-              <button
+            <div className="space-y-2 text-center">
+              <p className="text-sm text-muted-foreground">Deja un compte ?</p>
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() => navigate('login')}
-                className="text-primary font-medium hover:underline"
+                className="w-full h-auto py-3 text-lg font-bold"
               >
                 Se connecter
-              </button>
-            </p>
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>
