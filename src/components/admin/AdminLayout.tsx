@@ -14,8 +14,9 @@ import { AdminCommissions } from './AdminCommissions'
 import { AdminSettings } from './AdminSettings'
 import { AdminAnalytics } from './AdminAnalytics'
 import { AdminSubscriptionRequests } from './AdminSubscriptionRequests'
+import { AdminProManagement } from './AdminProManagement'
 
-type SubView = 'admin' | 'admin-stats' | 'admin-establishments' | 'admin-users' | 'admin-blog' | 'admin-subscribers' | 'admin-commissions' | 'admin-settings' | 'admin-analytics' | 'admin-subscription-requests'
+type SubView = 'admin' | 'admin-stats' | 'admin-establishments' | 'admin-users' | 'admin-blog' | 'admin-subscribers' | 'admin-commissions' | 'admin-pro' | 'admin-settings' | 'admin-analytics' | 'admin-subscription-requests'
 
 interface SidebarContentProps {
   subView: SubView
@@ -29,6 +30,7 @@ function SidebarContent({ subView, onNavigate, onCloseMobile }: SidebarContentPr
     { view: 'admin-analytics', label: 'Analytiques', icon: <BarChart2 className="h-4 w-4" /> },
     { view: 'admin-establishments', label: 'Établissements', icon: <Building2 className="h-4 w-4" /> },
     { view: 'admin-subscription-requests', label: 'Demandes Pro', icon: <CreditCard className="h-4 w-4" /> },
+    { view: 'admin-pro', label: 'Gestion Pro', icon: <Zap className="h-4 w-4" /> },
     { view: 'admin-commissions', label: 'Revenus Pro', icon: <Zap className="h-4 w-4" /> },
     { view: 'admin-users', label: 'Utilisateurs', icon: <Users className="h-4 w-4" /> },
     { view: 'admin-blog', label: 'Blog', icon: <Newspaper className="h-4 w-4" /> },
@@ -66,6 +68,7 @@ const navLabels: Record<SubView, string> = {
   'admin-blog': 'Blog',
   'admin-subscribers': 'Newsletter',
   'admin-commissions': 'Revenus Pro',
+  'admin-pro': 'Gestion Pro',
   'admin-subscription-requests': 'Demandes Pro',
   'admin-settings': 'Paramètres',
 }
@@ -90,6 +93,8 @@ export function AdminLayout() {
         return <AdminSubscribers />
       case 'admin-commissions':
         return <AdminCommissions />
+      case 'admin-pro':
+        return <AdminProManagement />
       case 'admin-subscription-requests':
         return <AdminSubscriptionRequests />
       case 'admin-settings':

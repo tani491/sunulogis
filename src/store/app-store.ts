@@ -10,6 +10,7 @@ export type View =
   | 'dashboard-establishments'
   | 'dashboard-rooms'
   | 'dashboard-bookings'
+  | 'dashboard-blog'
   | 'establishment-detail'
   | 'blog'
   | 'blog-post'
@@ -20,6 +21,7 @@ export type View =
   | 'admin-blog'
   | 'admin-subscribers'
   | 'admin-commissions'
+  | 'admin-pro'
   | 'admin-settings'
   | 'admin-analytics'
   | 'admin-subscription-requests';
@@ -31,6 +33,7 @@ interface CurrentUser {
   role: string;
   phone: string | null;
   isSubscribed: boolean;
+  paymentReminder?: boolean;
 }
 
 interface SearchFilters {

@@ -16,6 +16,19 @@ import { toast } from 'sonner'
 import { DragDropImageUpload } from '@/components/shared/DragDropImageUpload'
 import { ESTABLISHMENT_TYPES, REGIONS, getTypeLabel, getTypeColor, WAVE_INFO, getCommissionAmount, PAYMENT_STATUSES } from '@/lib/constants'
 
+const DAKAR_NEIGHBORHOODS = [
+  'Keur Massar',
+  'Ouakam',
+  'Médina',
+  'Almadies',
+  'Ngor',
+  'Plateau',
+  'Liberté 6',
+  'Sacré-Cœur',
+  'Mermoz',
+  'Hann Maristes',
+]
+
 interface Establishment {
   id: string
   name: string
@@ -100,6 +113,13 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
       return () => window.clearTimeout(timeoutId)
     }
   }, [establishmentId])
+
+  const handleRegionChange = (value: string) => {
+    setRegion(value)
+    if (value === 'Dakar' && !DAKAR_NEIGHBORHOODS.includes(address)) {
+      setAddress('')
+    }
+  }
 
   const handleSave = async () => {
     if (!name.trim() || !city.trim()) {
@@ -286,7 +306,7 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
                         className="flex items-center gap-2 text-sm font-medium leading-none cursor-pointer"
                       >
                         <Star className="h-4 w-4 text-amber-500" />
-                        Mettre en avant cette annonce
+                        Mettre cet établissement en vedette
                       </label>
                     </div>
                     <AlertDialogFooter>
@@ -445,7 +465,7 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
               </div>
               <div className="space-y-2">
                 <Label htmlFor="admin-region">Région</Label>
-                <Select value={region} onValueChange={setRegion}>
+                <Select value={region} onValueChange={handleRegionChange}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Sélectionner une région" />
                   </SelectTrigger>
@@ -457,8 +477,21 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="admin-address">Adresse</Label>
-                <Input id="admin-address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="45 Rue Carnot, Plateau" />
+                <Label htmlFor="admin-address">{region === 'Dakar' ? 'Quartier' : 'Adresse'}</Label>
+                {region === 'Dakar' ? (
+                  <Select value={address} onValueChange={setAddress}>
+                    <SelectTrigger id="admin-address" className="w-full">
+                      <SelectValue placeholder="Sélectionner un quartier" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {DAKAR_NEIGHBORHOODS.map((neighborhood) => (
+                        <SelectItem key={neighborhood} value={neighborhood}>{neighborhood}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input id="admin-address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="45 Rue Carnot, Plateau" />
+                )}
               </div>
             </div>
 

@@ -42,6 +42,7 @@ export function LoginPage() {
             role: string
             phone: string | null
             isSubscribed: boolean
+            paymentReminder?: boolean
           }
       >(res)
 

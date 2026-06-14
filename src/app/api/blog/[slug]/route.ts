@@ -32,7 +32,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ slug
 
     const { slug } = await params;
     const body = await req.json();
-    const { title, excerpt, content, coverImage, category, isPublished } = body;
+    const { title, excerpt, content, coverImage, category, isPublished, status } = body;
 
     const post = await db.blogPost.update({
       where: { slug },
@@ -43,6 +43,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ slug
         ...(coverImage !== undefined ? { coverImage } : {}),
         ...(category !== undefined ? { category } : {}),
         ...(isPublished !== undefined ? { isPublished } : {}),
+        ...(status !== undefined ? { status } : {}),
       },
       include: {
         author: { select: { id: true, name: true, email: true } },

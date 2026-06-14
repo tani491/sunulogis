@@ -32,28 +32,10 @@ export function PlanSelector({ onSelectPro, compact = false }: PlanSelectorProps
   const [submitted, setSubmitted] = useState(false)
   const [redirecting, setRedirecting] = useState(false)
 
-  // 1) crée la SubscriptionRequest PENDING, puis 2) redirige vers Wave
-  const handlePayWave = async () => {
+  const handlePayWave = () => {
     if (redirecting) return
     setRedirecting(true)
-    try {
-      await fetch('/api/subscription-requests', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          transactionDetails: 'Redirection Wave Business — paiement en cours',
-        }),
-      })
-    } catch {
-      // on continue même si la requête échoue : le paiement Wave reste prioritaire
-    }
-    // URL brute, sans encodage — ouverture en nouvel onglet, fallback même fenêtre
-    const opened = window.open(WAVE_PAY_LINK, '_blank', 'noopener')
-    if (!opened) {
-      window.location.href = WAVE_PAY_LINK
-    } else {
-      setRedirecting(false)
-    }
+    window.location.href = WAVE_PAY_LINK
   }
 
   const handleDeclare = async (e: React.FormEvent) => {
@@ -173,7 +155,7 @@ export function PlanSelector({ onSelectPro, compact = false }: PlanSelectorProps
             ))}
           </ul>
 
-          {/* CTA Wave Business — création request + redirect */}
+          {/* CTA Wave Business */}
           <div className="space-y-3">
             <Button
               type="button"

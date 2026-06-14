@@ -69,6 +69,7 @@ export async function getSessionUser() {
         phone: true,
         isActive: true,
         isSubscribed: true,
+        paymentReminder: true,
       },
     });
 
@@ -81,6 +82,7 @@ export async function getSessionUser() {
       role: user.role,
       phone: user.phone,
       isSubscribed: user.isSubscribed,
+      paymentReminder: user.paymentReminder,
     };
   } catch {
     return null;

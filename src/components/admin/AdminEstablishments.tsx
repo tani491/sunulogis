@@ -9,7 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
-import { Building2, Check, X, Ban, ShieldCheck, Filter, MapPin, Pencil, Eye, Clock, MessageSquare, Star } from 'lucide-react'
+import { Building2, Check, Ban, ShieldCheck, Filter, MapPin, Eye, Clock, Star } from 'lucide-react'
 import { toast } from 'sonner'
 import { ESTABLISHMENT_TYPE_FILTERS, getTypeLabel, getTypeColor } from '@/lib/constants'
 import { AdminEstablishmentEditor } from './AdminEstablishmentEditor'
@@ -223,6 +223,18 @@ export function AdminEstablishments() {
                       <div>
                         <p className="font-medium">{est.name}</p>
                         <p className="text-xs text-muted-foreground line-clamp-1">{est.description?.substring(0, 60)}{est.description?.length > 60 ? '...' : ''}</p>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="mt-2 h-9 w-9 p-0 bg-blue-600 text-white border-blue-600 hover:bg-blue-700 hover:text-white sm:w-auto sm:px-3 sm:gap-1"
+                          onClick={() => setEditingId(est.id)}
+                          disabled={actionLoading === est.id}
+                          aria-label={!est.isApproved ? 'Examiner' : 'Modifier'}
+                          title={!est.isApproved ? 'Examiner' : 'Modifier'}
+                        >
+                          <Eye className="h-4 w-4" />
+                          <span className="hidden sm:inline">{!est.isApproved ? 'Examiner' : 'Modifier'}</span>
+                        </Button>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -244,20 +256,6 @@ export function AdminEstablishments() {
                     <TableCell>{getStatusBadge(est)}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
-                        {/* Examine/Edit button - opens the full editor */}
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-9 w-9 p-0 sm:w-auto sm:px-3 sm:gap-1 text-primary hover:text-primary"
-                          onClick={() => setEditingId(est.id)}
-                          disabled={actionLoading === est.id}
-                          aria-label={!est.isApproved ? 'Examiner' : 'Modifier'}
-                          title={!est.isApproved ? 'Examiner' : 'Modifier'}
-                        >
-                          <Pencil className="h-3 w-3" />
-                          <span className="hidden sm:inline">{!est.isApproved ? 'Examiner' : 'Modifier'}</span>
-                        </Button>
-
                         {!est.isApproved && (
                           <AlertDialog>
                             <AlertDialogTrigger asChild>

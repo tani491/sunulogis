@@ -3,14 +3,15 @@
 import { useAppStore, type View } from '@/store/app-store'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { LayoutDashboard, Building2, BedDouble, CalendarDays, Home, Menu, X } from 'lucide-react'
+import { LayoutDashboard, Building2, BedDouble, CalendarDays, Home, Menu, X, Newspaper } from 'lucide-react'
 import { useState } from 'react'
 import { DashboardOverview } from './DashboardOverview'
 import { ManageEstablishment } from './ManageEstablishment'
 import { ManageRooms } from './ManageRooms'
 import { ManageBookings } from './ManageBookings'
+import { ManageBlogPosts } from './ManageBlogPosts'
 
-type SubView = 'dashboard' | 'dashboard-establishments' | 'dashboard-rooms' | 'dashboard-bookings'
+type SubView = 'dashboard' | 'dashboard-establishments' | 'dashboard-rooms' | 'dashboard-bookings' | 'dashboard-blog'
 
 interface SidebarContentProps {
   subView: SubView
@@ -19,12 +20,16 @@ interface SidebarContentProps {
 }
 
 function SidebarContent({ subView, onNavigate, onCloseMobile }: SidebarContentProps) {
+  const { currentUser } = useAppStore()
   const navItems: { view: SubView; label: string; icon: React.ReactNode }[] = [
     { view: 'dashboard', label: 'Vue d\'ensemble', icon: <LayoutDashboard className="h-4 w-4" /> },
     { view: 'dashboard-establishments', label: 'Mes Établissements', icon: <Building2 className="h-4 w-4" /> },
     { view: 'dashboard-rooms', label: 'Chambres', icon: <BedDouble className="h-4 w-4" /> },
     { view: 'dashboard-bookings', label: 'Réservations', icon: <CalendarDays className="h-4 w-4" /> },
   ]
+  const visibleNavItems = currentUser?.isSubscribed
+    ? [...navItems, { view: 'dashboard-blog' as const, label: 'Blog', icon: <Newspaper className="h-4 w-4" /> }]
+    : navItems
 
   return (
     <div className="space-y-2 p-4">
@@ -37,7 +42,7 @@ function SidebarContent({ subView, onNavigate, onCloseMobile }: SidebarContentPr
         <Home className="h-4 w-4" />
         Accueil
       </Button>
-      {navItems.map((item) => (
+      {visibleNavItems.map((item) => (
         <Button
           key={item.view}
           variant={subView === item.view ? 'secondary' : 'ghost'}
@@ -57,6 +62,7 @@ const navLabels: Record<SubView, string> = {
   'dashboard-establishments': 'Mes Établissements',
   'dashboard-rooms': 'Chambres',
   'dashboard-bookings': 'Réservations',
+  'dashboard-blog': 'Blog',
 }
 
 export function DashboardLayout() {
@@ -73,6 +79,8 @@ export function DashboardLayout() {
         return <ManageRooms />
       case 'dashboard-bookings':
         return <ManageBookings />
+      case 'dashboard-blog':
+        return <ManageBlogPosts />
       default:
         return <DashboardOverview />
     }

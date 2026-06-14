@@ -9,16 +9,17 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  name         String?
-  password     String?
-  role         String   @default("owner")
-  phone        String?
-  isActive     Boolean  @default(true)
-  isSubscribed Boolean  @default(false)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id              String   @id @default(cuid())
+  email           String   @unique
+  name            String?
+  password        String?
+  role            String   @default("owner")
+  phone           String?
+  isActive        Boolean  @default(true)
+  isSubscribed    Boolean  @default(false)
+  paymentReminder Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   establishments       Establishment[]
   posts                BlogPost[]
@@ -84,7 +85,7 @@ model Establishment {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
-  owner User  @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  owner User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   rooms Room[]
 
   @@index([ownerId])
@@ -139,6 +140,7 @@ model BlogPost {
   coverImage  String?
   category    String   @default("general")
   isPublished Boolean  @default(false)
+  status      String   @default("PENDING")
   authorId    String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -148,6 +150,7 @@ model BlogPost {
   @@index([slug])
   @@index([category])
   @@index([isPublished])
+  @@index([status])
   @@index([authorId])
 }
 

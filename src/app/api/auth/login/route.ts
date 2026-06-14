@@ -29,6 +29,7 @@ export async function POST(req: NextRequest) {
         password: true,
         isActive: true,
         isSubscribed: true,
+        paymentReminder: true,
       },
     });
 
@@ -53,6 +54,7 @@ export async function POST(req: NextRequest) {
       role: user.role,
       phone: user.phone,
       isSubscribed: user.isSubscribed,
+      paymentReminder: user.paymentReminder,
     };
 
     const response = NextResponse.json(payload);

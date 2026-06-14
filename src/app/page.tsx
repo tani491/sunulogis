@@ -46,6 +46,7 @@ export default function Home() {
           role: string
           phone: string | null
           isSubscribed: boolean
+          paymentReminder?: boolean
         } | null>(res)
         if (data && data.id) {
           setUser(data)
@@ -80,6 +81,7 @@ export default function Home() {
       'dashboard-establishments': <DashboardLayout />,
       'dashboard-rooms': <DashboardLayout />,
       'dashboard-bookings': <DashboardLayout />,
+      'dashboard-blog': <DashboardLayout />,
       admin: <AdminLayout />,
       'admin-stats': <AdminLayout />,
       'admin-establishments': <AdminLayout />,
@@ -87,6 +89,7 @@ export default function Home() {
       'admin-blog': <AdminLayout />,
       'admin-subscribers': <AdminLayout />,
       'admin-commissions': <AdminLayout />,
+      'admin-pro': <AdminLayout />,
       'admin-settings': <AdminLayout />,
       'admin-analytics': <AdminLayout />,
       'admin-subscription-requests': <AdminLayout />,

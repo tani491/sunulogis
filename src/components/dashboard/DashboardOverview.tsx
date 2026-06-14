@@ -9,10 +9,10 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Progress } from '@/components/ui/progress'
 import {
   CalendarDays, CheckCircle, Clock, Building2, Plus,
-  AlertCircle, Lock, Eye, MessageCircle, Zap,
+  AlertCircle, AlertTriangle, Lock, Eye, MessageCircle, Zap,
   Shield, Star, Sparkles,
 } from 'lucide-react'
-import { COMMISSION_RATES, getTypeLabel, PRO_FEATURES } from '@/lib/constants'
+import { COMMISSION_RATES, getTypeLabel, PRO_FEATURES, WAVE_PAY_LINK } from '@/lib/constants'
 import { format, isAfter } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { PlanSelector } from '@/components/PlanSelector'
@@ -127,6 +127,26 @@ export function DashboardOverview() {
 
   return (
     <div className="space-y-6">
+      {currentUser?.paymentReminder === true && (
+        <Card className="border-2 border-amber-300 bg-amber-50 shadow-sm">
+          <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-500 text-white shrink-0">
+                <AlertTriangle className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="font-bold text-amber-950">
+                  Votre abonnement SunuPro arrive à expiration. Veuillez renouveler votre accès.
+                </p>
+              </div>
+            </div>
+            <Button asChild className="bg-amber-600 hover:bg-amber-700 text-white font-bold shrink-0">
+              <a href={WAVE_PAY_LINK}>Renouveler maintenant</a>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
