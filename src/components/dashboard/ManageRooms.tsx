@@ -352,7 +352,7 @@ export function ManageRooms() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="roomName">Nom de la chambre *</Label>
+              <Label htmlFor="roomName">Nom de l&apos;hébergement *</Label>
               <Input id="roomName" value={name} onChange={(e) => setName(e.target.value)} placeholder="Chambre Double Confort" required />
             </div>
 
