@@ -29,6 +29,14 @@ interface Establishment {
   rooms: { id: string; isAvailable: boolean }[];
 }
 
+interface EstablishmentsApiResponse {
+  establishments: Establishment[];
+  totalCount: number;
+  totalPages: number;
+  page: number;
+  limit: number;
+}
+
 export function LandingPage() {
   const { navigate, selectEstablishment } = useAppStore();
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -49,10 +57,11 @@ export function LandingPage() {
   useEffect(() => {
     const fetchFeatured = async () => {
       try {
-        const res = await fetch('/api/establishments');
-        const data = await parseJsonResponse<Establishment[]>(res);
-        if (Array.isArray(data)) {
-          setEstablishments(data.slice(0, 6));
+        const res = await fetch('/api/establishments?limit=6');
+        const data = await parseJsonResponse<EstablishmentsApiResponse | Establishment[]>(res);
+        const list = Array.isArray(data) ? data : data.establishments;
+        if (Array.isArray(list)) {
+          setEstablishments(list.slice(0, 6));
         }
       } catch (err) {
         console.error(err);

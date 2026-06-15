@@ -1,15 +1,17 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAppStore } from '@/store/app-store'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Search, MapPin, Users, ArrowRight, Building2, Globe, Banknote, SlidersHorizontal } from 'lucide-react'
-import { ESTABLISHMENT_TYPE_FILTERS, REGIONS, PRICE_RANGES, getTypeLabel, getTypeColor } from '@/lib/constants'
+import { MapPin, Users, ArrowRight, Building2, Globe, Banknote, SlidersHorizontal, ChevronLeft, ChevronRight } from 'lucide-react'
+import { DAKAR_NEIGHBORHOODS, ESTABLISHMENT_TYPE_FILTERS, REGIONS, PRICE_RANGES, getTypeLabel, getTypeColor } from '@/lib/constants'
 import { parseJsonResponse } from '@/lib/fetch-json'
+
+const PAGE_LIMIT = 9
 
 interface Establishment {
   id: string
@@ -25,19 +27,46 @@ interface Establishment {
   rooms: { id: string; name: string; pricePerNight: number; capacity: number; isAvailable: boolean }[]
 }
 
+interface EstablishmentsApiResponse {
+  establishments: Establishment[]
+  totalCount: number
+  totalPages: number
+  page: number
+  limit: number
+}
+
 export function HomePage() {
   const { navigate, selectEstablishment, searchFilters, setSearchFilters } = useAppStore()
   const [establishments, setEstablishments] = useState<Establishment[]>([])
   const [loading, setLoading] = useState(true)
   const [typeFilter, setTypeFilter] = useState<string>('all')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalCount, setTotalCount] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
+  const latestRequestId = useRef(0)
+  const latestFilterKey = useRef('')
+  const filterKey = [
+    searchFilters.region,
+    searchFilters.neighborhood,
+    searchFilters.priceRange,
+    searchFilters.search,
+    typeFilter,
+  ].join('|')
 
   async function fetchEstablishments() {
+    const requestId = latestRequestId.current + 1
+    latestRequestId.current = requestId
     setLoading(true)
     try {
       const params = new URLSearchParams()
       if (searchFilters.region && searchFilters.region !== 'all') params.set('region', searchFilters.region)
+      if (searchFilters.region === 'Dakar' && searchFilters.neighborhood && searchFilters.neighborhood !== 'all') {
+        params.set('neighborhood', searchFilters.neighborhood)
+      }
       if (searchFilters.search) params.set('search', searchFilters.search)
       if (typeFilter && typeFilter !== 'all') params.set('type', typeFilter)
+      params.set('page', String(currentPage))
+      params.set('limit', String(PAGE_LIMIT))
 
       // Price filter ranges
       const pr = searchFilters.priceRange
@@ -58,29 +87,67 @@ export function HomePage() {
 
       const url = params.toString() ? `/api/establishments?${params.toString()}` : '/api/establishments'
       const res = await fetch(url)
-      const data = await parseJsonResponse<Establishment[]>(res)
-      if (Array.isArray(data)) setEstablishments(data)
+      const data = await parseJsonResponse<EstablishmentsApiResponse | Establishment[]>(res)
+      if (latestRequestId.current !== requestId) return
+
+      if (Array.isArray(data)) {
+        setEstablishments(data)
+        setTotalCount(data.length)
+        setTotalPages(data.length > 0 ? 1 : 0)
+      } else {
+        setEstablishments(Array.isArray(data.establishments) ? data.establishments : [])
+        setTotalCount(Number.isFinite(data.totalCount) ? data.totalCount : 0)
+        setTotalPages(Number.isFinite(data.totalPages) ? data.totalPages : 0)
+      }
     } catch (err) {
       console.error(err)
     } finally {
-      setLoading(false)
+      if (latestRequestId.current === requestId) {
+        setLoading(false)
+      }
     }
   }
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
+      const filtersChanged = latestFilterKey.current !== filterKey
+      latestFilterKey.current = filterKey
+      if (filtersChanged && currentPage !== 1) {
+        setCurrentPage(1)
+        return
+      }
+
       void fetchEstablishments()
     }, 0)
 
     return () => window.clearTimeout(timeoutId)
-  }, [searchFilters.region, searchFilters.priceRange, typeFilter])
+  }, [filterKey, currentPage])
 
-  const filteredEstablishments = establishments.filter((e) =>
-    !searchFilters.search || e.name.toLowerCase().includes(searchFilters.search.toLowerCase()) || e.city.toLowerCase().includes(searchFilters.search.toLowerCase())
-  )
+  const filteredEstablishments = establishments
+  const displayTotalPages = Math.max(totalPages, 1)
 
   const handleViewDetail = (id: string) => {
     selectEstablishment(id)
+  }
+
+  const handleTypeFilterChange = (value: string) => {
+    setTypeFilter(value)
+    setCurrentPage(1)
+  }
+
+  const handleRegionFilterChange = (value: string) => {
+    setSearchFilters({ region: value, neighborhood: 'all' })
+    setCurrentPage(1)
+  }
+
+  const handleNeighborhoodFilterChange = (value: string) => {
+    setSearchFilters({ neighborhood: value })
+    setCurrentPage(1)
+  }
+
+  const handlePriceFilterChange = (value: string) => {
+    setSearchFilters({ priceRange: value })
+    setCurrentPage(1)
   }
 
   return (
@@ -91,7 +158,7 @@ export function HomePage() {
           <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm font-medium">Filtres :</span>
         </div>
-        <Select value={typeFilter} onValueChange={setTypeFilter}>
+        <Select value={typeFilter} onValueChange={handleTypeFilterChange}>
           <SelectTrigger className="w-full sm:w-48 h-9">
             <Building2 className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
             <SelectValue placeholder="Type" />
@@ -102,7 +169,7 @@ export function HomePage() {
             ))}
           </SelectContent>
         </Select>
-        <Select value={searchFilters.region} onValueChange={(v) => setSearchFilters({ region: v })}>
+        <Select value={searchFilters.region} onValueChange={handleRegionFilterChange}>
           <SelectTrigger className="w-full sm:w-44 h-9">
             <MapPin className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
             <SelectValue placeholder="Région" />
@@ -114,7 +181,21 @@ export function HomePage() {
             ))}
           </SelectContent>
         </Select>
-        <Select value={searchFilters.priceRange} onValueChange={(v) => setSearchFilters({ priceRange: v })}>
+        {searchFilters.region === 'Dakar' && (
+          <Select value={searchFilters.neighborhood} onValueChange={handleNeighborhoodFilterChange}>
+            <SelectTrigger className="w-full sm:w-52 h-9">
+              <MapPin className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+              <SelectValue placeholder="Quartier" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tous les quartiers</SelectItem>
+              {DAKAR_NEIGHBORHOODS.map((neighborhood) => (
+                <SelectItem key={neighborhood} value={neighborhood}>{neighborhood}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+        <Select value={searchFilters.priceRange} onValueChange={handlePriceFilterChange}>
           <SelectTrigger className="w-full sm:w-48 h-9">
             <Banknote className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
             <SelectValue placeholder="Budget" />
@@ -131,7 +212,7 @@ export function HomePage() {
       <section>
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold">Établissements disponibles</h2>
-          <Badge variant="outline">{filteredEstablishments.length} résultat{filteredEstablishments.length !== 1 ? 's' : ''}</Badge>
+          <Badge variant="outline">{totalCount} résultat{totalCount !== 1 ? 's' : ''}</Badge>
         </div>
 
         {loading ? (
@@ -154,7 +235,8 @@ export function HomePage() {
             <p className="text-sm text-muted-foreground">Essayez de modifier vos critères de recherche</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredEstablishments.map((est) => (
               <Card
                 key={est.id}
@@ -228,7 +310,36 @@ export function HomePage() {
                   )}
                 </CardContent>
               </Card>
-            ))}
+              ))}
+            </div>
+
+            {totalPages > 1 && (
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="gap-2"
+                  onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                  disabled={currentPage <= 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Précédent
+                </Button>
+                <span className="text-sm font-medium text-muted-foreground">
+                  Page {currentPage} sur {displayTotalPages}
+                </span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="gap-2"
+                  onClick={() => setCurrentPage((page) => Math.min(displayTotalPages, page + 1))}
+                  disabled={currentPage >= totalPages}
+                >
+                  Suivant
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </section>

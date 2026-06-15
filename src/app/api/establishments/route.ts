@@ -36,6 +36,11 @@ export async function GET(req: NextRequest) {
     const maxPrice = searchParams.get('maxPrice');
     const search = searchParams.get('search');
     const ownerId = searchParams.get('ownerId');
+    const neighborhood = searchParams.get('neighborhood') || searchParams.get('address');
+    const pageParam = parseInt(searchParams.get('page') || '1', 10);
+    const limitParam = parseInt(searchParams.get('limit') || '9', 10);
+    const page = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1;
+    const limit = Number.isFinite(limitParam) && limitParam > 0 ? limitParam : 9;
 
     // If ownerId is provided, return establishments for that owner (including unapproved)
     // This is used by the owner dashboard. For security, only the owner themselves or admins can request this.
@@ -50,11 +55,13 @@ export async function GET(req: NextRequest) {
           ownerId,
           ...(city ? { city: { contains: city } } : {}),
           ...(region ? { region } : {}),
+          ...(neighborhood ? { address: { contains: neighborhood } } : {}),
           ...(type ? { type } : {}),
           ...(search ? {
             OR: [
               { name: { contains: search } },
               { city: { contains: search } },
+              { address: { contains: search } },
               { description: { contains: search } },
             ],
           } : {}),
@@ -76,42 +83,57 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Paramètre de prix invalide' }, { status: 400 });
     }
 
+    const roomPriceWhere = minPriceNum !== null || maxPriceNum !== null ? {
+      pricePerNight: {
+        ...(minPriceNum !== null ? { gte: minPriceNum } : {}),
+        ...(maxPriceNum !== null ? { lte: maxPriceNum } : {}),
+      },
+    } : undefined;
+
     // Public listing: only approved and non-suspended establishments
-    const establishments = await db.establishment.findMany({
-      where: {
-        isApproved: true,
-        isSuspended: false,
-        ...(city ? { city: { contains: city } } : {}),
-        ...(region ? { region } : {}),
-        ...(type ? { type } : {}),
-        ...(search ? {
-          OR: [
-            { name: { contains: search } },
-            { city: { contains: search } },
-            { description: { contains: search } },
-          ],
-        } : {}),
-      },
-      include: {
-        rooms: {
-          where: {
-            ...(minPriceNum !== null || maxPriceNum !== null ? {
-              pricePerNight: {
-                ...(minPriceNum !== null ? { gte: minPriceNum } : {}),
-                ...(maxPriceNum !== null ? { lte: maxPriceNum } : {}),
-              },
-            } : {}),
+    const where = {
+      isApproved: true,
+      isSuspended: false,
+      ...(city ? { city: { contains: city } } : {}),
+      ...(region ? { region } : {}),
+      ...(neighborhood ? { address: { contains: neighborhood } } : {}),
+      ...(type ? { type } : {}),
+      ...(roomPriceWhere ? { rooms: { some: roomPriceWhere } } : {}),
+      ...(search ? {
+        OR: [
+          { name: { contains: search } },
+          { city: { contains: search } },
+          { address: { contains: search } },
+          { description: { contains: search } },
+        ],
+      } : {}),
+    };
+
+    const [totalCount, establishments] = await db.$transaction([
+      db.establishment.count({ where }),
+      db.establishment.findMany({
+        where,
+        include: {
+          rooms: {
+            where: {
+              ...(roomPriceWhere || {}),
+            },
           },
+          owner: { select: { id: true, name: true } },
         },
-        owner: { select: { id: true, name: true } },
-      },
-      orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+    ]);
+
+    return NextResponse.json({
+      establishments: establishments.map(parseEstablishment),
+      totalCount,
+      totalPages: Math.ceil(totalCount / limit),
+      page,
+      limit,
     });
-
-    // Filter establishments that have rooms matching price criteria
-    const filtered = establishments.filter(e => e.rooms.length > 0 || (!minPrice && !maxPrice));
-
-    return NextResponse.json(filtered.map(parseEstablishment));
   } catch (error) {
     console.error('Get establishments error:', error);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });

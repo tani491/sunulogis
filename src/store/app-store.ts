@@ -39,6 +39,7 @@ interface CurrentUser {
 interface SearchFilters {
   search: string;
   region: string;
+  neighborhood: string;
   priceRange: string;
   type: string;
 }
@@ -73,6 +74,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   searchFilters: {
     search: '',
     region: 'all',
+    neighborhood: 'all',
     priceRange: 'all',
     type: 'all',
   },

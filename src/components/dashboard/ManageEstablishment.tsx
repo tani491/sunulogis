@@ -13,20 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Building2, Save, Plus, Globe, Phone, MapPin, CheckCircle, Clock, AlertCircle, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { DragDropImageUpload } from '@/components/shared/DragDropImageUpload'
-import { ESTABLISHMENT_TYPES, REGIONS, getTypeLabel } from '@/lib/constants'
-
-const DAKAR_NEIGHBORHOODS = [
-  'Keur Massar',
-  'Ouakam',
-  'Médina',
-  'Almadies',
-  'Ngor',
-  'Plateau',
-  'Liberté 6',
-  'Sacré-Cœur',
-  'Mermoz',
-  'Hann Maristes',
-]
+import { DAKAR_NEIGHBORHOODS, ESTABLISHMENT_TYPES, REGIONS, getTypeLabel } from '@/lib/constants'
 
 interface Establishment {
   id: string

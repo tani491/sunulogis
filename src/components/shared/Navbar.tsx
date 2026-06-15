@@ -9,6 +9,7 @@ import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Home, LayoutDashboard, LogOut, Menu, Search, MapPin, Banknote, ChevronDown, User, Shield, BookOpen, ChevronLeft } from 'lucide-react';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
+import { DAKAR_NEIGHBORHOODS } from '@/lib/constants';
 
 const regions = [
   'Dakar', 'Diourbel', 'Fatick', 'Kaffrine', 'Kaolack',
@@ -33,6 +34,16 @@ export default function Navbar() {
 
   const handleSearch = () => {
     navigate('home');
+  };
+
+  const handleRegionChange = (region: string) => {
+    setSearchFilters({ region, neighborhood: 'all' });
+    handleSearch();
+  };
+
+  const handleNeighborhoodChange = (neighborhood: string) => {
+    setSearchFilters({ neighborhood });
+    handleSearch();
   };
 
   return (
@@ -74,7 +85,7 @@ export default function Navbar() {
 
         {/* Desktop: Search filters (only on public pages) */}
         {isPublicPage && (
-          <div className="hidden lg:flex items-center gap-2 flex-1 max-w-2xl mx-6">
+          <div className="hidden lg:flex items-center gap-2 flex-1 max-w-4xl mx-6">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -85,7 +96,7 @@ export default function Navbar() {
                 className="h-9 border-green-700 pl-9 transition-all hover:border-primary hover:shadow-[0_0_0_3px_rgba(34,197,94,0.12)] focus-visible:ring-green-700/20"
               />
             </div>
-            <Select value={searchFilters.region} onValueChange={(v) => { setSearchFilters({ region: v }); handleSearch(); }}>
+            <Select value={searchFilters.region} onValueChange={handleRegionChange}>
               <SelectTrigger className="h-9 w-40 border-green-700 transition-all hover:border-primary hover:shadow-[0_0_0_3px_rgba(34,197,94,0.12)] focus:ring-green-700/20">
                 <MapPin className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
                 <SelectValue placeholder="Region" />
@@ -97,6 +108,20 @@ export default function Navbar() {
                 ))}
               </SelectContent>
             </Select>
+            {searchFilters.region === 'Dakar' && (
+              <Select value={searchFilters.neighborhood} onValueChange={handleNeighborhoodChange}>
+                <SelectTrigger className="h-9 w-48 border-green-700 transition-all hover:border-primary hover:shadow-[0_0_0_3px_rgba(34,197,94,0.12)] focus:ring-green-700/20">
+                  <MapPin className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+                  <SelectValue placeholder="Quartier" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tous les quartiers</SelectItem>
+                  {DAKAR_NEIGHBORHOODS.map((neighborhood) => (
+                    <SelectItem key={neighborhood} value={neighborhood}>{neighborhood}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
             <Select value={searchFilters.priceRange} onValueChange={(v) => { setSearchFilters({ priceRange: v }); handleSearch(); }}>
               <SelectTrigger className="h-9 w-44 border-green-700 transition-all hover:border-primary hover:shadow-[0_0_0_3px_rgba(34,197,94,0.12)] focus:ring-green-700/20">
                 <Banknote className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
@@ -361,7 +386,7 @@ export default function Navbar() {
             />
           </div>
           <div className="flex gap-2">
-            <Select value={searchFilters.region} onValueChange={(v) => { setSearchFilters({ region: v }); handleSearch(); }}>
+            <Select value={searchFilters.region} onValueChange={handleRegionChange}>
               <SelectTrigger className="h-9 flex-1 border-green-700 transition-all hover:border-primary hover:shadow-[0_0_0_3px_rgba(34,197,94,0.12)] focus:ring-green-700/20">
                 <MapPin className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
                 <SelectValue placeholder="Region" />
@@ -388,9 +413,22 @@ export default function Navbar() {
               </SelectContent>
             </Select>
           </div>
+          {searchFilters.region === 'Dakar' && (
+            <Select value={searchFilters.neighborhood} onValueChange={handleNeighborhoodChange}>
+              <SelectTrigger className="h-9 w-full border-green-700 transition-all hover:border-primary hover:shadow-[0_0_0_3px_rgba(34,197,94,0.12)] focus:ring-green-700/20">
+                <MapPin className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
+                <SelectValue placeholder="Quartier" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous les quartiers</SelectItem>
+                {DAKAR_NEIGHBORHOODS.map((neighborhood) => (
+                  <SelectItem key={neighborhood} value={neighborhood}>{neighborhood}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
       )}
     </header>
   );
 }
-

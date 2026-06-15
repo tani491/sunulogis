@@ -40,6 +40,18 @@ export const REGIONS = [
   'Saint-Louis', 'Tambacounda', 'Thiès', 'Ziguinchor',
 ] as const
 
+// Dakar neighborhoods
+export const DAKAR_NEIGHBORHOODS = [
+  'Almadies', 'Ben Tally', 'Camberène', 'Castors', 'Centre-ville / Plateau',
+  'Cité Keur Gorgui', 'Dakar Plateau', 'Dany', 'Dieuppeul', 'Fann Résidence',
+  'Grand Dakar', 'Grand Yoff', 'Guediawaye', 'Hann Maristes', 'HLM',
+  'Kapo', 'Keur Massar', 'Liberte 1', 'Liberte 2', 'Liberte 3', 'Liberte 4',
+  'Liberte 5', 'Liberte 6', 'Malika', 'Mermoz', 'Medina', 'Ngor',
+  'Nord Foire', 'Ouakam', 'Parcelles Assainies', 'Pikine', 'Point E',
+  'Rufisque', 'Sacré-Cœur 1', 'Sacré-Cœur 2', 'Sacré-Cœur 3', 'Sicotap',
+  'Thiaroye', 'Yoff', 'Zac Mbao',
+]
+
 // Get display label for establishment type
 export function getTypeLabel(type: string): string {
   const found = ESTABLISHMENT_TYPES.find(t => t.value === type)

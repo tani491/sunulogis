@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Check, X, Zap, Shield, Star, TrendingUp, Headphones, Eye, Image as ImageIcon, Globe, Megaphone, CheckCircle2, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -44,6 +44,12 @@ export function PlanSelector({ onSelectPro, compact = false }: PlanSelectorProps
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [redirecting, setRedirecting] = useState(false)
+
+  useEffect(() => {
+    const handleFocus = () => setRedirecting(false)
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
+  }, [])
 
   const handlePayWave = () => {
     if (redirecting) return
@@ -111,9 +117,7 @@ export function PlanSelector({ onSelectPro, compact = false }: PlanSelectorProps
                     <Check className="h-2.5 w-2.5" />
                   </span>
                 ) : (
-                  <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground/40">
-                    <X className="h-2.5 w-2.5" />
-                  </span>
+                  <X className="text-red-500 h-5 w-5 shrink-0 mt-0.5" />
                 )}
                 <span className={`leading-snug ${f.included ? 'text-foreground' : 'text-muted-foreground line-through'}`}>
                   {f.label}
@@ -121,9 +125,7 @@ export function PlanSelector({ onSelectPro, compact = false }: PlanSelectorProps
               </li>
             ))}
             <li className="flex items-start gap-2 text-xs sm:text-sm">
-              <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-500">
-                <X className="h-2.5 w-2.5" />
-              </span>
+              <X className="text-red-500 h-5 w-5 shrink-0 mt-0.5" />
               <span className="leading-snug text-muted-foreground line-through">
                 {BLOG_FEATURE}
               </span>
