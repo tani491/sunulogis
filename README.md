@@ -1,5 +1,5 @@
 # SunuLogis
-
+s
 **Plateforme SaaS de réservation d'hébergements pour le marché sénégalais**
 
 SunuLogis est une application web qui permet aux voyageurs de trouver et réserver des hébergements au Sénégal (auberges, hôtels, appartements, appartements meublés, lodges, lofts), tout en offrant aux propriétaires un dashboard de gestion complet. Les réservations se confirment via WhatsApp.

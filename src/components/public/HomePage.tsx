@@ -150,6 +150,11 @@ export function HomePage() {
     setCurrentPage(1)
   }
 
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+    window.scrollTo({ top: 350, behavior: 'smooth' })
+  }
+
   return (
     <div className="space-y-8">
       {/* Filters bar */}
@@ -181,6 +186,17 @@ export function HomePage() {
             ))}
           </SelectContent>
         </Select>
+        <Select value={searchFilters.priceRange} onValueChange={handlePriceFilterChange}>
+          <SelectTrigger className="w-full sm:w-48 h-9">
+            <Banknote className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+            <SelectValue placeholder="Budget" />
+          </SelectTrigger>
+          <SelectContent>
+            {PRICE_RANGES.map((p) => (
+              <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         {searchFilters.region === 'Dakar' && (
           <Select value={searchFilters.neighborhood} onValueChange={handleNeighborhoodFilterChange}>
             <SelectTrigger className="w-full sm:w-52 h-9">
@@ -195,17 +211,6 @@ export function HomePage() {
             </SelectContent>
           </Select>
         )}
-        <Select value={searchFilters.priceRange} onValueChange={handlePriceFilterChange}>
-          <SelectTrigger className="w-full sm:w-48 h-9">
-            <Banknote className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
-            <SelectValue placeholder="Budget" />
-          </SelectTrigger>
-          <SelectContent>
-            {PRICE_RANGES.map((p) => (
-              <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
       </section>
 
       {/* Establishment Grid */}
@@ -319,7 +324,7 @@ export function HomePage() {
                   type="button"
                   variant="outline"
                   className="gap-2"
-                  onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                  onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
                   disabled={currentPage <= 1}
                 >
                   <ChevronLeft className="h-4 w-4" />
@@ -332,7 +337,7 @@ export function HomePage() {
                   type="button"
                   variant="outline"
                   className="gap-2"
-                  onClick={() => setCurrentPage((page) => Math.min(displayTotalPages, page + 1))}
+                  onClick={() => handlePageChange(Math.min(displayTotalPages, currentPage + 1))}
                   disabled={currentPage >= totalPages}
                 >
                   Suivant

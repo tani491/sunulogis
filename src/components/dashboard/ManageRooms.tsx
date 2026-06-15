@@ -23,12 +23,13 @@ interface Room {
   capacity: number
   isAvailable: boolean
   establishmentId: string
-  establishment?: { name: string; id: string }
+  establishment?: { name: string; id: string; type?: string }
 }
 
 interface Establishment {
   id: string
   name: string
+  type: string
   rooms: Room[]
 }
 
@@ -44,9 +45,15 @@ export function ManageRooms() {
   const [name, setName] = useState('')
   const [pricePerNight, setPricePerNight] = useState('')
   const [capacity, setCapacity] = useState('1')
+  const [bedroomCount, setBedroomCount] = useState('1')
+  const [livingRoomCount, setLivingRoomCount] = useState('0')
+  const [bathroomCount, setBathroomCount] = useState('1')
   const [isAvailable, setIsAvailable] = useState(true)
   const [selectedEstablishmentId, setSelectedEstablishmentId] = useState('')
   const [saving, setSaving] = useState(false)
+
+  const selectedEstablishment = establishments.find((e) => e.id === selectedEstablishmentId)
+  const usesApartmentFields = ['appartement', 'appartement_meuble', 'studio'].includes(selectedEstablishment?.type || '')
 
   useEffect(() => {
     if (currentUser) {
@@ -66,7 +73,7 @@ export function ManageRooms() {
       for (const est of data) {
         const roomsRes = await fetch(`/api/rooms?establishmentId=${est.id}`)
         const estRooms = await roomsRes.json()
-        allRooms.push(...estRooms.map((r: Room) => ({ ...r, establishment: { name: est.name, id: est.id } })))
+        allRooms.push(...estRooms.map((r: Room) => ({ ...r, establishment: { name: est.name, id: est.id, type: est.type } })))
       }
       setRooms(allRooms)
     } catch (err) {
@@ -80,6 +87,9 @@ export function ManageRooms() {
     setName('')
     setPricePerNight('')
     setCapacity('1')
+    setBedroomCount('1')
+    setLivingRoomCount('0')
+    setBathroomCount('1')
     setIsAvailable(true)
     // Auto-select the first establishment if there's only one
     setSelectedEstablishmentId(establishments.length === 1 ? establishments[0].id : '')
@@ -91,6 +101,9 @@ export function ManageRooms() {
     setName('')
     setPricePerNight('')
     setCapacity('1')
+    setBedroomCount('1')
+    setLivingRoomCount('0')
+    setBathroomCount('1')
     setIsAvailable(true)
     setSelectedEstablishmentId('')
     setEditingRoom(null)
@@ -101,6 +114,9 @@ export function ManageRooms() {
     setName(room.name)
     setPricePerNight(room.pricePerNight.toString())
     setCapacity(room.capacity.toString())
+    setBedroomCount('1')
+    setLivingRoomCount('0')
+    setBathroomCount('1')
     setIsAvailable(room.isAvailable)
     setSelectedEstablishmentId(room.establishmentId)
     setEditingRoom(room)
@@ -122,11 +138,18 @@ export function ManageRooms() {
 
     setSaving(true)
     try {
+      const roomPayload = {
+        name,
+        pricePerNight: Number(pricePerNight),
+        capacity: usesApartmentFields ? 1 : Number(capacity),
+        isAvailable,
+      }
+
       if (editingRoom) {
         const res = await fetch(`/api/rooms/${editingRoom.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, pricePerNight: Number(pricePerNight), capacity: Number(capacity), isAvailable }),
+          body: JSON.stringify(roomPayload),
         })
         if (!res.ok) {
           const data = await res.json()
@@ -138,7 +161,7 @@ export function ManageRooms() {
         const res = await fetch('/api/rooms', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ establishmentId: selectedEstablishmentId, name, pricePerNight: Number(pricePerNight), capacity: Number(capacity), isAvailable }),
+          body: JSON.stringify({ establishmentId: selectedEstablishmentId, ...roomPayload }),
         })
         if (!res.ok) {
           const data = await res.json()
@@ -333,15 +356,32 @@ export function ManageRooms() {
               <Input id="roomName" value={name} onChange={(e) => setName(e.target.value)} placeholder="Chambre Double Confort" required />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className={usesApartmentFields ? 'space-y-3' : 'grid grid-cols-2 gap-3'}>
               <div className="space-y-2">
-                <Label htmlFor="price">Prix par nuit (FCFA) *</Label>
+                <Label htmlFor="price">{usesApartmentFields ? "Prix de l'appartement par mois (FCFA)" : 'Prix par nuit (FCFA)'} *</Label>
                 <Input id="price" type="number" value={pricePerNight} onChange={(e) => setPricePerNight(e.target.value)} placeholder="25000" min="0" required />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="capacity">Capacité</Label>
-                <Input id="capacity" type="number" value={capacity} onChange={(e) => setCapacity(e.target.value)} min="1" />
-              </div>
+              {usesApartmentFields ? (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="bedroomCount">Nombre de chambres</Label>
+                    <Input id="bedroomCount" type="number" value={bedroomCount} onChange={(e) => setBedroomCount(e.target.value)} min="1" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="livingRoomCount">Nombre de salons</Label>
+                    <Input id="livingRoomCount" type="number" value={livingRoomCount} onChange={(e) => setLivingRoomCount(e.target.value)} min="0" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="bathroomCount">Nombre de toilettes/salles de bain</Label>
+                    <Input id="bathroomCount" type="number" value={bathroomCount} onChange={(e) => setBathroomCount(e.target.value)} min="1" />
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Label htmlFor="capacity">Capacité</Label>
+                  <Input id="capacity" type="number" value={capacity} onChange={(e) => setCapacity(e.target.value)} min="1" />
+                </div>
+              )}
             </div>
 
             <div className="flex items-center gap-3">

@@ -26,6 +26,7 @@ interface Establishment {
   region: string;
   images: string[];
   minPrice: number | null;
+  isFeatured: boolean;
   rooms: { id: string; isAvailable: boolean }[];
 }
 
@@ -57,11 +58,11 @@ export function LandingPage() {
   useEffect(() => {
     const fetchFeatured = async () => {
       try {
-        const res = await fetch('/api/establishments?limit=6');
+        const res = await fetch('/api/establishments?limit=100');
         const data = await parseJsonResponse<EstablishmentsApiResponse | Establishment[]>(res);
         const list = Array.isArray(data) ? data : data.establishments;
         if (Array.isArray(list)) {
-          setEstablishments(list.slice(0, 6));
+          setEstablishments(list.filter((est) => est.isFeatured === true).slice(0, 6));
         }
       } catch (err) {
         console.error(err);
