@@ -43,17 +43,17 @@ export function PlanSelector({ onSelectPro, compact = false }: PlanSelectorProps
   const [details, setDetails] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
-  const [redirecting, setRedirecting] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    const handleFocus = () => setRedirecting(false)
+    const handleFocus = () => setIsLoading(false)
     window.addEventListener('focus', handleFocus)
     return () => window.removeEventListener('focus', handleFocus)
   }, [])
 
   const handlePayWave = () => {
-    if (redirecting) return
-    setRedirecting(true)
+    if (isLoading) return
+    setIsLoading(true)
     window.location.href = getCleanWavePayLink()
   }
 
@@ -117,7 +117,7 @@ export function PlanSelector({ onSelectPro, compact = false }: PlanSelectorProps
                     <Check className="h-2.5 w-2.5" />
                   </span>
                 ) : (
-                  <X className="text-red-500 h-5 w-5 shrink-0 mt-0.5" />
+                  <X className="text-red-500 h-5 w-5" />
                 )}
                 <span className={`leading-snug ${f.included ? 'text-foreground' : 'text-muted-foreground line-through'}`}>
                   {f.label}
@@ -125,7 +125,7 @@ export function PlanSelector({ onSelectPro, compact = false }: PlanSelectorProps
               </li>
             ))}
             <li className="flex items-start gap-2 text-xs sm:text-sm">
-              <X className="text-red-500 h-5 w-5 shrink-0 mt-0.5" />
+              <X className="text-red-500 h-5 w-5" />
               <span className="leading-snug text-muted-foreground line-through">
                 {BLOG_FEATURE}
               </span>
@@ -192,9 +192,9 @@ export function PlanSelector({ onSelectPro, compact = false }: PlanSelectorProps
               type="button"
               className="w-full h-10 sm:h-11 bg-linear-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white border-0 shadow-md shadow-emerald-500/30 font-semibold text-sm sm:text-base gap-2"
               onClick={handlePayWave}
-              disabled={redirecting}
+              disabled={isLoading}
             >
-              {redirecting ? (
+              {isLoading ? (
                 <>
                   <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
                   Redirection vers Wave…
