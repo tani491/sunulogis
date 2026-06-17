@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { useAppStore } from '@/store/app-store'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -132,7 +133,14 @@ export function BlogPostPage() {
           {/* Cover image */}
           {post.coverImage && (
             <div className="relative h-64 md:h-96 rounded-xl overflow-hidden">
-              <img src={post.coverImage} alt={post.title} className="w-full h-full object-cover" />
+              <Image
+                src={post.coverImage}
+                alt={post.title}
+                fill
+                priority
+                sizes="(max-width: 1023px) 100vw, 66vw"
+                className="object-cover"
+              />
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
             </div>
           )}

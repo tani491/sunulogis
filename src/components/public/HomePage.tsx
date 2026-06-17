@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import Image from 'next/image'
 import { useAppStore } from '@/store/app-store'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -242,7 +243,7 @@ export function HomePage() {
         ) : (
           <div className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredEstablishments.map((est) => (
+            {filteredEstablishments.map((est, index) => (
               <Card
                 key={est.id}
                 className="overflow-hidden group cursor-pointer hover:shadow-lg transition-all duration-300"
@@ -251,10 +252,13 @@ export function HomePage() {
                 {/* Image */}
                 <div className="relative h-48 overflow-hidden bg-muted">
                   {est.images && est.images.length > 0 ? (
-                    <img
+                    <Image
                       src={est.images[0]}
                       alt={est.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      fill
+                      priority={index < 3}
+                      sizes="(max-width: 767px) 100vw, (max-width: 1023px) 50vw, 33vw"
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   ) : (
                     <div className="flex items-center justify-center h-full bg-primary/10">

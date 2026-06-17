@@ -2,8 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getSessionUser } from '@/lib/auth';
 import { PRO_PRICE } from '@/lib/constants';
+import { getClientIp, rateLimitAsync, rateLimitResponse } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
+  const ip = getClientIp(req);
+  const rl = await rateLimitAsync(`subscription-request:${ip}`, 5, 60 * 60 * 1000);
+  if (!rl.ok) return rateLimitResponse(rl.resetAt, 5);
+
   try {
     const user = await getSessionUser();
     if (!user) {

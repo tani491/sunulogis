@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import { useAppStore } from '@/store/app-store';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -127,10 +128,13 @@ export function LandingPage() {
                 className="absolute inset-0 transition-opacity duration-1000"
                 style={{ opacity: i === currentSlide ? 1 : 0 }}
               >
-                <img
+                <Image
                   src={img}
                   alt={`Sénégal - Image ${i + 1}`}
-                  className="w-full h-full object-cover"
+                  fill
+                  priority={i === 0}
+                  sizes="(max-width: 1023px) 100vw, 50vw"
+                  className="object-cover"
                 />
               </div>
             ))}
@@ -223,10 +227,12 @@ export function LandingPage() {
                 >
                   <div className="relative h-48 overflow-hidden bg-muted">
                     {est.images && est.images.length > 0 ? (
-                      <img
+                      <Image
                         src={est.images[0]}
                         alt={est.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        fill
+                        sizes="(max-width: 767px) 100vw, (max-width: 1023px) 50vw, 33vw"
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                     ) : (
                       <div className="flex items-center justify-center h-full bg-primary/10">

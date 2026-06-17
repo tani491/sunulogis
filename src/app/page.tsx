@@ -1,20 +1,49 @@
 'use client'
 
 import { useEffect } from 'react'
+import dynamic from 'next/dynamic'
 import { useAppStore, type View } from '@/store/app-store'
 import Navbar from '@/components/shared/Navbar'
 import Footer from '@/components/shared/Footer'
 import { LandingPage } from '@/components/public/LandingPage'
-import { HomePage } from '@/components/public/HomePage'
-import { EstablishmentDetailPage } from '@/components/public/EstablishmentDetailPage'
-import { BlogPage } from '@/components/public/BlogPage'
-import { BlogPostPage } from '@/components/public/BlogPostPage'
-import { LoginPage } from '@/components/auth/LoginPage'
-import { RegisterPage } from '@/components/auth/RegisterPage'
-import { DashboardLayout } from '@/components/dashboard/DashboardLayout'
-import { AdminLayout } from '@/components/admin/AdminLayout'
 import { AnimatePresence, motion } from 'framer-motion'
 import { parseJsonResponse } from '@/lib/fetch-json'
+
+function ViewSkeleton() {
+  return (
+    <div className="space-y-4 py-8">
+      <div className="h-8 w-48 rounded-md bg-muted animate-pulse" />
+      <div className="h-40 rounded-xl bg-muted animate-pulse" />
+    </div>
+  )
+}
+
+const HomePage = dynamic(() => import('@/components/public/HomePage').then((mod) => mod.HomePage), {
+  loading: () => <ViewSkeleton />,
+})
+const EstablishmentDetailPage = dynamic(
+  () => import('@/components/public/EstablishmentDetailPage').then((mod) => mod.EstablishmentDetailPage),
+  { loading: () => <ViewSkeleton /> }
+)
+const BlogPage = dynamic(() => import('@/components/public/BlogPage').then((mod) => mod.BlogPage), {
+  loading: () => <ViewSkeleton />,
+})
+const BlogPostPage = dynamic(() => import('@/components/public/BlogPostPage').then((mod) => mod.BlogPostPage), {
+  loading: () => <ViewSkeleton />,
+})
+const LoginPage = dynamic(() => import('@/components/auth/LoginPage').then((mod) => mod.LoginPage), {
+  loading: () => <ViewSkeleton />,
+})
+const RegisterPage = dynamic(() => import('@/components/auth/RegisterPage').then((mod) => mod.RegisterPage), {
+  loading: () => <ViewSkeleton />,
+})
+const DashboardLayout = dynamic(
+  () => import('@/components/dashboard/DashboardLayout').then((mod) => mod.DashboardLayout),
+  { loading: () => <ViewSkeleton /> }
+)
+const AdminLayout = dynamic(() => import('@/components/admin/AdminLayout').then((mod) => mod.AdminLayout), {
+  loading: () => <ViewSkeleton />,
+})
 
 const pageVariants = {
   initial: { opacity: 0, y: 8 },

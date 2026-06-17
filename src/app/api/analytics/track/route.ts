@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { getClientIp, rateLimitAsync } from '@/lib/rate-limit'
 
 const SEARCH_ENGINES: Record<string, string> = {
   'google.': 'google', 'bing.com': 'bing', 'yahoo.com': 'yahoo',
@@ -44,12 +45,15 @@ async function resolveCountry(ip: string): Promise<string | null> {
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = getClientIp(req)
+    const rl = await rateLimitAsync(`analytics:${ip}`, 120, 60 * 1000)
+    if (!rl.ok) return NextResponse.json({ ok: true })
+
     const body = await req.json()
     const { path, referrer, establishmentId, type } = body
 
     // 1. ANALYTIQUE GÉNÉRALE (Ton code existant)
     const { source, medium } = classifyReferrer(referrer)
-    const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? '127.0.0.1'
     const country = await resolveCountry(ip)
 
     await db.pageView.create({

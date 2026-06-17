@@ -1,12 +1,18 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getSessionUser, isAdminRole } from '@/lib/auth';
+import { getClientIp, rateLimitAsync, rateLimitResponse } from '@/lib/rate-limit';
 
 // POST - Subscribe to newsletter (public)
 export async function POST(request: Request) {
+  const ip = getClientIp(request);
+  const rl = await rateLimitAsync(`newsletter:${ip}`, 8, 15 * 60 * 1000);
+  if (!rl.ok) return rateLimitResponse(rl.resetAt, 8);
+
   try {
     const body = await request.json();
-    const { email, source = 'footer' } = body;
+    const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
+    const source = typeof body.source === 'string' ? body.source.trim().slice(0, 50) : 'footer';
 
     if (!email || !email.includes('@')) {
       return NextResponse.json({ error: 'Email invalide' }, { status: 400 });

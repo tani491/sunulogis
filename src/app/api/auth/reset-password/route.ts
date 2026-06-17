@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createHash } from 'crypto';
 import { db } from '@/lib/db';
 import { hashPassword } from '@/lib/auth';
-import { rateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
+import { rateLimitAsync, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 
 function hashToken(token: string): string {
   return createHash('sha256').update(token).digest('hex');
@@ -19,8 +19,8 @@ function validatePassword(password: string): string | null {
 
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req);
-  const rl = rateLimit(`reset-password:${ip}`, 8, 15 * 60 * 1000);
-  if (!rl.ok) return rateLimitResponse(rl.resetAt);
+  const rl = await rateLimitAsync(`reset-password:${ip}`, 8, 15 * 60 * 1000);
+  if (!rl.ok) return rateLimitResponse(rl.resetAt, 8);
 
   try {
     const body = await req.json().catch(() => ({}));

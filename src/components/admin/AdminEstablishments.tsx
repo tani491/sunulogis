@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -210,7 +211,14 @@ export function AdminEstablishments() {
                   <TableRow key={est.id} className={!est.isApproved ? 'bg-yellow-50/50' : ''}>
                     <TableCell>
                       {est.images && est.images.length > 0 ? (
-                        <img src={est.images[0]} alt={est.name} className="w-12 h-12 rounded object-cover" />
+                        <Image
+                          src={est.images[0]}
+                          alt={est.name}
+                          width={48}
+                          height={48}
+                          sizes="48px"
+                          className="h-12 w-12 rounded object-cover"
+                        />
                       ) : (
                         <div className="w-12 h-12 rounded bg-muted flex items-center justify-center">
                           <Building2 className="h-5 w-5 text-muted-foreground/40" />

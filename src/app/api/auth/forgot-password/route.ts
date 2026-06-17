@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createHash, randomBytes } from 'crypto';
-import { Resend } from 'resend';
 import { db } from '@/lib/db';
-import { rateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
+import { rateLimitAsync, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 
 const RESET_TOKEN_TTL_MS = 60 * 60 * 1000;
 
@@ -45,8 +44,8 @@ function buildResetEmail(resetUrl: string): string {
 
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req);
-  const rl = rateLimit(`forgot-password:${ip}`, 5, 15 * 60 * 1000);
-  if (!rl.ok) return rateLimitResponse(rl.resetAt);
+  const rl = await rateLimitAsync(`forgot-password:${ip}`, 5, 15 * 60 * 1000);
+  if (!rl.ok) return rateLimitResponse(rl.resetAt, 5);
 
   try {
     const body = await req.json().catch(() => ({}));
@@ -97,6 +96,7 @@ export async function POST(req: NextRequest) {
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin;
     const resetUrl = `${baseUrl}/reset-password?token=${token}`;
+    const { Resend } = await import('resend');
     const resend = new Resend(apiKey);
 
     await resend.emails.send({

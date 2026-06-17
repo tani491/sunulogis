@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getSessionUser } from '@/lib/auth';
-import { rateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
+import { rateLimitAsync, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 
 export async function GET(_req: NextRequest) {
   try {
@@ -44,8 +44,8 @@ export async function GET(_req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req);
-  const rl = rateLimit(`booking:${ip}`, 10, 60 * 60 * 1000);
-  if (!rl.ok) return rateLimitResponse(rl.resetAt);
+  const rl = await rateLimitAsync(`booking:${ip}`, 10, 60 * 60 * 1000);
+  if (!rl.ok) return rateLimitResponse(rl.resetAt, 10);
 
   try {
     const body = await req.json();

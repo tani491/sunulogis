@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { rateLimit, getClientIp } from '@/lib/rate-limit';
+import { rateLimitAsync, getClientIp } from '@/lib/rate-limit';
 
 export async function POST(
   req: NextRequest,
@@ -17,7 +17,7 @@ export async function POST(
     }
 
     const windowMs = type === 'view' ? 10 * 60 * 1000 : 5 * 60 * 1000;
-    const rl = rateLimit(`track:${type}:${ip}:${id}`, 1, windowMs);
+    const rl = await rateLimitAsync(`track:${type}:${ip}:${id}`, 1, windowMs);
     if (!rl.ok) {
       return NextResponse.json({ ok: true });
     }

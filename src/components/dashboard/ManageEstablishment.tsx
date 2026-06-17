@@ -1,6 +1,7 @@
  'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { useAppStore } from '@/store/app-store'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -333,8 +334,14 @@ export function ManageEstablishment() {
           {establishments.map((est) => (
             <Card key={est.id} className="overflow-hidden">
               {est.images && est.images.length > 0 && (
-                <div className="h-40 overflow-hidden">
-                  <img src={est.images[0]} alt={est.name} className="w-full h-full object-cover" />
+                <div className="relative h-40 overflow-hidden">
+                  <Image
+                    src={est.images[0]}
+                    alt={est.name}
+                    fill
+                    sizes="(max-width: 767px) 100vw, 50vw"
+                    className="object-cover"
+                  />
                 </div>
               )}
               <CardContent className="p-4 space-y-2">

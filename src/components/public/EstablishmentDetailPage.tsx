@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { useAppStore } from '@/store/app-store'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -124,10 +125,13 @@ export function EstablishmentDetailPage() {
         <div className="relative h-64 overflow-hidden rounded-xl bg-muted md:h-96">
           {images.length > 0 ? (
             <>
-              <img
+              <Image
                 src={images[currentImageIndex]}
                 alt={`${establishment.name} - Image ${currentImageIndex + 1}`}
-                className="h-full w-full object-cover"
+                fill
+                priority
+                sizes="(max-width: 1023px) 100vw, 66vw"
+                className="object-cover"
               />
               {images.length > 1 && (
                 <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2">
@@ -160,7 +164,13 @@ export function EstablishmentDetailPage() {
                   i === currentImageIndex ? 'border-primary' : 'border-transparent'
                 }`}
               >
-                <img src={img} alt="" className="h-full w-full object-cover" />
+                <Image
+                  src={img}
+                  alt=""
+                  fill
+                  sizes="80px"
+                  className="object-cover"
+                />
               </button>
             ))}
           </div>

@@ -3,6 +3,7 @@ import path from 'path'
 import { NextResponse } from 'next/server'
 import { getSessionUser } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase'
+import { getClientIp, rateLimitAsync, rateLimitResponse } from '@/lib/rate-limit'
 
 export const runtime = 'nodejs'
 
@@ -30,6 +31,10 @@ function getExtension(file: File) {
 }
 
 export async function POST(request: Request) {
+  const ip = getClientIp(request)
+  const rl = await rateLimitAsync(`upload:${ip}`, 30, 60 * 60 * 1000)
+  if (!rl.ok) return rateLimitResponse(rl.resetAt, 30)
+
   try {
     const user = await getSessionUser()
     if (!user) {

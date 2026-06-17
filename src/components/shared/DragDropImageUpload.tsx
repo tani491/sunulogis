@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback } from 'react'
+import Image from 'next/image'
 import imageCompression from 'browser-image-compression'
 import { Button } from '@/components/ui/button'
 import { X, Upload, ImagePlus, Loader2 } from 'lucide-react'
@@ -183,7 +184,14 @@ export function DragDropImageUpload({ images, onImagesChange, maxImages = 8 }: D
         <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2">
           {images.map((img, i) => (
             <div key={i} className="relative aspect-square rounded-lg overflow-hidden border group">
-              <img src={img} alt={`Image ${i + 1}`} className="w-full h-full object-cover" />
+              <Image
+                src={img}
+                alt={`Image ${i + 1}`}
+                fill
+                sizes="(max-width: 639px) 25vw, (max-width: 767px) 20vw, 96px"
+                unoptimized={img.startsWith('data:') || img.startsWith('blob:')}
+                className="object-cover"
+              />
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors" />
               <button
                 type="button"
