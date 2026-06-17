@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
     const resend = new Resend(apiKey);
 
     await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || 'SunuLogis <onboarding@resend.dev>',
+      from: process.env.RESEND_FROM_EMAIL || 'SunuLogis <noreply@sunulogis.com>',
       to: user.email,
       subject: 'Reinitialisez votre mot de passe SunuLogis',
       html: buildResetEmail(resetUrl),
