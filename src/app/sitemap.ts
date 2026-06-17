@@ -1,12 +1,13 @@
 import type { MetadataRoute } from "next";
-import { siteConfig } from "@/lib/seo";
 
 export const revalidate = 86400;
+
+const sitemapBaseUrl = "https://sunulogis.com";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
     {
-      url: siteConfig.url,
+      url: sitemapBaseUrl,
       lastModified: new Date(),
       changeFrequency: "daily",
       priority: 1,
