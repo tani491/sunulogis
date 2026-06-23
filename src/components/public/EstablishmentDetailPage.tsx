@@ -160,7 +160,7 @@ export function EstablishmentDetailPage() {
               <button
                 key={i}
                 onClick={() => setCurrentImageIndex(i)}
-                className={`h-16 w-20 shrink-0 overflow-hidden rounded-lg border-2 transition-colors ${
+                className={`relative h-16 w-20 shrink-0 overflow-hidden rounded-lg border-2 transition-colors ${
                   i === currentImageIndex ? 'border-primary' : 'border-transparent'
                 }`}
               >
