@@ -7,6 +7,7 @@ const DISABLED_PUBLIC_REGISTRATION_PATHS = new Set([
   '/signup-owner',
   '/owner/register',
 ]);
+const HIDDEN_STANDARD_ADMIN_PATHS = ['/login', '/connexion', '/admin'];
 
 // State-changing API routes that must originate from the same site.
 // Defense-in-depth against CSRF on top of SameSite=Lax cookies.
@@ -15,6 +16,10 @@ const PROTECTED_API_PREFIX = '/api/';
 export function proxy(req: NextRequest): NextResponse {
   const { pathname } = req.nextUrl;
   const method = req.method;
+
+  if (HIDDEN_STANDARD_ADMIN_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`))) {
+    return NextResponse.redirect(new URL('/', req.url));
+  }
 
   if (DISABLED_PUBLIC_REGISTRATION_PATHS.has(pathname)) {
     return NextResponse.redirect(new URL('/', req.url));

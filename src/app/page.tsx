@@ -31,9 +31,6 @@ const BlogPage = dynamic(() => import('@/components/public/BlogPage').then((mod)
 const BlogPostPage = dynamic(() => import('@/components/public/BlogPostPage').then((mod) => mod.BlogPostPage), {
   loading: () => <ViewSkeleton />,
 })
-const LoginPage = dynamic(() => import('@/components/auth/LoginPage').then((mod) => mod.LoginPage), {
-  loading: () => <ViewSkeleton />,
-})
 const AdminLayout = dynamic(() => import('@/components/admin/AdminLayout').then((mod) => mod.AdminLayout), {
   loading: () => <ViewSkeleton />,
 })
@@ -68,7 +65,7 @@ export default function Home() {
     }
 
     if (currentView.startsWith('admin') && currentUser?.role !== 'admin') {
-      navigate('login')
+      navigate('landing')
     }
   }, [currentView, currentUser?.role, navigate])
 
@@ -114,7 +111,7 @@ export default function Home() {
       'establishment-detail': <EstablishmentDetailPage />,
       blog: <BlogPage />,
       'blog-post': <BlogPostPage />,
-      login: <LoginPage />,
+      login: <LandingPage />,
       register: <LandingPage />,
       dashboard: dashboardFallback,
       'dashboard-establishments': dashboardFallback,

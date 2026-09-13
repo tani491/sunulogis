@@ -8,7 +8,7 @@ import { AdminLayout } from '@/components/admin/AdminLayout'
 import { useAppStore } from '@/store/app-store'
 import { parseJsonResponse } from '@/lib/fetch-json'
 
-export default function LoginRoute() {
+export default function SunuPortailGestionRoute() {
   const { currentUser, currentView, setUser, navigate } = useAppStore()
   const isAdminView = currentView.startsWith('admin') && currentUser?.role === 'admin'
 
