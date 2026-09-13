@@ -6,7 +6,7 @@ import { useAppStore } from '@/store/app-store';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Building2, Search, MapPin, ArrowRight, Home, Key, CalendarCheck, Users, Star } from 'lucide-react';
+import { Building2, Search, MapPin, ArrowRight, Home, CalendarCheck, Star } from 'lucide-react';
 import { getTypeLabel, getTypeColor } from '@/lib/constants';
 import { parseJsonResponse } from '@/lib/fetch-json';
 
@@ -156,10 +156,10 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Two CTA buttons */}
+      {/* Search CTA */}
       <section className="py-8 px-4">
         <div className="container mx-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl mx-auto">
+          <div className="max-w-md mx-auto">
             <Card
               className="cursor-pointer hover:shadow-lg transition-all group border-2 hover:border-primary/50"
               onClick={() => navigate('home')}
@@ -171,20 +171,6 @@ export function LandingPage() {
                 <div>
                   <h3 className="font-semibold text-lg">Je cherche un logement</h3>
                   <p className="text-sm text-muted-foreground">Explorez les établissements disponibles</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card
-              className="cursor-pointer hover:shadow-lg transition-all group border-2 hover:border-primary/50"
-              onClick={() => navigate('register')}
-            >
-              <CardContent className="p-6 flex items-center gap-4">
-                <div className="flex items-center justify-center w-14 h-14 rounded-full bg-emerald-100 group-hover:bg-emerald-200 transition-colors">
-                  <Key className="h-7 w-7 text-emerald-700" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-lg">Je propose un logement</h3>
-                  <p className="text-sm text-muted-foreground">Espace Propriétaire</p>
                 </div>
               </CardContent>
             </Card>
@@ -319,7 +305,7 @@ export function LandingPage() {
               </div>
               <h3 className="text-lg font-semibold">Réserver</h3>
               <p className="text-sm text-muted-foreground">
-                Réservez en ligne et confirmez directement via WhatsApp avec le propriétaire
+                Réservez en ligne et confirmez directement via WhatsApp avec SunuLogis
               </p>
             </div>
           </div>
@@ -338,10 +324,6 @@ export function LandingPage() {
               <Button size="lg" onClick={() => navigate('home')} className="gap-2">
                 <Search className="h-4 w-4" />
                 Chercher un logement
-              </Button>
-              <Button size="lg" variant="outline" onClick={() => navigate('register')} className="gap-2">
-                <Users className="h-4 w-4" />
-                Devenir propriétaire
               </Button>
             </div>
           </div>

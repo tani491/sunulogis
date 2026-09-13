@@ -14,18 +14,6 @@ export async function GET(req: NextRequest) {
 
     const user = await getSessionUser();
 
-    if (user && user.role === 'owner') {
-      const rooms = await db.room.findMany({
-        where: {
-          ...(establishmentId ? { establishmentId } : {}),
-          establishment: { ownerId: user.id },
-        },
-        include: { establishment: { select: { id: true, name: true } } },
-        orderBy: { createdAt: 'desc' },
-      });
-      return NextResponse.json(rooms);
-    }
-
     if (user && isAdminRole(user.role)) {
       const rooms = await db.room.findMany({
         where: { ...(establishmentId ? { establishmentId } : {}) },
@@ -66,6 +54,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
+    if (!isAdminRole(user.role)) {
+      return NextResponse.json({ error: 'Seul l’administrateur peut créer des chambres' }, { status: 403 });
+    }
+
     const body = await req.json();
     const { establishmentId, name, pricePerNight, capacity } = body;
 
@@ -80,10 +72,10 @@ export async function POST(req: NextRequest) {
 
     const establishment = await db.establishment.findUnique({
       where: { id: establishmentId },
-      select: { ownerId: true },
+      select: { id: true },
     });
-    if (!establishment || (establishment.ownerId !== user.id && !isAdminRole(user.role))) {
-      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+    if (!establishment) {
+      return NextResponse.json({ error: 'Établissement non trouvé' }, { status: 404 });
     }
 
     const room = await db.room.create({

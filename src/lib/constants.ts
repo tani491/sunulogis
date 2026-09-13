@@ -87,6 +87,13 @@ export const WAVE_INFO = {
   name: 'SunuLogis',
 }
 
+// Contact officiel SunuLogis pour la mise en relation des leads
+export const SUNULOGIS_CONTACT = {
+  whatsappNumber: '221778057536',
+  phoneHref: '+221778057536',
+  phoneDisplay: '+221 77 805 75 36',
+}
+
 // Lien marchand Wave Business pour l'abonnement Sunu Pro (15 000 FCFA)
 export const WAVE_PAY_LINK = 'https://pay.wave.com/m/M_sn_sOEITXNn4hV_/c/sn/'
 

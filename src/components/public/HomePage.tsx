@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import { MapPin, Users, ArrowRight, Building2, Globe, Banknote, SlidersHorizontal, ChevronLeft, ChevronRight } from 'lucide-react'
+import { MapPin, Users, ArrowRight, Building2, Banknote, SlidersHorizontal, ChevronLeft, ChevronRight } from 'lucide-react'
 import { DAKAR_NEIGHBORHOODS, ESTABLISHMENT_TYPE_FILTERS, REGIONS, PRICE_RANGES, getTypeLabel, getTypeColor } from '@/lib/constants'
 import { parseJsonResponse } from '@/lib/fetch-json'
 
@@ -23,7 +23,6 @@ interface Establishment {
   region: string
   images: string[]
   phone?: string
-  website?: string
   minPrice: number | null
   rooms: { id: string; name: string; pricePerNight: number; capacity: number; isAvailable: boolean }[]
 }
@@ -272,12 +271,6 @@ export function HomePage() {
                     <MapPin className="h-3 w-3 mr-1" />
                     {est.city}
                   </Badge>
-                  {est.website && (
-                    <Badge className="absolute bottom-3 right-3 bg-white/90 text-foreground hover:bg-white" variant="secondary">
-                      <Globe className="h-3 w-3 mr-1" />
-                      Site web
-                    </Badge>
-                  )}
                 </div>
 
                 <CardContent className="p-4 space-y-3">

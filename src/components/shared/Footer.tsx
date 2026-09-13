@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 import { parseJsonResponse } from '@/lib/fetch-json'
+import { SUNULOGIS_CONTACT } from '@/lib/constants'
 
 function FacebookIcon({ className }: { className?: string }) {
   return (
@@ -153,7 +154,6 @@ export default function Footer() {
                 { label: 'Accueil', view: 'home' as const },
                 { label: 'Etablissements', view: 'home' as const },
                 { label: 'Blog', view: 'blog' as const },
-                { label: 'Devenir proprietaire', view: 'register' as const },
               ].map(({ label, view }) => (
                 <li key={label}>
                   <button
@@ -183,8 +183,8 @@ export default function Footer() {
               </li>
               <li className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Phone className="h-4 w-4 shrink-0 text-primary" />
-                <a href="tel:+221773615944" className="hover:text-primary transition-colors">
-                  +221 77 361 59 44
+                <a href={`tel:${SUNULOGIS_CONTACT.phoneHref}`} className="hover:text-primary transition-colors">
+                  {SUNULOGIS_CONTACT.phoneDisplay}
                 </a>
               </li>
             </ul>

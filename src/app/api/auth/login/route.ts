@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { verifyPassword, getCookieOptions, createSessionToken } from '@/lib/auth';
+import { verifyPassword, getCookieOptions, createSessionToken, isAdminRole } from '@/lib/auth';
 import { rateLimitAsync, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 import { loginSchema } from '@/lib/validation';
 
@@ -45,6 +45,10 @@ export async function POST(req: NextRequest) {
 
     if (!user.isActive) {
       return NextResponse.json({ error: 'Compte désactivé' }, { status: 403 });
+    }
+
+    if (!isAdminRole(user.role)) {
+      return NextResponse.json({ error: 'Accès réservé à l’administrateur SunuLogis' }, { status: 403 });
     }
 
     const payload = {

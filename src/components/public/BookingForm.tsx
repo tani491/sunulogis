@@ -7,9 +7,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { CalendarDays, User, Phone, MessageCircle, Check } from 'lucide-react'
 import { toast } from 'sonner'
-import { format } from 'date-fns'
-import { fr } from 'date-fns/locale'
 import { parseJsonResponse } from '@/lib/fetch-json'
+import { SUNULOGIS_CONTACT } from '@/lib/constants'
 
 interface Room {
   id: string
@@ -21,6 +20,9 @@ interface Room {
 interface Establishment {
   id: string
   name: string
+  city?: string
+  region?: string
+  address?: string
   phone?: string
 }
 
@@ -86,9 +88,9 @@ export function BookingForm({ room, establishment, open, onClose }: BookingFormP
   }
 
   const getWhatsAppLink = () => {
-    const message = `Bonjour, je suis ${guestName}. J'ai vu votre offre dans SunuLogis et Je souhaite réserver la chambre ${room.name} du ${format(new Date(startDate), 'dd MMMM yyyy', { locale: fr })} au ${format(new Date(endDate), 'dd MMMM yyyy', { locale: fr })}. Merci de confirmer.`
-    const phone = establishment.phone?.replace(/^(\+)/, '') || ''
-    return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
+    const location = [establishment.address, establishment.city].filter(Boolean).join(', ') || establishment.region || 'Sénégal'
+    const message = `Bonjour SunuLogis, je suis intéressé(e) par le bien : ${establishment.name} situé à ${location} (Réf: ${establishment.id}). Est-il toujours disponible pour une visite ?`
+    return `https://wa.me/${SUNULOGIS_CONTACT.whatsappNumber}?text=${encodeURIComponent(message)}`
   }
 
   const handleClose = () => {
@@ -190,19 +192,17 @@ export function BookingForm({ room, establishment, open, onClose }: BookingFormP
             </div>
             <h3 className="text-lg font-semibold">Réservation enregistrée !</h3>
             <p className="text-sm text-muted-foreground">
-              Votre réservation est en attente de confirmation. Contactez l&apos;établissement via WhatsApp pour confirmer.
+              Votre réservation est en attente de confirmation. Contactez SunuLogis via WhatsApp pour confirmer la mise en relation.
             </p>
 
-            {establishment.phone && (
-              <Button
-                className="w-full gap-2"
-                variant="outline"
-                onClick={() => window.open(getWhatsAppLink(), '_blank')}
-              >
-                <MessageCircle className="h-4 w-4 text-green-600" />
-                Confirmer via WhatsApp
-              </Button>
-            )}
+            <Button
+              className="w-full gap-2"
+              variant="outline"
+              onClick={() => window.open(getWhatsAppLink(), '_blank')}
+            >
+              <MessageCircle className="h-4 w-4 text-green-600" />
+              Confirmer via WhatsApp
+            </Button>
 
             <Button variant="ghost" className="w-full" onClick={handleClose}>
               Fermer

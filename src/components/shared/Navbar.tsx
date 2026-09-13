@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Home, LayoutDashboard, LogOut, Menu, Search, MapPin, Banknote, ChevronDown, User, Shield, BookOpen, ChevronLeft } from 'lucide-react';
+import { Home, LogOut, Menu, Search, MapPin, Banknote, ChevronDown, User, Shield, BookOpen, ChevronLeft } from 'lucide-react';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { DAKAR_NEIGHBORHOODS } from '@/lib/constants';
 
@@ -64,7 +64,7 @@ export default function Navbar() {
             </Button>
           )}
           <button
-            onClick={() => navigate(currentUser ? (currentUser.role === 'admin' ? 'admin' : (currentUser.role === 'owner' ? 'dashboard' : 'home')) : 'landing')}
+            onClick={() => navigate(currentUser?.role === 'admin' ? 'admin' : (currentUser ? 'home' : 'landing'))}
             className="flex min-w-0 max-w-[calc(100vw-7rem)] items-center gap-2 hover:opacity-80 transition-opacity sm:max-w-none"
             aria-label="Aller à l'accueil SunuLogis"
           >
@@ -178,20 +178,6 @@ export default function Navbar() {
                         </Button>
                       ) : (
                         <>
-                          {/* Affiche uniquement pour les proprietaires */}
-                          {currentUser.role === 'owner' && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="w-full justify-start gap-2"
-                              onClick={() => { navigate('dashboard'); setShowUserMenu(false); }}
-                            >
-                              <LayoutDashboard className="h-4 w-4" />
-                              Espace Gestion
-                            </Button>
-                          )}
-                          
-                          {/* Affiche pour TOUT LE MONDE (Client et Proprio) */}
                           <Button
                             variant="ghost"
                             size="sm"
@@ -202,7 +188,6 @@ export default function Navbar() {
                             Accueil
                           </Button>
 
-                          {/* LE BOUTON BLOG ICI */}
                           <Button
                             variant="ghost"
                             size="sm"
@@ -298,19 +283,6 @@ export default function Navbar() {
                       </Button>
                     ) : (
                       <>
-                        {/* Uniquement Proprio */}
-                        {currentUser.role === 'owner' && (
-                          <Button
-                            variant={currentView.startsWith('dashboard') ? 'secondary' : 'ghost'}
-                            size="sm"
-                            className="w-full justify-start gap-2"
-                            onClick={() => { navigate('dashboard'); setMobileOpen(false); }}
-                          >
-                            <LayoutDashboard className="h-4 w-4" />
-                            Espace Gestion
-                          </Button>
-                        )}
-                        
                         <Button
                           variant={currentView === 'home' ? 'secondary' : 'ghost'}
                           size="sm"
@@ -321,7 +293,6 @@ export default function Navbar() {
                           Accueil
                         </Button>
 
-                        {/* LE BOUTON BLOG ICI EN MOBILE */}
                         <Button
                           variant={currentView === 'blog' ? 'secondary' : 'ghost'}
                           size="sm"

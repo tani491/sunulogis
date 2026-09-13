@@ -34,13 +34,6 @@ const BlogPostPage = dynamic(() => import('@/components/public/BlogPostPage').th
 const LoginPage = dynamic(() => import('@/components/auth/LoginPage').then((mod) => mod.LoginPage), {
   loading: () => <ViewSkeleton />,
 })
-const RegisterPage = dynamic(() => import('@/components/auth/RegisterPage').then((mod) => mod.RegisterPage), {
-  loading: () => <ViewSkeleton />,
-})
-const DashboardLayout = dynamic(
-  () => import('@/components/dashboard/DashboardLayout').then((mod) => mod.DashboardLayout),
-  { loading: () => <ViewSkeleton /> }
-)
 const AdminLayout = dynamic(() => import('@/components/admin/AdminLayout').then((mod) => mod.AdminLayout), {
   loading: () => <ViewSkeleton />,
 })
@@ -57,11 +50,27 @@ const pageTransition = {
 }
 
 export default function Home() {
-  const { currentView, setUser } = useAppStore()
+  const { currentView, currentUser, setUser, navigate } = useAppStore()
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' })
   }, [currentView])
+
+  useEffect(() => {
+    if (currentView === 'register') {
+      navigate('landing')
+      return
+    }
+
+    if (currentView.startsWith('dashboard')) {
+      navigate(currentUser?.role === 'admin' ? 'admin' : 'home')
+      return
+    }
+
+    if (currentView.startsWith('admin') && currentUser?.role !== 'admin') {
+      navigate('login')
+    }
+  }, [currentView, currentUser?.role, navigate])
 
   useEffect(() => {
     // Check session on mount
@@ -98,6 +107,7 @@ export default function Home() {
   }, [setUser])
 
   const renderView = () => {
+    const dashboardFallback = currentUser?.role === 'admin' ? <AdminLayout /> : <LandingPage />
     const views: Record<View, React.ReactNode> = {
       landing: <LandingPage />,
       home: <HomePage />,
@@ -105,12 +115,12 @@ export default function Home() {
       blog: <BlogPage />,
       'blog-post': <BlogPostPage />,
       login: <LoginPage />,
-      register: <RegisterPage />,
-      dashboard: <DashboardLayout />,
-      'dashboard-establishments': <DashboardLayout />,
-      'dashboard-rooms': <DashboardLayout />,
-      'dashboard-bookings': <DashboardLayout />,
-      'dashboard-blog': <DashboardLayout />,
+      register: <LandingPage />,
+      dashboard: dashboardFallback,
+      'dashboard-establishments': dashboardFallback,
+      'dashboard-rooms': dashboardFallback,
+      'dashboard-bookings': dashboardFallback,
+      'dashboard-blog': dashboardFallback,
       admin: <AdminLayout />,
       'admin-stats': <AdminLayout />,
       'admin-establishments': <AdminLayout />,

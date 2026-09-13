@@ -28,16 +28,22 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: 'Établissement non trouvé' }, { status: 404 });
     }
 
-    // Non-public establishments are only visible to their owner or an admin
+    const user = await getSessionUser();
+    const isAdmin = isAdminRole(user?.role);
+
+    // Non-public establishments are only visible to an admin
     if (!establishment.isApproved || establishment.isSuspended) {
-      const user = await getSessionUser();
-      const isOwner = user?.id === establishment.ownerId;
-      if (!isOwner && !isAdminRole(user?.role)) {
+      if (!isAdmin) {
         return NextResponse.json({ error: 'Établissement non trouvé' }, { status: 404 });
       }
     }
 
-    return NextResponse.json(parseEstablishment(establishment));
+    const payload = parseEstablishment(establishment);
+    if (!isAdmin) {
+      payload.owner = null;
+    }
+
+    return NextResponse.json(payload);
   } catch (error) {
     console.error('Get establishment error:', error);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
@@ -51,6 +57,10 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
+    if (!isAdminRole(user.role)) {
+      return NextResponse.json({ error: 'Seul l’administrateur peut modifier des établissements' }, { status: 403 });
+    }
+
     const { id } = await params;
     const existing = await db.establishment.findUnique({ where: { id } });
 
@@ -60,49 +70,21 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
     const body = await req.json();
 
-    // Admin can edit/approve/suspend any establishment
-    if (isAdminRole(user.role)) {
-      const establishment = await db.establishment.update({
-        where: { id },
-        data: {
-          ...(body.isApproved !== undefined && { isApproved: body.isApproved }),
-          ...(body.isSuspended !== undefined && { isSuspended: body.isSuspended }),
-          ...(body.name !== undefined && { name: body.name }),
-          ...(body.description !== undefined && { description: body.description }),
-          ...(body.city !== undefined && { city: body.city }),
-          ...(body.region !== undefined && { region: body.region }),
-          ...(body.type !== undefined && { type: body.type }),
-          ...(body.address !== undefined && { address: body.address }),
-          ...(body.website !== undefined && { website: body.website }),
-          ...(body.phone !== undefined && { phone: body.phone }),
-          ...(body.images !== undefined && { images: JSON.stringify(body.images) }),
-          ...(body.isFeatured !== undefined && existing.isApproved && { isFeatured: body.isFeatured }),
-        },
-        include: { rooms: true },
-      });
-      return NextResponse.json(parseEstablishment(establishment));
-    }
-
-    // Owner can update their own establishment
-    if (existing.ownerId !== user.id) {
-      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
-    }
-
-    const { name, type, description, city, region, address, website, phone, images, paymentPending } = body;
-
     const establishment = await db.establishment.update({
       where: { id },
       data: {
-        ...(name !== undefined && { name }),
-        ...(type !== undefined && { type }),
-        ...(description !== undefined && { description }),
-        ...(city !== undefined && { city }),
-        ...(region !== undefined && { region }),
-        ...(address !== undefined && { address }),
-        ...(website !== undefined && { website }),
-        ...(phone !== undefined && { phone }),
-        ...(images !== undefined && { images: JSON.stringify(images) }),
-        ...(paymentPending === true && { paymentPending: true }),
+        ...(body.isApproved !== undefined && { isApproved: body.isApproved }),
+        ...(body.isSuspended !== undefined && { isSuspended: body.isSuspended }),
+        ...(body.name !== undefined && { name: body.name }),
+        ...(body.description !== undefined && { description: body.description }),
+        ...(body.city !== undefined && { city: body.city }),
+        ...(body.region !== undefined && { region: body.region }),
+        ...(body.type !== undefined && { type: body.type }),
+        ...(body.address !== undefined && { address: body.address }),
+        ...(body.website !== undefined && { website: body.website }),
+        ...(body.phone !== undefined && { phone: body.phone }),
+        ...(body.images !== undefined && { images: JSON.stringify(body.images) }),
+        ...(body.isFeatured !== undefined && existing.isApproved && { isFeatured: body.isFeatured }),
       },
       include: { rooms: true },
     });
@@ -121,15 +103,15 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
+    if (!isAdminRole(user.role)) {
+      return NextResponse.json({ error: 'Seul l’administrateur peut supprimer des établissements' }, { status: 403 });
+    }
+
     const { id } = await params;
     const existing = await db.establishment.findUnique({ where: { id } });
 
     if (!existing) {
       return NextResponse.json({ error: 'Établissement non trouvé' }, { status: 404 });
-    }
-
-    if (existing.ownerId !== user.id && !isAdminRole(user.role)) {
-      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 
     await db.establishment.delete({ where: { id } });

@@ -64,7 +64,7 @@ export function LoginPage() {
       if (data.role === 'admin') {
         navigate('admin')
       } else {
-        navigate('dashboard')
+        navigate('home')
       }
     } catch (err) {
       console.error(err)
@@ -83,7 +83,7 @@ export function LoginPage() {
           </div>
           <CardTitle className="text-2xl">Connexion</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Connectez-vous à votre espace SunuLogis
+            Accès réservé à l&apos;administration SunuLogis
           </p>
         </CardHeader>
         <CardContent>
@@ -140,14 +140,7 @@ export function LoginPage() {
             </Button>
 
             <p className="text-center text-sm text-muted-foreground">
-              Pas encore de compte ?{' '}
-              <button
-                type="button"
-                onClick={() => navigate('register')}
-                className="text-primary font-medium hover:underline"
-              >
-                S&apos;inscrire
-              </button>
+              Les comptes publics ne sont plus ouverts à l&apos;inscription.
             </p>
           </form>
         </CardContent>

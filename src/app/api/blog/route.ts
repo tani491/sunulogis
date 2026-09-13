@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
 
     if (mine) {
       const user = await getSessionUser();
-      if (!user || !(user.role === 'owner' && user.isSubscribed)) {
+      if (!user || !isAdminRole(user.role)) {
         return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
       }
 
@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const user = await getSessionUser();
-    if (!user || (!isAdminRole(user.role) && !(user.role === 'owner' && user.isSubscribed))) {
+    if (!user || !isAdminRole(user.role)) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 
@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
         content: content || '',
         coverImage: coverImage || null,
         category: category || 'general',
-        isPublished: isAdminRole(user.role) ? Boolean(isPublished) : true,
+        isPublished: Boolean(isPublished),
         authorId: user.id,
       },
       include: {

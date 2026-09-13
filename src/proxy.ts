@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
+const DISABLED_PUBLIC_REGISTRATION_PATHS = new Set([
+  '/register',
+  '/signup',
+  '/signup-owner',
+  '/owner/register',
+]);
 
 // State-changing API routes that must originate from the same site.
 // Defense-in-depth against CSRF on top of SameSite=Lax cookies.
@@ -9,6 +15,10 @@ const PROTECTED_API_PREFIX = '/api/';
 export function proxy(req: NextRequest): NextResponse {
   const { pathname } = req.nextUrl;
   const method = req.method;
+
+  if (DISABLED_PUBLIC_REGISTRATION_PATHS.has(pathname)) {
+    return NextResponse.redirect(new URL('/', req.url));
+  }
 
   // CSRF protection for mutating API calls
   if (MUTATING_METHODS.has(method) && pathname.startsWith(PROTECTED_API_PREFIX)) {

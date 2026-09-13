@@ -14,18 +14,18 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
+    if (!isAdminRole(user.role)) {
+      return NextResponse.json({ error: 'Seul l’administrateur peut modifier des chambres' }, { status: 403 });
+    }
+
     const { id } = await params;
     const existing = await db.room.findUnique({
       where: { id },
-      select: { establishment: { select: { ownerId: true } } },
+      select: { id: true },
     });
 
     if (!existing) {
       return NextResponse.json({ error: 'Chambre non trouvée' }, { status: 404 });
-    }
-
-    if (existing.establishment.ownerId !== user.id && !isAdminRole(user.role)) {
-      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 
     const body = await req.json();
@@ -69,18 +69,18 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
+    if (!isAdminRole(user.role)) {
+      return NextResponse.json({ error: 'Seul l’administrateur peut supprimer des chambres' }, { status: 403 });
+    }
+
     const { id } = await params;
     const existing = await db.room.findUnique({
       where: { id },
-      select: { establishment: { select: { ownerId: true } } },
+      select: { id: true },
     });
 
     if (!existing) {
       return NextResponse.json({ error: 'Chambre non trouvée' }, { status: 404 });
-    }
-
-    if (existing.establishment.ownerId !== user.id && !isAdminRole(user.role)) {
-      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 
     await db.room.delete({ where: { id } });

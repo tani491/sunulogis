@@ -44,11 +44,10 @@ export async function GET(req: NextRequest) {
     const page = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1;
     const limit = Number.isFinite(limitParam) && limitParam > 0 ? limitParam : 9;
 
-    // If ownerId is provided, return establishments for that owner (including unapproved)
-    // This is used by the owner dashboard. For security, only the owner themselves or admins can request this.
+    // Admin-only private listing. Public visitors only receive approved listings below.
     if (ownerId) {
       const user = await getSessionUser();
-      if (!user || (user.id !== ownerId && !isAdminRole(user.role))) {
+      if (!user || !isAdminRole(user.role)) {
         return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
       }
 
@@ -149,8 +148,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
-    if (user.role !== 'owner' && !isAdminRole(user.role)) {
-      return NextResponse.json({ error: 'Seuls les propriétaires peuvent créer des établissements' }, { status: 403 });
+    if (!isAdminRole(user.role)) {
+      return NextResponse.json({ error: 'Seul l’administrateur peut créer des établissements' }, { status: 403 });
     }
 
     const body = await req.json();
