@@ -127,8 +127,8 @@ export function AdminEstablishments() {
       {/* Pending alert */}
       {pendingCount > 0 && (
         <Card className="border-yellow-200 bg-yellow-50">
-          <CardContent className="p-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
+          <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3">
               <Clock className="h-5 w-5 text-yellow-600" />
               <div>
                 <p className="font-medium text-yellow-800">
@@ -142,7 +142,7 @@ export function AdminEstablishments() {
             <Button
               onClick={() => setStatusFilter('pending')}
               variant="outline"
-              className="gap-2 border-yellow-300 text-yellow-800 hover:bg-yellow-100"
+              className="w-full gap-2 border-yellow-300 text-yellow-800 hover:bg-yellow-100 sm:w-auto"
             >
               <Eye className="h-4 w-4" />
               Voir les en attente
@@ -157,10 +157,13 @@ export function AdminEstablishments() {
           Établissements ({establishments.length})
         </h1>
 
-        <div className="flex items-center gap-2 flex-wrap">
-          <Filter className="h-4 w-4 text-muted-foreground" />
+        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Filter className="h-4 w-4" />
+            Filtres
+          </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger className="w-full sm:w-40">
               <SelectValue placeholder="Statut" />
             </SelectTrigger>
             <SelectContent>
@@ -171,7 +174,7 @@ export function AdminEstablishments() {
             </SelectContent>
           </Select>
           <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger className="w-44">
+            <SelectTrigger className="w-full sm:w-44">
               <SelectValue placeholder="Type" />
             </SelectTrigger>
             <SelectContent>
@@ -191,9 +194,142 @@ export function AdminEstablishments() {
           </CardContent>
         </Card>
       ) : (
-        <Card>
-          <div className="overflow-x-auto">
-            <Table>
+        <>
+          <div className="space-y-3 md:hidden">
+            {filteredEstablishments.map((est) => (
+              <Card key={est.id} className={!est.isApproved ? 'bg-yellow-50/50' : ''}>
+                <CardContent className="space-y-4 p-4">
+                  <div className="flex gap-3">
+                    {est.images && est.images.length > 0 ? (
+                      <Image
+                        src={est.images[0]}
+                        alt={est.name}
+                        width={64}
+                        height={64}
+                        sizes="64px"
+                        className="h-16 w-16 shrink-0 rounded object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded bg-muted">
+                        <Building2 className="h-6 w-6 text-muted-foreground/40" />
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-start gap-2">
+                        <h3 className="font-semibold leading-tight">{est.name}</h3>
+                        {getStatusBadge(est)}
+                      </div>
+                      <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{est.description}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-3 text-sm">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Type</p>
+                      <Badge className={getTypeColor(est.type)}>{getTypeLabel(est.type)}</Badge>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Localisation</p>
+                      <p className="flex items-center gap-1">
+                        <MapPin className="h-3 w-3 text-muted-foreground" />
+                        {est.city}{est.region ? `, ${est.region}` : ''}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Propriétaire</p>
+                      <p className="font-medium">{est.owner?.fullName || '—'}</p>
+                      <p className="break-all text-xs text-muted-foreground">{est.owner?.email}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Chambres</p>
+                      <p className="font-medium">{est.rooms?.length || 0}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="col-span-2 gap-2 bg-blue-600 text-white border-blue-600 hover:bg-blue-700 hover:text-white"
+                      onClick={() => setEditingId(est.id)}
+                      disabled={actionLoading === est.id}
+                    >
+                      <Eye className="h-4 w-4" />
+                      {!est.isApproved ? 'Examiner' : 'Modifier'}
+                    </Button>
+
+                    {!est.isApproved && (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button size="sm" variant="outline" className="gap-1 text-green-600 hover:text-green-700" disabled={actionLoading === est.id}>
+                            <Check className="h-3 w-3" />
+                            Valider
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Valider l&apos;établissement ?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Approuver {est.name} ? Il sera visible publiquement sur le site.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Annuler</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => updateEstablishment(est.id, { isApproved: true })}
+                              className="bg-green-600 hover:bg-green-700"
+                            >
+                              Valider
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
+
+                    {!est.isSuspended ? (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button size="sm" variant="outline" className="gap-1 text-destructive hover:text-destructive" disabled={actionLoading === est.id}>
+                            <Ban className="h-3 w-3" />
+                            Suspendre
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Suspendre l&apos;établissement ?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Suspendre {est.name} ? Il ne sera plus visible publiquement.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Annuler</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => updateEstablishment(est.id, { isSuspended: true })} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                              Suspendre
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-1 text-green-600 hover:text-green-700"
+                        onClick={() => updateEstablishment(est.id, { isSuspended: false })}
+                        disabled={actionLoading === est.id}
+                      >
+                        <ShieldCheck className="h-3 w-3" />
+                        Réactiver
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <Card className="hidden md:block">
+            <div className="w-full overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
+              <Table className="min-w-[920px]">
               <TableHeader>
                 <TableRow>
                   <TableHead>Photo</TableHead>
@@ -328,9 +464,10 @@ export function AdminEstablishments() {
                   </TableRow>
                 ))}
               </TableBody>
-            </Table>
-          </div>
-        </Card>
+              </Table>
+            </div>
+          </Card>
+        </>
       )}
     </div>
   )

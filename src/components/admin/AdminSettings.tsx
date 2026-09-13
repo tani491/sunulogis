@@ -58,7 +58,7 @@ export function AdminSettings() {
   }
 
   return (
-    <div className="space-y-6 max-w-lg">
+    <div className="space-y-6 max-w-2xl">
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <Shield className="h-6 w-6 text-primary" />
@@ -74,18 +74,18 @@ export function AdminSettings() {
             Informations du compte
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-2 text-sm">
-          <div className="flex justify-between">
+        <CardContent className="space-y-3 text-sm">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <span className="text-muted-foreground">Email</span>
-            <span className="font-medium">{currentUser?.email}</span>
+            <span className="font-medium break-all sm:text-right">{currentUser?.email}</span>
           </div>
-          <div className="flex justify-between">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <span className="text-muted-foreground">Nom</span>
-            <span className="font-medium">{currentUser?.fullName || '—'}</span>
+            <span className="font-medium sm:text-right">{currentUser?.fullName || '—'}</span>
           </div>
-          <div className="flex justify-between">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <span className="text-muted-foreground">Rôle</span>
-            <span className="font-medium capitalize">{currentUser?.role}</span>
+            <span className="font-medium capitalize sm:text-right">{currentUser?.role}</span>
           </div>
         </CardContent>
       </Card>

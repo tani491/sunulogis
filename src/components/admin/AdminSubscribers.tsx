@@ -96,7 +96,7 @@ export function AdminSubscribers() {
           Abonnés Newsletter ({subscribers.length})
         </h1>
 
-        <Button onClick={exportCSV} className="gap-2" variant="outline">
+        <Button onClick={exportCSV} className="w-full gap-2 sm:w-auto" variant="outline">
           <Download className="h-4 w-4" />
           Exporter en CSV
         </Button>
@@ -155,9 +155,59 @@ export function AdminSubscribers() {
           </CardContent>
         </Card>
       ) : (
-        <Card>
-          <div className="overflow-x-auto">
-            <Table>
+        <>
+          <div className="space-y-3 md:hidden">
+            {subscribers.map((sub) => (
+              <Card key={sub.id}>
+                <CardContent className="space-y-4 p-4">
+                  <div className="space-y-2">
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="font-medium break-all">{sub.email}</p>
+                      {getSourceBadge(sub.source)}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {sub.consentStatus ? (
+                        <Badge className="bg-green-100 text-green-800">Consentement oui</Badge>
+                      ) : (
+                        <Badge variant="secondary">Consentement non</Badge>
+                      )}
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(sub.createdAt).toLocaleDateString('fr-FR', {
+                          day: 'numeric', month: 'long', year: 'numeric',
+                        })}
+                      </span>
+                    </div>
+                  </div>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button size="sm" variant="outline" className="w-full gap-2 text-destructive hover:text-destructive" disabled={deleting === sub.id}>
+                        <Trash2 className="h-4 w-4" />
+                        Supprimer
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Supprimer cet abonné ?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Supprimer {sub.email} de la liste des abonnés ?
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Annuler</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => deleteSubscriber(sub.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                          Supprimer
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <Card className="hidden md:block">
+          <div className="w-full overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
+            <Table className="min-w-[760px]">
               <TableHeader>
                 <TableRow>
                   <TableHead>Email</TableHead>
@@ -213,6 +263,7 @@ export function AdminSubscribers() {
             </Table>
           </div>
         </Card>
+        </>
       )}
     </div>
   )

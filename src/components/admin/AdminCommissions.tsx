@@ -154,8 +154,46 @@ export function AdminCommissions() {
               <p className="mt-4 text-muted-foreground">Aucun paiement validé pour l&apos;instant</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
+            <>
+              <div className="space-y-3 p-4 md:hidden">
+                {recentPayments.map((p) => (
+                  <div key={p.id} className="space-y-3 rounded-lg border bg-background p-4 shadow-sm">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="font-medium">{p.ownerName}</p>
+                          <p className="break-all text-xs text-muted-foreground">{p.ownerEmail}</p>
+                        </div>
+                        <Badge className="bg-emerald-100 text-emerald-800 gap-1">
+                          <Zap className="h-3 w-3" />
+                          Validé
+                        </Badge>
+                      </div>
+                      <div className="grid grid-cols-1 gap-2 text-sm">
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-muted-foreground">Date</span>
+                          <span>
+                            {new Date(p.paidAt).toLocaleDateString('fr-FR', {
+                              day: '2-digit',
+                              month: 'short',
+                              year: 'numeric',
+                            })}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-muted-foreground">Montant</span>
+                          <span className="font-semibold">{p.amount.toLocaleString()} FCFA</span>
+                        </div>
+                        <div className="space-y-1">
+                          <span className="text-muted-foreground">Référence</span>
+                          <p className="break-words text-xs">{p.transactionDetails || '—'}</p>
+                        </div>
+                      </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="hidden w-full overflow-x-auto rounded-lg border border-gray-200 shadow-sm md:block">
+              <Table className="min-w-[760px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Propriétaire</TableHead>
@@ -198,6 +236,7 @@ export function AdminCommissions() {
                 </TableBody>
               </Table>
             </div>
+            </>
           )}
         </CardContent>
       </Card>

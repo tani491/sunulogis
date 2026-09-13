@@ -109,9 +109,95 @@ export function AdminProManagement() {
           </CardContent>
         </Card>
       ) : (
-        <Card>
-          <div className="overflow-x-auto">
-            <Table>
+        <>
+          <div className="space-y-3 md:hidden">
+            {users.map((user) => (
+              <Card key={user.id}>
+                <CardContent className="space-y-4 p-4">
+                  <div className="space-y-2">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-medium">{user.fullName || user.email}</p>
+                        <p className="break-all text-xs text-muted-foreground">{user.email}</p>
+                      </div>
+                      <Badge variant="outline">{user.role}</Badge>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="secondary">{user._count.establishments} établissement{user._count.establishments !== 1 ? 's' : ''}</Badge>
+                      {user.isSubscribed ? (
+                        <Badge className="bg-emerald-600">SunuPro actif</Badge>
+                      ) : (
+                        <Badge variant="secondary">Non abonné</Badge>
+                      )}
+                      {user.paymentReminder ? (
+                        <Badge className="bg-amber-500">Rappel actif</Badge>
+                      ) : (
+                        <Badge variant="outline">Aucun rappel</Badge>
+                      )}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1 text-amber-700 border-amber-300 hover:bg-amber-50"
+                      disabled={actionLoading === `${user.id}:remind`}
+                      onClick={() => updateProUser(user.id, 'remind')}
+                    >
+                      <Bell className="h-3.5 w-3.5" />
+                      Rappeler
+                    </Button>
+
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="gap-1 text-destructive hover:text-destructive"
+                          disabled={!user.isSubscribed || actionLoading === `${user.id}:suspend`}
+                        >
+                          <Ban className="h-3.5 w-3.5" />
+                          Suspendre
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Suspendre SunuPro ?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            L&apos;accès SunuPro de {user.fullName || user.email} sera désactivé immédiatement.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Annuler</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => updateProUser(user.id, 'suspend')}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Suspendre
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1 text-emerald-700 border-emerald-300 hover:bg-emerald-50"
+                      disabled={user.isSubscribed || actionLoading === `${user.id}:unsuspend`}
+                      onClick={() => updateProUser(user.id, 'unsuspend')}
+                    >
+                      <ShieldCheck className="h-3.5 w-3.5" />
+                      Désuspendre
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <Card className="hidden md:block">
+          <div className="w-full overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
+            <Table className="min-w-[920px]">
               <TableHeader>
                 <TableRow>
                   <TableHead>Utilisateur</TableHead>
@@ -213,6 +299,7 @@ export function AdminProManagement() {
             </Table>
           </div>
         </Card>
+        </>
       )}
     </div>
   )

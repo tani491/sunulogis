@@ -113,10 +113,13 @@ export function AdminUsers() {
           Utilisateurs ({users.length})
         </h1>
 
-        <div className="flex items-center gap-2 flex-wrap">
-          <Filter className="h-4 w-4 text-muted-foreground" />
+        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Filter className="h-4 w-4" />
+            Filtres
+          </div>
           <Select value={roleFilter} onValueChange={setRoleFilter}>
-            <SelectTrigger className="w-44">
+            <SelectTrigger className="w-full sm:w-44">
               <SelectValue placeholder="Rôle" />
             </SelectTrigger>
             <SelectContent>
@@ -127,7 +130,7 @@ export function AdminUsers() {
             </SelectContent>
           </Select>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger className="w-full sm:w-40">
               <SelectValue placeholder="Statut" />
             </SelectTrigger>
             <SelectContent>
@@ -147,9 +150,74 @@ export function AdminUsers() {
           </CardContent>
         </Card>
       ) : (
-        <Card>
-          <div className="overflow-x-auto">
-            <Table>
+        <>
+          <div className="space-y-3 md:hidden">
+            {filteredUsers.map((user) => (
+              <Card key={user.id}>
+                <CardContent className="space-y-4 p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="font-medium">{user.fullName || '—'}</p>
+                      <p className="truncate text-sm text-muted-foreground">{user.email}</p>
+                      <p className="text-sm text-muted-foreground">{user.phone || 'Téléphone non renseigné'}</p>
+                    </div>
+                    {user.isActive ? (
+                      <Badge className="shrink-0 bg-green-600">Actif</Badge>
+                    ) : (
+                      <Badge variant="destructive" className="shrink-0">Désactivé</Badge>
+                    )}
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    {getRoleBadge(user.role)}
+                    {user.role === 'owner' && (
+                      <Badge variant="outline">{user._count.establishments} établissement{user._count.establishments !== 1 ? 's' : ''}</Badge>
+                    )}
+                  </div>
+
+                  {user.isActive ? (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button size="sm" variant="outline" className="w-full gap-1 text-destructive hover:text-destructive" disabled={actionLoading === user.id}>
+                          <Ban className="h-3 w-3" />
+                          Désactiver
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Désactiver l&apos;utilisateur ?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Désactiver {user.fullName || user.email} ? Il ne pourra plus se connecter.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Annuler</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => toggleUserStatus(user.id, false)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                            Désactiver
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="w-full gap-1 text-green-600 hover:text-green-700"
+                      onClick={() => toggleUserStatus(user.id, true)}
+                      disabled={actionLoading === user.id}
+                    >
+                      <ShieldCheck className="h-3 w-3" />
+                      Activer
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <Card className="hidden md:block">
+            <div className="w-full overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
+              <Table className="min-w-[760px]">
               <TableHeader>
                 <TableRow>
                   <TableHead>Nom</TableHead>
@@ -222,9 +290,10 @@ export function AdminUsers() {
                   </TableRow>
                 ))}
               </TableBody>
-            </Table>
-          </div>
-        </Card>
+              </Table>
+            </div>
+          </Card>
+        </>
       )}
     </div>
   )

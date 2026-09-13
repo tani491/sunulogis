@@ -18,6 +18,19 @@ import { AdminProManagement } from './AdminProManagement'
 
 type SubView = 'admin' | 'admin-stats' | 'admin-establishments' | 'admin-users' | 'admin-blog' | 'admin-subscribers' | 'admin-commissions' | 'admin-pro' | 'admin-settings' | 'admin-analytics' | 'admin-subscription-requests'
 
+const navItems: { view: SubView; label: string; icon: React.ReactNode }[] = [
+  { view: 'admin', label: 'Vue d\'ensemble', icon: <LayoutDashboard className="h-4 w-4" /> },
+  { view: 'admin-analytics', label: 'Analytiques', icon: <BarChart2 className="h-4 w-4" /> },
+  { view: 'admin-establishments', label: 'Établissements', icon: <Building2 className="h-4 w-4" /> },
+  { view: 'admin-subscription-requests', label: 'Demandes Pro', icon: <CreditCard className="h-4 w-4" /> },
+  { view: 'admin-pro', label: 'Gestion Pro', icon: <Zap className="h-4 w-4" /> },
+  { view: 'admin-commissions', label: 'Revenus Pro', icon: <Zap className="h-4 w-4" /> },
+  { view: 'admin-users', label: 'Utilisateurs', icon: <Users className="h-4 w-4" /> },
+  { view: 'admin-blog', label: 'Blog', icon: <Newspaper className="h-4 w-4" /> },
+  { view: 'admin-subscribers', label: 'Newsletter', icon: <Mail className="h-4 w-4" /> },
+  { view: 'admin-settings', label: 'Paramètres', icon: <Settings className="h-4 w-4" /> },
+]
+
 interface SidebarContentProps {
   subView: SubView
   onNavigate: (view: View) => void
@@ -25,19 +38,6 @@ interface SidebarContentProps {
 }
 
 function SidebarContent({ subView, onNavigate, onCloseMobile }: SidebarContentProps) {
-  const navItems: { view: SubView; label: string; icon: React.ReactNode }[] = [
-    { view: 'admin', label: 'Vue d\'ensemble', icon: <LayoutDashboard className="h-4 w-4" /> },
-    { view: 'admin-analytics', label: 'Analytiques', icon: <BarChart2 className="h-4 w-4" /> },
-    { view: 'admin-establishments', label: 'Établissements', icon: <Building2 className="h-4 w-4" /> },
-    { view: 'admin-subscription-requests', label: 'Demandes Pro', icon: <CreditCard className="h-4 w-4" /> },
-    { view: 'admin-pro', label: 'Gestion Pro', icon: <Zap className="h-4 w-4" /> },
-    { view: 'admin-commissions', label: 'Revenus Pro', icon: <Zap className="h-4 w-4" /> },
-    { view: 'admin-users', label: 'Utilisateurs', icon: <Users className="h-4 w-4" /> },
-    { view: 'admin-blog', label: 'Blog', icon: <Newspaper className="h-4 w-4" /> },
-    { view: 'admin-subscribers', label: 'Newsletter', icon: <Mail className="h-4 w-4" /> },
-    { view: 'admin-settings', label: 'Paramètres', icon: <Settings className="h-4 w-4" /> },
-  ]
-
   return (
     <div className="space-y-2 p-4">
       <div className="flex items-center gap-2 mb-4 px-2">
@@ -56,6 +56,28 @@ function SidebarContent({ subView, onNavigate, onCloseMobile }: SidebarContentPr
         </Button>
       ))}
     </div>
+  )
+}
+
+function MobileTabBar({ subView, onNavigate }: { subView: SubView; onNavigate: (view: View) => void }) {
+  return (
+    <nav className="md:hidden border-b bg-card px-3 pt-2">
+      <div className="flex overflow-x-auto no-scrollbar whitespace-nowrap gap-2 pb-2">
+        {navItems.map((item) => (
+          <Button
+            key={item.view}
+            type="button"
+            variant={subView === item.view ? 'secondary' : 'outline'}
+            size="sm"
+            className="shrink-0 gap-2"
+            onClick={() => onNavigate(item.view as View)}
+          >
+            {item.icon}
+            {item.label}
+          </Button>
+        ))}
+      </div>
+    </nav>
   )
 }
 
@@ -133,7 +155,7 @@ export function AdminLayout() {
       )}
 
       {/* Main content */}
-      <main className="flex-1 overflow-hidden">
+      <main className="flex-1 min-w-0 overflow-hidden">
         {/* Mobile header */}
         <div className="md:hidden flex items-center gap-2 p-4 border-b bg-card">
           <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(true)}>
@@ -143,9 +165,10 @@ export function AdminLayout() {
             {navLabels[subView] || 'Admin'}
           </h2>
         </div>
+        <MobileTabBar subView={subView} onNavigate={navigate} />
 
-        <ScrollArea className="h-[calc(100vh-10rem)] md:h-[calc(100vh-8rem)]">
-          <div className="p-4 md:p-6 lg:p-8">
+        <ScrollArea className="h-[calc(100vh-13rem)] md:h-[calc(100vh-8rem)]">
+          <div className="p-3 sm:p-4 md:p-6 lg:p-8">
             {renderContent()}
           </div>
         </ScrollArea>

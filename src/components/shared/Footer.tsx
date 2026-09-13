@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import { useState } from 'react'
 import { useAppStore } from '@/store/app-store'
-import { Heart, Mail, Loader2, MapPin, Phone } from 'lucide-react'
+import { Mail, Loader2, MapPin, Phone } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
@@ -242,9 +242,7 @@ export default function Footer() {
 
         {/* Barre du bas */}
         <div className="mt-8 border-t border-border pt-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1">
-            Fait avec <Heart className="h-3 w-3 text-red-500 fill-red-500 mx-0.5" /> au Senegal &mdash; &copy; {new Date().getFullYear()} SunuLogis
-          </span>
+          <span>&copy; 2026 SunuLogis. Tous droits réservés.</span>
           <div className="flex items-center gap-4">
             {socialLinks.map(({ label, href, icon: Icon }) => (
               <a

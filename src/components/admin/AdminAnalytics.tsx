@@ -121,7 +121,7 @@ export function AdminAnalytics() {
           </h1>
           <p className="text-muted-foreground text-sm">Sources de visites, réseaux sociaux et pays</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex w-full overflow-x-auto no-scrollbar whitespace-nowrap gap-2 pb-1 sm:w-auto">
           {PERIOD_OPTIONS.map((d) => (
             <Button
               key={d}

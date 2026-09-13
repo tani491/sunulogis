@@ -147,8 +147,66 @@ export function AdminSubscriptionRequests() {
               Aucune demande en attente
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
+            <>
+              <div className="space-y-3 p-4 md:hidden">
+                {pending.map((r) => (
+                  <div key={r.id} className="space-y-4 rounded-lg border bg-background p-4 shadow-sm">
+                    <div>
+                      <p className="font-medium">{r.user?.name || '—'}</p>
+                      <p className="break-all text-xs text-muted-foreground">{r.user?.email}</p>
+                      {r.user?.phone && (
+                        <p className="text-xs text-muted-foreground">{r.user.phone}</p>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-1 gap-2 text-sm">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-muted-foreground">Date</span>
+                        <span>
+                          {new Date(r.createdAt).toLocaleString('fr-FR', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-muted-foreground">Montant</span>
+                        <span className="font-semibold">{r.amount.toLocaleString()} FCFA</span>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-muted-foreground">Détails transaction</span>
+                        <p className="break-words">{r.transactionDetails || '—'}</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        size="sm"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1"
+                        disabled={actionId === r.id}
+                        onClick={() => decide(r.id, 'APPROVED')}
+                      >
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        Valider
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-red-300 text-red-700 hover:bg-red-50 gap-1"
+                        disabled={actionId === r.id}
+                        onClick={() => decide(r.id, 'REJECTED')}
+                      >
+                        <XCircle className="h-3.5 w-3.5" />
+                        Rejeter
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="hidden w-full overflow-x-auto rounded-lg border border-gray-200 shadow-sm md:block">
+              <Table className="min-w-[820px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Utilisateur</TableHead>
@@ -213,6 +271,7 @@ export function AdminSubscriptionRequests() {
                 </TableBody>
               </Table>
             </div>
+            </>
           )}
         </CardContent>
       </Card>
@@ -224,8 +283,45 @@ export function AdminSubscriptionRequests() {
             <div className="px-4 py-3 border-b">
               <h2 className="font-semibold">Historique</h2>
             </div>
-            <div className="overflow-x-auto">
-              <Table>
+            <div className="space-y-3 p-4 md:hidden">
+              {history.map((r) => (
+                <div key={r.id} className="space-y-3 rounded-lg border bg-background p-4 shadow-sm">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="font-medium">{r.user?.name || '—'}</p>
+                      <p className="break-all text-xs text-muted-foreground">{r.user?.email}</p>
+                    </div>
+                    {r.status === 'APPROVED' ? (
+                      <Badge className="bg-emerald-100 text-emerald-800 gap-1">
+                        <CheckCircle2 className="h-3 w-3" />
+                        Validé
+                      </Badge>
+                    ) : (
+                      <Badge className="bg-red-100 text-red-800 gap-1">
+                        <XCircle className="h-3 w-3" />
+                        Rejeté
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 gap-2 text-sm">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-muted-foreground">Date</span>
+                      <span>{new Date(r.createdAt).toLocaleDateString('fr-FR')}</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-muted-foreground">Montant</span>
+                      <span>{r.amount.toLocaleString()} FCFA</span>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-muted-foreground">Détails</span>
+                      <p className="break-words text-xs">{r.transactionDetails || '—'}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="hidden w-full overflow-x-auto rounded-lg border border-gray-200 shadow-sm md:block">
+              <Table className="min-w-[760px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Utilisateur</TableHead>

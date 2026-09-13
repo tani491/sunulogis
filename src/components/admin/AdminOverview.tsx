@@ -167,8 +167,8 @@ export function AdminOverview() {
       {/* Quick action for pending approvals */}
       {(stats?.pendingEstablishments || 0) > 0 && (
         <Card className="border-yellow-200 bg-yellow-50">
-          <CardContent className="p-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
+          <CardContent className="p-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3">
               <AlertCircle className="h-5 w-5 text-yellow-600" />
               <div>
                 <p className="font-medium text-yellow-800">
@@ -179,7 +179,7 @@ export function AdminOverview() {
                 </p>
               </div>
             </div>
-            <Button onClick={() => navigate('admin-establishments')} variant="outline" className="gap-2">
+            <Button onClick={() => navigate('admin-establishments')} variant="outline" className="w-full gap-2 sm:w-auto">
               <Building2 className="h-4 w-4" />
               Examiner
             </Button>

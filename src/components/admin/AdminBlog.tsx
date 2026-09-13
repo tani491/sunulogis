@@ -216,12 +216,12 @@ export function AdminBlog() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <Newspaper className="h-6 w-6 text-primary" />
           Blog
         </h1>
-        <Button onClick={openCreateDialog} className="gap-2">
+        <Button onClick={openCreateDialog} className="w-full gap-2 sm:w-auto">
           <Plus className="h-4 w-4" />
           Nouvel article
         </Button>
@@ -240,9 +240,59 @@ export function AdminBlog() {
           </CardContent>
         </Card>
       ) : (
-        <Card>
-          <div className="overflow-x-auto">
-            <Table>
+        <>
+          <div className="space-y-3 md:hidden">
+            {posts.map((post) => (
+              <Card key={post.id}>
+                <CardContent className="space-y-4 p-4">
+                  <div className="space-y-2">
+                    <div className="flex items-start justify-between gap-3">
+                      <h3 className="font-semibold leading-tight">{post.title}</h3>
+                      {getStatusBadge(post)}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge variant="outline">{getCategoryLabel(post.category)}</Badge>
+                      <span className="text-xs text-muted-foreground">
+                        {format(new Date(post.createdAt), 'dd MMM yyyy', { locale: fr })}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button size="sm" variant="outline" className="gap-2" onClick={() => startEdit(post)}>
+                      <Pencil className="h-4 w-4" />
+                      Modifier
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button size="sm" variant="outline" className="gap-2 text-destructive hover:text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                          Supprimer
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Supprimer cet article ?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Cette action est irréversible. L&apos;article &ldquo;{post.title}&rdquo; sera définitivement supprimé.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Annuler</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDelete(post.slug)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                            Supprimer
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <Card className="hidden md:block">
+            <div className="w-full overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
+              <Table className="min-w-[700px]">
               <TableHeader>
                 <TableRow>
                   <TableHead>Titre</TableHead>
@@ -294,9 +344,10 @@ export function AdminBlog() {
                   </TableRow>
                 ))}
               </TableBody>
-            </Table>
-          </div>
-        </Card>
+              </Table>
+            </div>
+          </Card>
+        </>
       )}
 
       {/* Create/Edit dialog */}
@@ -339,7 +390,7 @@ export function AdminBlog() {
               <p className="text-xs text-muted-foreground">Généré automatiquement à partir du titre. Modifiable manuellement.</p>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label>Catégorie</Label>
                 <Select value={category} onValueChange={setCategory}>
@@ -394,9 +445,9 @@ export function AdminBlog() {
               />
             </div>
 
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={resetForm}>Annuler</Button>
-              <Button type="submit" disabled={saving}>
+            <DialogFooter className="flex-col gap-2 sm:flex-row">
+              <Button type="button" variant="outline" onClick={resetForm} className="w-full sm:w-auto">Annuler</Button>
+              <Button type="submit" disabled={saving} className="w-full sm:w-auto">
                 {saving ? 'Enregistrement...' : editingPost ? 'Mettre à jour' : 'Créer l\'article'}
               </Button>
             </DialogFooter>
