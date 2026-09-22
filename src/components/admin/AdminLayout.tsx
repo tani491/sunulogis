@@ -3,28 +3,22 @@
 import { useAppStore, type View } from '@/store/app-store'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { LayoutDashboard, Building2, Users, Menu, X, Shield, Newspaper, Mail, Settings, BarChart2, CreditCard, Zap } from 'lucide-react'
+import { LayoutDashboard, Building2, Users, Menu, X, Shield, Newspaper, Mail, Settings, BarChart2 } from 'lucide-react'
 import { useState } from 'react'
 import { AdminOverview } from './AdminOverview'
 import { AdminEstablishments } from './AdminEstablishments'
 import { AdminUsers } from './AdminUsers'
 import { AdminBlog } from './AdminBlog'
 import { AdminSubscribers } from './AdminSubscribers'
-import { AdminCommissions } from './AdminCommissions'
 import { AdminSettings } from './AdminSettings'
 import { AdminAnalytics } from './AdminAnalytics'
-import { AdminSubscriptionRequests } from './AdminSubscriptionRequests'
-import { AdminProManagement } from './AdminProManagement'
 
-type SubView = 'admin' | 'admin-stats' | 'admin-establishments' | 'admin-users' | 'admin-blog' | 'admin-subscribers' | 'admin-commissions' | 'admin-pro' | 'admin-settings' | 'admin-analytics' | 'admin-subscription-requests'
+type SubView = 'admin' | 'admin-stats' | 'admin-establishments' | 'admin-users' | 'admin-blog' | 'admin-subscribers' | 'admin-settings' | 'admin-analytics'
 
 const navItems: { view: SubView; label: string; icon: React.ReactNode }[] = [
   { view: 'admin', label: 'Vue d\'ensemble', icon: <LayoutDashboard className="h-4 w-4" /> },
   { view: 'admin-analytics', label: 'Analytiques', icon: <BarChart2 className="h-4 w-4" /> },
   { view: 'admin-establishments', label: 'Établissements', icon: <Building2 className="h-4 w-4" /> },
-  { view: 'admin-subscription-requests', label: 'Demandes Pro', icon: <CreditCard className="h-4 w-4" /> },
-  { view: 'admin-pro', label: 'Gestion Pro', icon: <Zap className="h-4 w-4" /> },
-  { view: 'admin-commissions', label: 'Revenus Pro', icon: <Zap className="h-4 w-4" /> },
   { view: 'admin-users', label: 'Utilisateurs', icon: <Users className="h-4 w-4" /> },
   { view: 'admin-blog', label: 'Blog', icon: <Newspaper className="h-4 w-4" /> },
   { view: 'admin-subscribers', label: 'Newsletter', icon: <Mail className="h-4 w-4" /> },
@@ -89,9 +83,6 @@ const navLabels: Record<SubView, string> = {
   'admin-users': 'Utilisateurs',
   'admin-blog': 'Blog',
   'admin-subscribers': 'Newsletter',
-  'admin-commissions': 'Revenus Pro',
-  'admin-pro': 'Gestion Pro',
-  'admin-subscription-requests': 'Demandes Pro',
   'admin-settings': 'Paramètres',
 }
 
@@ -113,12 +104,6 @@ export function AdminLayout() {
         return <AdminBlog />
       case 'admin-subscribers':
         return <AdminSubscribers />
-      case 'admin-commissions':
-        return <AdminCommissions />
-      case 'admin-pro':
-        return <AdminProManagement />
-      case 'admin-subscription-requests':
-        return <AdminSubscriptionRequests />
       case 'admin-settings':
         return <AdminSettings />
       case 'admin-stats':

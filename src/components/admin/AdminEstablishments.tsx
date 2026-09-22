@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
-import { Building2, Check, Ban, ShieldCheck, Filter, MapPin, Eye, Clock } from 'lucide-react'
+import { Building2, Check, Ban, ShieldCheck, Filter, MapPin, Eye, Clock, Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import { ESTABLISHMENT_TYPE_FILTERS, getTypeLabel, getTypeColor } from '@/lib/constants'
 import { AdminEstablishmentEditor } from './AdminEstablishmentEditor'
@@ -37,6 +37,7 @@ export function AdminEstablishments() {
   const [typeFilter, setTypeFilter] = useState<string>('all')
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [isCreating, setIsCreating] = useState(false)
 
   useEffect(() => {
     fetchEstablishments()
@@ -102,12 +103,15 @@ export function AdminEstablishments() {
   // Count pending
   const pendingCount = establishments.filter(e => !e.isApproved).length
 
-  // If editing an establishment, show the editor
-  if (editingId) {
+  // If creating or editing an establishment, show the editor
+  if (isCreating || editingId) {
     return (
       <AdminEstablishmentEditor
         establishmentId={editingId}
-        onClose={() => setEditingId(null)}
+        onClose={() => {
+          setEditingId(null)
+          setIsCreating(false)
+        }}
         onSaved={fetchEstablishments}
       />
     )
@@ -152,12 +156,25 @@ export function AdminEstablishments() {
       )}
 
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Building2 className="h-6 w-6 text-primary" />
-          Établissements ({establishments.length})
-        </h1>
+        <div className="space-y-1">
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            <Building2 className="h-6 w-6 text-primary" />
+            Établissements ({establishments.length})
+          </h1>
+          <p className="text-sm text-muted-foreground">Créer et gérer les biens publiés dans le catalogue SunuLogis.</p>
+        </div>
 
         <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+          <Button
+            onClick={() => {
+              setEditingId(null)
+              setIsCreating(true)
+            }}
+            className="w-full gap-2 sm:w-auto"
+          >
+            <Plus className="h-4 w-4" />
+            Ajouter un nouveau bien
+          </Button>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Filter className="h-4 w-4" />
             Filtres

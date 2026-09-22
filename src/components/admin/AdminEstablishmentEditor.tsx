@@ -11,10 +11,42 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { Separator } from '@/components/ui/separator'
-import { Pencil, Save, X, Globe, Phone, MapPin, CheckCircle, Ban, ShieldCheck, Clock, Trash2, ImagePlus, Star } from 'lucide-react'
+import { Pencil, Save, X, Globe, Phone, MapPin, CheckCircle, Ban, ShieldCheck, Clock, Trash2, ImagePlus, Star, PlusCircle, Banknote, ListChecks } from 'lucide-react'
 import { toast } from 'sonner'
 import { DragDropImageUpload } from '@/components/shared/DragDropImageUpload'
 import { DAKAR_NEIGHBORHOODS, ESTABLISHMENT_TYPES, REGIONS, getTypeLabel, getTypeColor, WAVE_INFO, getCommissionAmount, PAYMENT_STATUSES } from '@/lib/constants'
+
+const PRIMARY_ROOM_NAME = 'Offre principale'
+const EQUIPMENT_SECTION_REGEX = /\n{0,2}(?:É|E)quipements\s*:\s*([\s\S]*)$/i
+
+function splitDescriptionAndAmenities(value: string) {
+  const match = value.match(EQUIPMENT_SECTION_REGEX)
+  if (!match) {
+    return { baseDescription: value, amenities: '' }
+  }
+
+  return {
+    baseDescription: value.slice(0, match.index).trim(),
+    amenities: match[1]?.trim() ?? '',
+  }
+}
+
+function formatAmenities(value: string) {
+  return value
+    .split(/[\n,]/)
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .join(', ')
+}
+
+function composeDescription(baseDescription: string, amenities: string) {
+  const cleanDescription = baseDescription.trim()
+  const cleanAmenities = formatAmenities(amenities)
+
+  if (!cleanAmenities) return cleanDescription
+
+  return [cleanDescription, `Équipements : ${cleanAmenities}`].filter(Boolean).join('\n\n')
+}
 
 interface Establishment {
   id: string
@@ -59,7 +91,10 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
   const [website, setWebsite] = useState('')
   const [phone, setPhone] = useState('')
   const [images, setImages] = useState<string[]>([])
+  const [price, setPrice] = useState('')
+  const [amenities, setAmenities] = useState('')
   const [isFeatured, setIsFeatured] = useState(false)
+  const [publishNow, setPublishNow] = useState(true)
 
   async function fetchEstablishment() {
     setLoading(true)
@@ -67,16 +102,20 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
       const res = await fetch(`/api/establishments/${establishmentId}`)
       if (res.ok) {
         const data = await res.json()
+        const { baseDescription, amenities: parsedAmenities } = splitDescriptionAndAmenities(data.description || '')
+        const primaryRoom = data.rooms?.find((room: NonNullable<Establishment['rooms']>[number]) => room.isAvailable) || data.rooms?.[0]
         setEstablishment(data)
         setName(data.name || '')
         setType(data.type || 'auberge')
-        setDescription(data.description || '')
+        setDescription(baseDescription)
         setCity(data.city || '')
         setRegion(data.region || '')
         setAddress(data.address || '')
         setWebsite(data.website || '')
         setPhone(data.phone || '')
         setImages(data.images || [])
+        setPrice(primaryRoom?.pricePerNight?.toString() || '')
+        setAmenities(parsedAmenities)
         setIsFeatured(data.isFeatured || false)
       } else {
         toast.error('Établissement non trouvé')
@@ -99,6 +138,22 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
 
       return () => window.clearTimeout(timeoutId)
     }
+
+    setEstablishment(null)
+    setName('')
+    setType('auberge')
+    setDescription('')
+    setCity('')
+    setRegion('')
+    setAddress('')
+    setWebsite('')
+    setPhone('')
+    setImages([])
+    setPrice('')
+    setAmenities('')
+    setIsFeatured(false)
+    setPublishNow(true)
+    setLoading(false)
   }, [establishmentId])
 
   const handleRegionChange = (value: string) => {
@@ -108,34 +163,96 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
     }
   }
 
+  const savePrimaryRoom = async (targetEstablishmentId: string) => {
+    const cleanPrice = price.trim()
+    if (!cleanPrice) return
+
+    const numericPrice = Number(cleanPrice)
+    const primaryRoom = establishment?.rooms?.find((room) => room.isAvailable) || establishment?.rooms?.[0]
+    const res = await fetch(primaryRoom?.id ? `/api/rooms/${primaryRoom.id}` : '/api/rooms', {
+      method: primaryRoom?.id ? 'PUT' : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...(!primaryRoom?.id ? { establishmentId: targetEstablishmentId } : {}),
+        name: primaryRoom?.name || PRIMARY_ROOM_NAME,
+        pricePerNight: numericPrice,
+        capacity: primaryRoom?.capacity || 1,
+        isAvailable: true,
+      }),
+    })
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      throw new Error(data.error || 'Erreur lors de la mise à jour du prix')
+    }
+  }
+
   const handleSave = async () => {
     if (!name.trim() || !city.trim()) {
       toast.error('Le nom et la ville sont requis')
       return
     }
 
+    if (price.trim()) {
+      const numericPrice = Number(price)
+      if (!Number.isFinite(numericPrice) || numericPrice < 0) {
+        toast.error('Le prix doit être un nombre positif')
+        return
+      }
+    }
+
     setSaving(true)
     try {
-      const res = await fetch(`/api/establishments/${establishmentId}`, {
-        method: 'PUT',
+      const payload = {
+        name,
+        type,
+        description: composeDescription(description, amenities),
+        city,
+        region,
+        address,
+        website: website || null,
+        phone: phone || null,
+        images,
+        ...(establishment?.isApproved ? { isFeatured } : {}),
+      }
+
+      const res = await fetch(establishmentId ? `/api/establishments/${establishmentId}` : '/api/establishments', {
+        method: establishmentId ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name, type, description, city, region, address,
-          website: website || null, phone: phone || null, images,
-          ...(establishment?.isApproved ? { isFeatured } : {}),
-        }),
+        body: JSON.stringify(payload),
       })
 
       if (res.ok) {
-        toast.success('Établissement mis à jour avec succès')
+        const saved = await res.json()
+        const savedId = establishmentId || saved.id
+
+        await savePrimaryRoom(savedId)
+
+        if (!establishmentId && publishNow) {
+          const publishRes = await fetch('/api/admin/establishments', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ establishmentId: savedId, isApproved: true, isSuspended: false }),
+          })
+
+          if (!publishRes.ok) {
+            const publishData = await publishRes.json().catch(() => ({}))
+            throw new Error(publishData.error || 'Bien créé, mais publication impossible')
+          }
+        }
+
+        toast.success(establishmentId ? 'Établissement mis à jour avec succès' : publishNow ? 'Bien créé et publié avec succès' : 'Bien créé avec succès')
         onSaved()
+        if (!establishmentId) {
+          onClose()
+        }
       } else {
         const data = await res.json()
-        toast.error(data.error || 'Erreur lors de la mise à jour')
+        toast.error(data.error || 'Erreur lors de l’enregistrement')
       }
     } catch (err) {
       console.error(err)
-      toast.error('Erreur serveur')
+      toast.error(err instanceof Error ? err.message : 'Erreur serveur')
     } finally {
       setSaving(false)
     }
@@ -224,9 +341,11 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
     )
   }
 
-  if (!establishment) return null
+  const isCreateMode = !establishmentId
 
-  const expectedCommission = getCommissionAmount(establishment.type)
+  if (!isCreateMode && !establishment) return null
+
+  const expectedCommission = getCommissionAmount(type)
 
   return (
     <div className="space-y-6">
@@ -238,118 +357,126 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
           </Button>
           <div>
             <h1 className="text-xl font-bold flex items-center gap-2">
-              <Pencil className="h-5 w-5 text-primary" />
-              Modification administrateur
+              {isCreateMode ? (
+                <PlusCircle className="h-5 w-5 text-primary" />
+              ) : (
+                <Pencil className="h-5 w-5 text-primary" />
+              )}
+              {isCreateMode ? 'Créer un établissement' : 'Modification administrateur'}
             </h1>
             <p className="text-sm text-muted-foreground">
-              Modifier l&apos;établissement de {establishment.owner?.fullName || 'un propriétaire'}
+              {isCreateMode ? 'Ajouter un nouveau bien au catalogue SunuLogis.' : `Modifier l'établissement ${establishment?.name || ''}`}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           {/* Status badges */}
-          {establishment.isSuspended ? (
-            <Badge variant="destructive" className="gap-1"><Ban className="h-3 w-3" /> Suspendu</Badge>
-          ) : !establishment.isApproved ? (
-            <Badge variant="secondary" className="gap-1 bg-yellow-100 text-yellow-800"><Clock className="h-3 w-3" /> En attente</Badge>
-          ) : (
-            <Badge className="gap-1 bg-green-600"><ShieldCheck className="h-3 w-3" /> Approuvé</Badge>
+          {!isCreateMode && establishment && (
+            establishment.isSuspended ? (
+              <Badge variant="destructive" className="gap-1"><Ban className="h-3 w-3" /> Suspendu</Badge>
+            ) : !establishment.isApproved ? (
+              <Badge variant="secondary" className="gap-1 bg-yellow-100 text-yellow-800"><Clock className="h-3 w-3" /> En attente</Badge>
+            ) : (
+              <Badge className="gap-1 bg-green-600"><ShieldCheck className="h-3 w-3" /> Approuvé</Badge>
+            )
           )}
-          <Badge className={getTypeColor(establishment.type)}>{getTypeLabel(establishment.type)}</Badge>
+          <Badge className={getTypeColor(type)}>{getTypeLabel(type)}</Badge>
         </div>
       </div>
 
       {/* Quick action bar - Moderation */}
-      <Card className="border-primary/20 bg-primary/5">
-        <CardContent className="p-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <h3 className="font-semibold text-sm">Actions de modération</h3>
-              <p className="text-xs text-muted-foreground">Gérer le statut de cet établissement</p>
-            </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              {!establishment.isApproved && (
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button size="sm" className="gap-1 bg-green-600 hover:bg-green-700">
-                      <CheckCircle className="h-4 w-4" />
-                      Valider & Publier
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Valider cet établissement ?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Approuver <strong>{establishment.name}</strong> ? Il sera visible publiquement sur le site après validation.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Annuler</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleApprove} className="bg-green-600 hover:bg-green-700">
-                        Valider
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              )}
-              {!establishment.isSuspended ? (
+      {!isCreateMode && establishment && (
+        <Card className="border-primary/20 bg-primary/5">
+          <CardContent className="p-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="font-semibold text-sm">Actions de modération</h3>
+                <p className="text-xs text-muted-foreground">Gérer le statut de cet établissement</p>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                {!establishment.isApproved && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button size="sm" className="gap-1 bg-green-600 hover:bg-green-700">
+                        <CheckCircle className="h-4 w-4" />
+                        Valider & Publier
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Valider cet établissement ?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Approuver <strong>{establishment.name}</strong> ? Il sera visible publiquement sur le site après validation.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Annuler</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleApprove} className="bg-green-600 hover:bg-green-700">
+                          Valider
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
+                {!establishment.isSuspended ? (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button size="sm" variant="outline" className="gap-1 text-destructive hover:text-destructive">
+                        <Ban className="h-4 w-4" />
+                        Suspendre
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Suspendre cet établissement ?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Suspendre <strong>{establishment.name}</strong> ? Il ne sera plus visible publiquement.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Annuler</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleSuspend} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                          Suspendre
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                ) : (
+                  <Button size="sm" variant="outline" className="gap-1 text-green-600" onClick={handleReactivate}>
+                    <ShieldCheck className="h-4 w-4" />
+                    Réactiver
+                  </Button>
+                )}
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button size="sm" variant="outline" className="gap-1 text-destructive hover:text-destructive">
-                      <Ban className="h-4 w-4" />
-                      Suspendre
+                      <Trash2 className="h-4 w-4" />
+                      Supprimer
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Suspendre cet établissement ?</AlertDialogTitle>
+                      <AlertDialogTitle>Supprimer définitivement ?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Suspendre <strong>{establishment.name}</strong> ? Il ne sera plus visible publiquement.
+                        Cette action est irréversible. <strong>{establishment.name}</strong> et toutes ses chambres et réservations seront supprimés.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Annuler</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleSuspend} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                        Suspendre
+                      <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                        Supprimer
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
-              ) : (
-                <Button size="sm" variant="outline" className="gap-1 text-green-600" onClick={handleReactivate}>
-                  <ShieldCheck className="h-4 w-4" />
-                  Réactiver
-                </Button>
-              )}
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button size="sm" variant="outline" className="gap-1 text-destructive hover:text-destructive">
-                    <Trash2 className="h-4 w-4" />
-                    Supprimer
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Supprimer définitivement ?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Cette action est irréversible. <strong>{establishment.name}</strong> et toutes ses chambres et réservations seront supprimés.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Annuler</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                      Supprimer
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Owner info */}
-      {establishment.owner && (
+      {!isCreateMode && establishment?.owner && (
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-semibold text-muted-foreground">Informations du propriétaire</CardTitle>
@@ -374,26 +501,28 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
       )}
 
       {/* Commission info */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-            <div>
-              <p className="text-muted-foreground">Commission attendue</p>
-              <p className="font-bold text-lg">{expectedCommission.toLocaleString()} FCFA</p>
+      {!isCreateMode && establishment && (
+        <Card>
+          <CardContent className="p-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+              <div>
+                <p className="text-muted-foreground">Commission attendue</p>
+                <p className="font-bold text-lg">{expectedCommission.toLocaleString()} FCFA</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Statut de paiement</p>
+                <Badge className={establishment.paymentStatus === 'paye' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
+                  {PAYMENT_STATUSES[establishment.paymentStatus as keyof typeof PAYMENT_STATUSES] || establishment.paymentStatus}
+                </Badge>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Paiement Wave</p>
+                <p className="font-medium">{WAVE_INFO.number} ({WAVE_INFO.name})</p>
+              </div>
             </div>
-            <div>
-              <p className="text-muted-foreground">Statut de paiement</p>
-              <Badge className={establishment.paymentStatus === 'paye' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
-                {PAYMENT_STATUSES[establishment.paymentStatus as keyof typeof PAYMENT_STATUSES] || establishment.paymentStatus}
-              </Badge>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Paiement Wave</p>
-              <p className="font-medium">{WAVE_INFO.number} ({WAVE_INFO.name})</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       <Separator />
 
@@ -401,16 +530,20 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Pencil className="h-5 w-5 text-primary" />
-            Modifier l&apos;établissement
+            {isCreateMode ? (
+              <PlusCircle className="h-5 w-5 text-primary" />
+            ) : (
+              <Pencil className="h-5 w-5 text-primary" />
+            )}
+            {isCreateMode ? 'Nouveau bien' : 'Modifier l’établissement'}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="admin-name">Nom de l&apos;établissement *</Label>
-                <Input id="admin-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Auberge du Plateau" />
+                <Label htmlFor="admin-name">Titre / Nom du bien *</Label>
+                <Input id="admin-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Appartement lumineux aux Almadies" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="admin-type">Type *</Label>
@@ -429,12 +562,29 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
 
             <div className="space-y-2">
               <Label htmlFor="admin-description">Description</Label>
-              <Textarea id="admin-description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Décrivez l'établissement..." rows={4} />
+              <Textarea id="admin-description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Décrivez le bien, son ambiance, ses pièces et ses points forts..." rows={4} />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="admin-amenities" className="flex items-center gap-2">
+                <ListChecks className="h-3.5 w-3.5" />
+                Équipements
+              </Label>
+              <Textarea
+                id="admin-amenities"
+                value={amenities}
+                onChange={(e) => setAmenities(e.target.value)}
+                placeholder="Wi-Fi, climatisation, cuisine équipée, parking, gardiennage..."
+                rows={2}
+              />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="admin-city">Ville *</Label>
+                <Label htmlFor="admin-city" className="flex items-center gap-2">
+                  <MapPin className="h-3.5 w-3.5" />
+                  Ville *
+                </Label>
                 <Input id="admin-city" value={city} onChange={(e) => setCity(e.target.value)} placeholder="Dakar" />
               </div>
               <div className="space-y-2">
@@ -469,7 +619,22 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="admin-price" className="flex items-center gap-2">
+                  <Banknote className="h-3.5 w-3.5" />
+                  Prix à partir de
+                </Label>
+                <Input
+                  id="admin-price"
+                  type="number"
+                  min="0"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  placeholder="25000"
+                />
+                <p className="text-xs text-muted-foreground">Montant en FCFA.</p>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="admin-website" className="flex items-center gap-2">
                   <Globe className="h-3.5 w-3.5" />
@@ -486,7 +651,7 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
               </div>
             </div>
 
-            {establishment.isApproved && (
+            {!isCreateMode && establishment?.isApproved && (
               <div className="flex items-center gap-2 rounded-lg border p-3">
                 <Checkbox
                   id="admin-featured"
@@ -510,7 +675,7 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
                 Gestion des images
               </Label>
               <p className="text-xs text-muted-foreground">
-                Remplacez les photos floues par des images plus nettes, ou supprimez celles qui ne conviennent pas.
+                Ajoutez plusieurs photos et choisissez la première comme image de couverture.
               </p>
               <DragDropImageUpload
                 images={images}
@@ -519,11 +684,28 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
               />
             </div>
 
+            {isCreateMode && (
+              <div className="flex items-center gap-2 rounded-lg border p-3">
+                <Checkbox
+                  id="admin-publish-now"
+                  checked={publishNow}
+                  onCheckedChange={(checked) => setPublishNow(checked === true)}
+                />
+                <label
+                  htmlFor="admin-publish-now"
+                  className="flex items-center gap-2 text-sm font-medium leading-none cursor-pointer"
+                >
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  Publier immédiatement le bien
+                </label>
+              </div>
+            )}
+
             {/* Save/Cancel */}
             <div className="flex gap-3 pt-4">
               <Button onClick={handleSave} disabled={saving} className="gap-2">
                 <Save className="h-4 w-4" />
-                {saving ? 'Enregistrement...' : 'Enregistrer les modifications'}
+                {saving ? 'Enregistrement...' : isCreateMode ? 'Créer le bien' : 'Enregistrer les modifications'}
               </Button>
               <Button type="button" variant="outline" onClick={onClose}>
                 Annuler
@@ -534,7 +716,7 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
       </Card>
 
       {/* Rooms summary */}
-      {establishment.rooms && establishment.rooms.length > 0 && (
+      {!isCreateMode && establishment?.rooms && establishment.rooms.length > 0 && (
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-semibold text-muted-foreground">
