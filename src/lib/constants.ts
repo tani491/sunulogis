@@ -18,22 +18,32 @@ export const COMMISSION_RATES: Record<string, number> = {
 
 // Establishment type labels (French)
 export const ESTABLISHMENT_TYPES = [
-  { value: 'auberge', label: 'Auberge' },
-  { value: 'hotel', label: 'Hôtel' },
   { value: 'appartement', label: 'Appartement' },
   { value: 'appartement_meuble', label: 'Appartement Meublé' },
   { value: 'studio', label: 'Studio' },
+  { value: 'villa', label: 'Villa' },
+  { value: 'maison_a_vendre', label: 'Maison' },
+  { value: 'terrain', label: 'Terrain' },
+  { value: 'bureau', label: 'Bureau' },
+  { value: 'local_commercial', label: 'Local commercial' },
+  { value: 'auberge', label: 'Auberge' },
+  { value: 'hotel', label: 'Hôtel' },
   { value: 'lodge', label: 'Lodge' },
   { value: 'loft', label: 'Loft' },
-  { value: 'villa', label: 'Villa' },
-  { value: 'maison_a_vendre', label: 'Maison à Vendre' },
 ] as const
 
 // For filter dropdowns (includes "all" option)
 export const ESTABLISHMENT_TYPE_FILTERS = [
-  { value: 'all', label: 'Tous les types' },
+  { value: 'all', label: 'Tous les biens' },
   ...ESTABLISHMENT_TYPES,
 ]
+
+export const OPERATION_FILTERS = [
+  { value: 'all', label: 'Acheter / louer' },
+  { value: 'VENTE', label: 'Acheter' },
+  { value: 'LOCATION_MENSUELLE', label: 'Louer' },
+  { value: 'SEJOUR_NUITEE', label: 'Séjour' },
+] as const
 
 // Senegalese regions
 export const REGIONS = [
@@ -72,6 +82,9 @@ export function getTypeColor(type: string): string {
     loft: 'bg-purple-100 text-purple-800',
     villa: 'bg-indigo-100 text-indigo-800',
     maison_a_vendre: 'bg-teal-100 text-teal-800',
+    terrain: 'bg-lime-100 text-lime-800',
+    bureau: 'bg-slate-100 text-slate-800',
+    local_commercial: 'bg-fuchsia-100 text-fuchsia-800',
   }
   return colors[type] || 'bg-gray-100 text-gray-800'
 }
@@ -124,12 +137,13 @@ export const BLOG_CATEGORIES = [
 
 // Price range options
 export const PRICE_RANGES = [
-  { value: 'all', label: 'Tous les prix' },
-  { value: '0-10000', label: '0 - 10 000 FCFA' },
-  { value: '10000-25000', label: '10 000 - 25 000 FCFA' },
-  { value: '25000-50000', label: '25 000 - 50 000 FCFA' },
-  { value: '50000-100000', label: '50 000 - 100 000 FCFA' },
-  { value: '100000+', label: '100 000+ FCFA' },
+  { value: 'all', label: 'Tous les budgets' },
+  { value: '0-150000', label: 'Jusqu’à 150 000 FCFA' },
+  { value: '150000-500000', label: '150 000 - 500 000 FCFA' },
+  { value: '500000-1000000', label: '500 000 - 1 000 000 FCFA' },
+  { value: '1000000-50000000', label: '1 M - 50 M FCFA' },
+  { value: '50000000-150000000', label: '50 M - 150 M FCFA' },
+  { value: '150000000+', label: '150 M+ FCFA' },
 ] as const
 
 // Freemium visibility packs

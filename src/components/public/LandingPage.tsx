@@ -2,13 +2,15 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import { useAppStore } from '@/store/app-store';
+import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Building2, Search, MapPin, ArrowRight, Home, CalendarCheck, Star } from 'lucide-react';
 import { getTypeLabel, getTypeColor } from '@/lib/constants';
 import { parseJsonResponse } from '@/lib/fetch-json';
+import { CustomSearchRequestForm } from './CustomSearchRequestForm';
+import { getOperationBadgeLabel, getOperationType, getPriceDisplay, getPropertySlug } from '@/lib/real-estate';
 
 const heroImages = [
   'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&q=80',
@@ -26,6 +28,11 @@ interface Establishment {
   city: string;
   region: string;
   images: string[];
+  slug?: string | null;
+  operationType?: string | null;
+  priceAmount?: number | null;
+  pricePeriod?: string | null;
+  priceStatus?: string | null;
   minPrice: number | null;
   isFeatured: boolean;
   rooms: { id: string; isAvailable: boolean }[];
@@ -40,7 +47,6 @@ interface EstablishmentsApiResponse {
 }
 
 export function LandingPage() {
-  const { navigate, selectEstablishment } = useAppStore();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [establishments, setEstablishments] = useState<Establishment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -87,7 +93,7 @@ export function LandingPage() {
             <div className="max-w-lg">
               <Badge variant="secondary" className="mb-4 text-sm px-3 py-1">
                 <Star className="h-3.5 w-3.5 mr-1.5" />
-                Plateforme #1 au Sénégal
+                Sélection exclusive SunuLogis
               </Badge>
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-foreground leading-tight">
                 Trouvez votre{' '}
@@ -95,26 +101,24 @@ export function LandingPage() {
                 au Sénégal
               </h1>
               <p className="mt-4 text-lg text-muted-foreground max-w-md">
-                Découvrez auberges, hôtels, appartements meublés, villas, maisons à vendre et lodges à travers les 14 régions du Sénégal. Réservez facilement et confirmez via WhatsApp.
+                Découvrez notre sélection de biens à vendre et à louer. SunuLogis vous aide à préciser votre recherche et à organiser vos visites.
               </p>
               <div className="mt-8 flex flex-col sm:flex-row gap-3">
-                <Button
-                  size="lg"
-                  className="gap-2"
-                  onClick={() => navigate('home')}
-                >
-                  Explorer maintenant
-                  <ArrowRight className="h-4 w-4" />
+                <Button size="lg" className="gap-2" asChild>
+                  <Link href="/biens">
+                    Explorer le catalogue
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
                 </Button>
               </div>
               <div className="mt-8 flex items-center gap-6 text-sm text-muted-foreground">
                 <div className="flex items-center gap-1.5">
                   <Building2 className="h-4 w-4 text-primary" />
-                  <span>Établissements vérifiés</span>
+                  <span>Biens sélectionnés</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <MapPin className="h-4 w-4 text-primary" />
-                  <span>14 régions</span>
+                  <span>Visites organisées</span>
                 </div>
               </div>
             </div>
@@ -160,20 +164,19 @@ export function LandingPage() {
       <section className="py-8 px-4">
         <div className="container mx-auto">
           <div className="max-w-md mx-auto">
-            <Card
-              className="cursor-pointer hover:shadow-lg transition-all group border-2 hover:border-primary/50"
-              onClick={() => navigate('home')}
-            >
+            <Link href="/biens" className="block">
+            <Card className="cursor-pointer hover:shadow-lg transition-all group border-2 hover:border-primary/50">
               <CardContent className="p-6 flex items-center gap-4">
                 <div className="flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
                   <Search className="h-7 w-7 text-primary" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-lg">Je cherche un logement</h3>
-                  <p className="text-sm text-muted-foreground">Explorez les établissements disponibles</p>
+                  <p className="text-sm text-muted-foreground">Explorez les biens disponibles</p>
                 </div>
               </CardContent>
             </Card>
+            </Link>
           </div>
         </div>
       </section>
@@ -182,8 +185,8 @@ export function LandingPage() {
       <section className="py-12 px-4">
         <div className="container mx-auto">
           <div className="text-center mb-8">
-            <h2 className="text-2xl md:text-3xl font-bold">Établissements en vedette</h2>
-            <p className="text-muted-foreground mt-2">Les meilleurs hébergements au Sénégal</p>
+            <h2 className="text-2xl md:text-3xl font-bold">Biens en vedette</h2>
+            <p className="text-muted-foreground mt-2">Une sélection suivie directement par SunuLogis</p>
           </div>
 
           {loading ? (
@@ -201,16 +204,13 @@ export function LandingPage() {
           ) : establishments.length === 0 ? (
             <div className="text-center py-12">
               <Building2 className="h-16 w-16 mx-auto text-muted-foreground/40" />
-              <p className="mt-4 text-muted-foreground">Aucun établissement disponible pour le moment</p>
+              <p className="mt-4 text-muted-foreground">Aucun bien disponible pour le moment</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {establishments.map((est) => (
-                <Card
-                  key={est.id}
-                  className="overflow-hidden group cursor-pointer hover:shadow-lg transition-all duration-300"
-                  onClick={() => { selectEstablishment(est.id); }}
-                >
+                <Link key={est.id} href={`/biens/${getPropertySlug(est)}`} className="block">
+                <Card className="h-full overflow-hidden group cursor-pointer hover:shadow-lg transition-all duration-300">
                   <div className="relative h-48 overflow-hidden bg-muted">
                     {est.images && est.images.length > 0 ? (
                       <Image
@@ -225,8 +225,8 @@ export function LandingPage() {
                         <Building2 className="h-12 w-12 text-primary/40" />
                       </div>
                     )}
-                    <Badge className={`absolute top-3 left-3 ${getTypeColor(est.type)}`}>
-                      {getTypeLabel(est.type)}
+                    <Badge className="absolute top-3 left-3 bg-emerald-700 text-white">
+                      {getOperationBadgeLabel(getOperationType(est))}
                     </Badge>
                     <Badge className="absolute top-3 right-3" variant="secondary">
                       <MapPin className="h-3 w-3 mr-1" />
@@ -238,26 +238,17 @@ export function LandingPage() {
                     <p className="text-sm text-muted-foreground line-clamp-2">{est.description}</p>
                     <div className="flex items-center justify-between pt-2">
                       <div>
-                        {est.type === 'maison_a_vendre' ? (
-                          <p className="text-sm">
-                            <span className="font-bold text-primary">À vendre</span>
-                          </p>
-                        ) : est.minPrice !== null && est.minPrice !== undefined ? (
-                          <p className="text-sm">
-                            <span className="font-bold text-primary">{est.minPrice.toLocaleString()} FCFA</span>
-                            <span className="text-muted-foreground"> / nuit</span>
-                          </p>
-                        ) : (
-                          <p className="text-sm text-muted-foreground">Prix non disponible</p>
-                        )}
+                        <p className="text-sm font-bold text-primary">{getPriceDisplay(est)}</p>
+                        <Badge variant="outline" className={getTypeColor(est.type)}>{getTypeLabel(est.type)}</Badge>
                       </div>
-                      <Button size="sm" className="gap-1">
+                      <span className="inline-flex h-9 items-center justify-center gap-1 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground">
                         Voir détails
                         <ArrowRight className="h-3 w-3" />
-                      </Button>
+                      </span>
                     </div>
                   </CardContent>
                 </Card>
+                </Link>
               ))}
             </div>
           )}
@@ -269,7 +260,7 @@ export function LandingPage() {
         <div className="container mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-2xl md:text-3xl font-bold">Comment ça marche ?</h2>
-            <p className="text-muted-foreground mt-2">Trouvez votre hébergement en 3 étapes simples</p>
+            <p className="text-muted-foreground mt-2">Avancez avec une sélection claire et des visites organisées</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             <div className="text-center space-y-4">
@@ -281,7 +272,7 @@ export function LandingPage() {
               </div>
               <h3 className="text-lg font-semibold">Rechercher</h3>
               <p className="text-sm text-muted-foreground">
-                Explorez notre sélection d&apos;établissements par région, type ou budget
+                Explorez notre sélection par opération, zone, type de bien et budget
               </p>
             </div>
             <div className="text-center space-y-4">
@@ -293,7 +284,7 @@ export function LandingPage() {
               </div>
               <h3 className="text-lg font-semibold">Comparer</h3>
               <p className="text-sm text-muted-foreground">
-                Comparez les prix, les équipements et les avis pour trouver le logement idéal
+                Comparez les prix, la localisation et les caractéristiques utiles
               </p>
             </div>
             <div className="text-center space-y-4">
@@ -305,27 +296,27 @@ export function LandingPage() {
               </div>
               <h3 className="text-lg font-semibold">Réserver</h3>
               <p className="text-sm text-muted-foreground">
-                Réservez en ligne et confirmez directement via WhatsApp avec SunuLogis
+                Demandez une visite ou un dossier, puis échangez directement avec SunuLogis
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
       <section className="py-16 px-4">
-        <div className="container mx-auto text-center">
-          <div className="max-w-2xl mx-auto space-y-6">
-            <h2 className="text-2xl md:text-3xl font-bold">Prêt à trouver votre hébergement ?</h2>
-            <p className="text-muted-foreground">
-              Rejoignez des milliers de voyageurs qui ont déjà trouvé leur chez-vous au Sénégal avec SunuLogis.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Button size="lg" onClick={() => navigate('home')} className="gap-2">
-                <Search className="h-4 w-4" />
-                Chercher un logement
-              </Button>
+        <div className="container mx-auto">
+          <div className="mx-auto max-w-3xl space-y-6">
+            <div className="text-center">
+              <h2 className="text-2xl md:text-3xl font-bold">Recherche personnalisée</h2>
+              <p className="mt-2 text-muted-foreground">
+                Décrivez votre projet, SunuLogis vous recontacte pour cadrer les critères et proposer les biens pertinents.
+              </p>
             </div>
+            <Card>
+              <CardContent className="p-5 md:p-6">
+                <CustomSearchRequestForm />
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>

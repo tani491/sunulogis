@@ -13,6 +13,7 @@ import { Building2, Check, Ban, ShieldCheck, Filter, MapPin, Eye, Clock, Plus } 
 import { toast } from 'sonner'
 import { ESTABLISHMENT_TYPE_FILTERS, getTypeLabel, getTypeColor } from '@/lib/constants'
 import { AdminEstablishmentEditor } from './AdminEstablishmentEditor'
+import { getOperationBadgeLabel, getOperationType, getPriceDisplay } from '@/lib/real-estate'
 
 interface Establishment {
   id: string
@@ -25,6 +26,12 @@ interface Establishment {
   isApproved: boolean
   isSuspended: boolean
   isFeatured: boolean
+  reference?: string | null
+  operationType?: string | null
+  priceAmount?: number | null
+  pricePeriod?: string | null
+  priceStatus?: string | null
+  bedrooms?: number | null
   minPrice: number | null
   owner: { id: string; fullName: string; email: string; phone?: string | null }
   rooms: { id: string }[]
@@ -68,7 +75,7 @@ export function AdminEstablishments() {
       })
 
       if (res.ok) {
-        toast.success('Établissement mis à jour')
+        toast.success('Bien mis à jour')
         fetchEstablishments()
       } else {
         const data = await res.json()
@@ -136,7 +143,7 @@ export function AdminEstablishments() {
               <Clock className="h-5 w-5 text-yellow-600" />
               <div>
                 <p className="font-medium text-yellow-800">
-                  {pendingCount} établissement{pendingCount !== 1 ? 's' : ''} en attente de validation
+                  {pendingCount} bien{pendingCount !== 1 ? 's' : ''} en attente de validation
                 </p>
                 <p className="text-sm text-yellow-700">
                   Cliquez sur &quot;Examiner&quot; pour voir les détails, modifier les photos si nécessaire, puis valider ou rejeter.
@@ -159,7 +166,7 @@ export function AdminEstablishments() {
         <div className="space-y-1">
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Building2 className="h-6 w-6 text-primary" />
-            Établissements ({establishments.length})
+            Biens / Établissements ({establishments.length})
           </h1>
           <p className="text-sm text-muted-foreground">Créer et gérer les biens publiés dans le catalogue SunuLogis.</p>
         </div>
@@ -207,7 +214,7 @@ export function AdminEstablishments() {
         <Card>
           <CardContent className="py-12 text-center">
             <Building2 className="h-12 w-12 mx-auto text-muted-foreground/40" />
-            <p className="mt-4 text-muted-foreground">Aucun établissement trouvé</p>
+            <p className="mt-4 text-muted-foreground">Aucun bien trouvé</p>
           </CardContent>
         </Card>
       ) : (
@@ -246,6 +253,14 @@ export function AdminEstablishments() {
                       <Badge className={getTypeColor(est.type)}>{getTypeLabel(est.type)}</Badge>
                     </div>
                     <div>
+                      <p className="text-xs text-muted-foreground">Opération</p>
+                      <Badge className="bg-emerald-700 text-white">{getOperationBadgeLabel(getOperationType(est))}</Badge>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Prix</p>
+                      <p className="font-medium">{getPriceDisplay(est)}</p>
+                    </div>
+                    <div>
                       <p className="text-xs text-muted-foreground">Localisation</p>
                       <p className="flex items-center gap-1">
                         <MapPin className="h-3 w-3 text-muted-foreground" />
@@ -253,13 +268,13 @@ export function AdminEstablishments() {
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">Propriétaire</p>
+                      <p className="text-xs text-muted-foreground">Contact associé</p>
                       <p className="font-medium">{est.owner?.fullName || '—'}</p>
                       <p className="break-all text-xs text-muted-foreground">{est.owner?.email}</p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Chambres</p>
-                      <p className="font-medium">{est.rooms?.length || 0}</p>
+                      <p className="font-medium">{est.bedrooms || '—'}</p>
                     </div>
                   </div>
 
@@ -285,7 +300,7 @@ export function AdminEstablishments() {
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Valider l&apos;établissement ?</AlertDialogTitle>
+                            <AlertDialogTitle>Valider le bien ?</AlertDialogTitle>
                             <AlertDialogDescription>
                               Approuver {est.name} ? Il sera visible publiquement sur le site.
                             </AlertDialogDescription>
@@ -313,7 +328,7 @@ export function AdminEstablishments() {
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Suspendre l&apos;établissement ?</AlertDialogTitle>
+                            <AlertDialogTitle>Suspendre le bien ?</AlertDialogTitle>
                             <AlertDialogDescription>
                               Suspendre {est.name} ? Il ne sera plus visible publiquement.
                             </AlertDialogDescription>
@@ -353,8 +368,8 @@ export function AdminEstablishments() {
                   <TableHead>Nom</TableHead>
                   <TableHead>Type</TableHead>
                   <TableHead>Localisation</TableHead>
-                  <TableHead>Propriétaire</TableHead>
-                  <TableHead>Chambres</TableHead>
+                  <TableHead>Opération</TableHead>
+                  <TableHead>Prix</TableHead>
                   <TableHead>Statut</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -405,13 +420,11 @@ export function AdminEstablishments() {
                         {est.city}{est.region ? `, ${est.region}` : ''}
                       </div>
                     </TableCell>
-                    <TableCell className="text-sm">
-                      <div>
-                        <p>{est.owner?.fullName || '—'}</p>
-                        <p className="text-xs text-muted-foreground">{est.owner?.email}</p>
-                      </div>
+                    <TableCell>
+                      <Badge className="bg-emerald-700 text-white">{getOperationBadgeLabel(getOperationType(est))}</Badge>
+                      {est.bedrooms ? <p className="mt-1 text-xs text-muted-foreground">{est.bedrooms} chambre{est.bedrooms !== 1 ? 's' : ''}</p> : null}
                     </TableCell>
-                    <TableCell>{est.rooms?.length || 0}</TableCell>
+                    <TableCell className="font-medium">{getPriceDisplay(est)}</TableCell>
                     <TableCell>{getStatusBadge(est)}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">

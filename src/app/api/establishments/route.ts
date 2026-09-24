@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getSessionUser, isAdminRole } from '@/lib/auth';
 import { establishmentSchema } from '@/lib/validation';
+import { getPropertyOverrides, getPropertyReference, getPropertySlug } from '@/lib/real-estate';
 
 // A03 — Never call JSON.parse without a try-catch; malformed data must not crash the route
 function safeParseImages(raw: unknown): string[] {
@@ -18,12 +19,17 @@ function safeParseImages(raw: unknown): string[] {
 }
 
 function parseEstablishment(e: any) {
+  const overrides = getPropertyOverrides(e);
+  const availablePrices = Array.isArray(e.rooms)
+    ? e.rooms.filter((r: any) => r.isAvailable).map((r: any) => r.pricePerNight).filter((value: number) => Number.isFinite(value) && value > 0)
+    : [];
   return {
     ...e,
     images: safeParseImages(e.images),
-    minPrice: e.rooms && e.rooms.length > 0
-      ? Math.min(...e.rooms.filter((r: any) => r.isAvailable).map((r: any) => r.pricePerNight))
-      : null,
+    minPrice: availablePrices.length > 0 ? Math.min(...availablePrices) : null,
+    reference: e.reference || getPropertyReference(e),
+    slug: e.slug || getPropertySlug(e),
+    ...(overrides || {}),
     owner: e.owner ? { ...e.owner, fullName: e.owner.name ?? e.owner.fullName } : e.owner,
   };
 }
@@ -39,6 +45,8 @@ export async function GET(req: NextRequest) {
     const search = searchParams.get('search');
     const ownerId = searchParams.get('ownerId');
     const neighborhood = searchParams.get('neighborhood') || searchParams.get('address');
+    const operationType = searchParams.get('operationType');
+    const bedrooms = searchParams.get('bedrooms');
     const pageParam = parseInt(searchParams.get('page') || '1', 10);
     const limitParam = parseInt(searchParams.get('limit') || '9', 10);
     const page = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1;
@@ -90,6 +98,34 @@ export async function GET(req: NextRequest) {
         ...(maxPriceNum !== null ? { lte: maxPriceNum } : {}),
       },
     } : undefined;
+    const propertyPriceWhere = minPriceNum !== null || maxPriceNum !== null ? {
+      priceAmount: {
+        ...(minPriceNum !== null ? { gte: minPriceNum } : {}),
+        ...(maxPriceNum !== null ? { lte: maxPriceNum } : {}),
+      },
+    } : undefined;
+    const bedroomNum = bedrooms ? parseInt(bedrooms, 10) : null;
+    const andFilters: any[] = [];
+
+    if (propertyPriceWhere) {
+      andFilters.push({
+        OR: [
+          propertyPriceWhere,
+          { rooms: { some: roomPriceWhere } },
+        ],
+      });
+    }
+
+    if (search) {
+      andFilters.push({
+        OR: [
+          { name: { contains: search } },
+          { city: { contains: search } },
+          { address: { contains: search } },
+          { description: { contains: search } },
+        ],
+      });
+    }
 
     // Public listing: only approved and non-suspended establishments
     const where = {
@@ -99,15 +135,9 @@ export async function GET(req: NextRequest) {
       ...(region ? { region } : {}),
       ...(neighborhood ? { address: { contains: neighborhood } } : {}),
       ...(type ? { type } : {}),
-      ...(roomPriceWhere ? { rooms: { some: roomPriceWhere } } : {}),
-      ...(search ? {
-        OR: [
-          { name: { contains: search } },
-          { city: { contains: search } },
-          { address: { contains: search } },
-          { description: { contains: search } },
-        ],
-      } : {}),
+      ...(operationType && operationType !== 'all' ? { operationType: operationType as any } : {}),
+      ...(bedroomNum !== null && Number.isFinite(bedroomNum) ? { bedrooms: { gte: bedroomNum } } : {}),
+      ...(andFilters.length > 0 ? { AND: andFilters } : {}),
     };
 
     const [totalCount, establishments] = await db.$transaction([
@@ -160,13 +190,39 @@ export async function POST(req: NextRequest) {
       const message = parsed.error.issues[0]?.message ?? 'Données invalides';
       return NextResponse.json({ error: message }, { status: 400 });
     }
-    const { name, type, description, city, region, address, website, phone, images } = parsed.data;
+    const {
+      name,
+      type,
+      reference,
+      slug,
+      operationType,
+      priceAmount,
+      pricePeriod,
+      priceStatus,
+      bedrooms,
+      surfaceM2,
+      description,
+      city,
+      region,
+      address,
+      website,
+      phone,
+      images,
+    } = parsed.data;
 
     const establishment = await db.establishment.create({
       data: {
         ownerId: user.id,
         name,
         type: type ?? 'auberge',
+        reference: reference || null,
+        slug: slug || null,
+        operationType: operationType ?? 'SEJOUR_NUITEE',
+        priceAmount: priceAmount ?? null,
+        pricePeriod: pricePeriod ?? (operationType === 'VENTE' ? 'NONE' : operationType === 'LOCATION_MENSUELLE' ? 'MOIS' : 'NUITEE'),
+        priceStatus: priceStatus ?? (priceAmount ? 'KNOWN' : 'SUR_DEMANDE'),
+        bedrooms: bedrooms ?? null,
+        surfaceM2: surfaceM2 ?? null,
         description: description ?? '',
         city,
         region: region ?? '',

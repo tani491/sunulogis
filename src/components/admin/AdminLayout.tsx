@@ -3,25 +3,28 @@
 import { useAppStore, type View } from '@/store/app-store'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { LayoutDashboard, Building2, Users, Menu, X, Shield, Newspaper, Mail, Settings, BarChart2 } from 'lucide-react'
+import { LayoutDashboard, Building2, Users, Menu, X, Shield, Newspaper, Settings, Handshake, CalendarDays, Banknote } from 'lucide-react'
 import { useState } from 'react'
 import { AdminOverview } from './AdminOverview'
 import { AdminEstablishments } from './AdminEstablishments'
-import { AdminUsers } from './AdminUsers'
 import { AdminBlog } from './AdminBlog'
 import { AdminSubscribers } from './AdminSubscribers'
 import { AdminSettings } from './AdminSettings'
-import { AdminAnalytics } from './AdminAnalytics'
+import { AdminProspects } from './AdminProspects'
+import { AdminPartners } from './AdminPartners'
+import { AdminVisits } from './AdminVisits'
+import { AdminCommissions } from './AdminCommissions'
 
-type SubView = 'admin' | 'admin-stats' | 'admin-establishments' | 'admin-users' | 'admin-blog' | 'admin-subscribers' | 'admin-settings' | 'admin-analytics'
+type SubView = 'admin' | 'admin-stats' | 'admin-establishments' | 'admin-prospects' | 'admin-partners' | 'admin-visits' | 'admin-commissions' | 'admin-blog' | 'admin-subscribers' | 'admin-settings'
 
 const navItems: { view: SubView; label: string; icon: React.ReactNode }[] = [
   { view: 'admin', label: 'Vue d\'ensemble', icon: <LayoutDashboard className="h-4 w-4" /> },
-  { view: 'admin-analytics', label: 'Analytiques', icon: <BarChart2 className="h-4 w-4" /> },
-  { view: 'admin-establishments', label: 'Établissements', icon: <Building2 className="h-4 w-4" /> },
-  { view: 'admin-users', label: 'Utilisateurs', icon: <Users className="h-4 w-4" /> },
-  { view: 'admin-blog', label: 'Blog', icon: <Newspaper className="h-4 w-4" /> },
-  { view: 'admin-subscribers', label: 'Newsletter', icon: <Mail className="h-4 w-4" /> },
+  { view: 'admin-establishments', label: 'Biens / Établissements', icon: <Building2 className="h-4 w-4" /> },
+  { view: 'admin-prospects', label: 'Prospects', icon: <Users className="h-4 w-4" /> },
+  { view: 'admin-partners', label: 'Partenaires & Mandats', icon: <Handshake className="h-4 w-4" /> },
+  { view: 'admin-visits', label: 'Visites', icon: <CalendarDays className="h-4 w-4" /> },
+  { view: 'admin-commissions', label: 'Commissions', icon: <Banknote className="h-4 w-4" /> },
+  { view: 'admin-blog', label: 'Blog & Newsletter', icon: <Newspaper className="h-4 w-4" /> },
   { view: 'admin-settings', label: 'Paramètres', icon: <Settings className="h-4 w-4" /> },
 ]
 
@@ -78,10 +81,12 @@ function MobileTabBar({ subView, onNavigate }: { subView: SubView; onNavigate: (
 const navLabels: Record<SubView, string> = {
   admin: 'Vue d\'ensemble',
   'admin-stats': 'Statistiques',
-  'admin-analytics': 'Analytiques',
-  'admin-establishments': 'Établissements',
-  'admin-users': 'Utilisateurs',
-  'admin-blog': 'Blog',
+  'admin-establishments': 'Biens / Établissements',
+  'admin-prospects': 'Prospects',
+  'admin-partners': 'Partenaires & Mandats',
+  'admin-visits': 'Visites',
+  'admin-commissions': 'Commissions',
+  'admin-blog': 'Blog & Newsletter',
   'admin-subscribers': 'Newsletter',
   'admin-settings': 'Paramètres',
 }
@@ -94,14 +99,23 @@ export function AdminLayout() {
 
   const renderContent = () => {
     switch (subView) {
-      case 'admin-analytics':
-        return <AdminAnalytics />
       case 'admin-establishments':
         return <AdminEstablishments />
-      case 'admin-users':
-        return <AdminUsers />
+      case 'admin-prospects':
+        return <AdminProspects />
+      case 'admin-partners':
+        return <AdminPartners />
+      case 'admin-visits':
+        return <AdminVisits />
+      case 'admin-commissions':
+        return <AdminCommissions />
       case 'admin-blog':
-        return <AdminBlog />
+        return (
+          <div className="space-y-8">
+            <AdminBlog />
+            <AdminSubscribers />
+          </div>
+        )
       case 'admin-subscribers':
         return <AdminSubscribers />
       case 'admin-settings':

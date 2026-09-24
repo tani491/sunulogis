@@ -107,7 +107,11 @@ export function AdminAnalytics() {
   }
 
   useEffect(() => {
-    void fetchAnalytics(days)
+    const timeoutId = window.setTimeout(() => {
+      void fetchAnalytics(days)
+    }, 0)
+
+    return () => window.clearTimeout(timeoutId)
   }, [days])
 
   return (

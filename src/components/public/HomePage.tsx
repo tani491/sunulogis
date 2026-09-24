@@ -2,15 +2,17 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { useAppStore } from '@/store/app-store'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import { MapPin, Users, ArrowRight, Building2, Banknote, SlidersHorizontal, ChevronLeft, ChevronRight } from 'lucide-react'
-import { DAKAR_NEIGHBORHOODS, ESTABLISHMENT_TYPE_FILTERS, REGIONS, PRICE_RANGES, getTypeLabel, getTypeColor } from '@/lib/constants'
+import { MapPin, ArrowRight, Building2, Banknote, SlidersHorizontal, ChevronLeft, ChevronRight, BedDouble } from 'lucide-react'
+import { DAKAR_NEIGHBORHOODS, ESTABLISHMENT_TYPE_FILTERS, OPERATION_FILTERS, REGIONS, PRICE_RANGES, getTypeLabel, getTypeColor } from '@/lib/constants'
 import { parseJsonResponse } from '@/lib/fetch-json'
+import { getOperationBadgeLabel, getOperationType, getPriceDisplay, getPropertySlug } from '@/lib/real-estate'
 
 const PAGE_LIMIT = 9
 
@@ -23,6 +25,13 @@ interface Establishment {
   region: string
   images: string[]
   phone?: string
+  reference?: string | null
+  slug?: string | null
+  operationType?: string | null
+  priceAmount?: number | null
+  pricePeriod?: string | null
+  priceStatus?: string | null
+  bedrooms?: number | null
   minPrice: number | null
   rooms: { id: string; name: string; pricePerNight: number; capacity: number; isAvailable: boolean }[]
 }
@@ -36,10 +45,12 @@ interface EstablishmentsApiResponse {
 }
 
 export function HomePage() {
-  const { navigate, selectEstablishment, searchFilters, setSearchFilters } = useAppStore()
+  const { searchFilters, setSearchFilters } = useAppStore()
   const [establishments, setEstablishments] = useState<Establishment[]>([])
   const [loading, setLoading] = useState(true)
   const [typeFilter, setTypeFilter] = useState<string>('all')
+  const [operationFilter, setOperationFilter] = useState<string>('all')
+  const [bedroomFilter, setBedroomFilter] = useState<string>('all')
   const [currentPage, setCurrentPage] = useState(1)
   const [totalCount, setTotalCount] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
@@ -51,6 +62,8 @@ export function HomePage() {
     searchFilters.priceRange,
     searchFilters.search,
     typeFilter,
+    operationFilter,
+    bedroomFilter,
   ].join('|')
 
   async function fetchEstablishments() {
@@ -65,24 +78,21 @@ export function HomePage() {
       }
       if (searchFilters.search) params.set('search', searchFilters.search)
       if (typeFilter && typeFilter !== 'all') params.set('type', typeFilter)
+      if (operationFilter && operationFilter !== 'all') params.set('operationType', operationFilter)
+      if (bedroomFilter && bedroomFilter !== 'all') params.set('bedrooms', bedroomFilter)
       params.set('page', String(currentPage))
       params.set('limit', String(PAGE_LIMIT))
 
       // Price filter ranges
       const pr = searchFilters.priceRange
-      if (pr === '0-10000') {
-        params.set('maxPrice', '10000')
-      } else if (pr === '10000-25000') {
-        params.set('minPrice', '10000')
-        params.set('maxPrice', '25000')
-      } else if (pr === '25000-50000') {
-        params.set('minPrice', '25000')
-        params.set('maxPrice', '50000')
-      } else if (pr === '50000-100000') {
-        params.set('minPrice', '50000')
-        params.set('maxPrice', '100000')
-      } else if (pr === '100000+') {
-        params.set('minPrice', '100000')
+      if (pr && pr !== 'all') {
+        if (pr.endsWith('+')) {
+          params.set('minPrice', pr.replace('+', ''))
+        } else {
+          const [min, max] = pr.split('-')
+          if (min && min !== '0') params.set('minPrice', min)
+          if (max) params.set('maxPrice', max)
+        }
       }
 
       const url = params.toString() ? `/api/establishments?${params.toString()}` : '/api/establishments'
@@ -126,12 +136,18 @@ export function HomePage() {
   const filteredEstablishments = establishments
   const displayTotalPages = Math.max(totalPages, 1)
 
-  const handleViewDetail = (id: string) => {
-    selectEstablishment(id)
-  }
-
   const handleTypeFilterChange = (value: string) => {
     setTypeFilter(value)
+    setCurrentPage(1)
+  }
+
+  const handleOperationFilterChange = (value: string) => {
+    setOperationFilter(value)
+    setCurrentPage(1)
+  }
+
+  const handleBedroomFilterChange = (value: string) => {
+    setBedroomFilter(value)
     setCurrentPage(1)
   }
 
@@ -163,6 +179,17 @@ export function HomePage() {
           <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm font-medium">Filtres :</span>
         </div>
+        <Select value={operationFilter} onValueChange={handleOperationFilterChange}>
+          <SelectTrigger className="w-full sm:w-44 h-9">
+            <Banknote className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+            <SelectValue placeholder="Acheter / louer" />
+          </SelectTrigger>
+          <SelectContent>
+            {OPERATION_FILTERS.map((operation) => (
+              <SelectItem key={operation.value} value={operation.value}>{operation.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <Select value={typeFilter} onValueChange={handleTypeFilterChange}>
           <SelectTrigger className="w-full sm:w-48 h-9">
             <Building2 className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
@@ -197,6 +224,19 @@ export function HomePage() {
             ))}
           </SelectContent>
         </Select>
+        <Select value={bedroomFilter} onValueChange={handleBedroomFilterChange}>
+          <SelectTrigger className="w-full sm:w-44 h-9">
+            <BedDouble className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+            <SelectValue placeholder="Chambres" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Toutes chambres</SelectItem>
+            <SelectItem value="1">1+ chambre</SelectItem>
+            <SelectItem value="2">2+ chambres</SelectItem>
+            <SelectItem value="3">3+ chambres</SelectItem>
+            <SelectItem value="4">4+ chambres</SelectItem>
+          </SelectContent>
+        </Select>
         {searchFilters.region === 'Dakar' && (
           <Select value={searchFilters.neighborhood} onValueChange={handleNeighborhoodFilterChange}>
             <SelectTrigger className="w-full sm:w-52 h-9">
@@ -216,7 +256,7 @@ export function HomePage() {
       {/* Establishment Grid */}
       <section>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold">Établissements disponibles</h2>
+          <h2 className="text-2xl font-bold">Biens disponibles</h2>
           <Badge variant="outline">{totalCount} résultat{totalCount !== 1 ? 's' : ''}</Badge>
         </div>
 
@@ -236,18 +276,15 @@ export function HomePage() {
         ) : filteredEstablishments.length === 0 ? (
           <div className="text-center py-16 space-y-4">
             <Building2 className="h-16 w-16 mx-auto text-muted-foreground/40" />
-            <h3 className="text-lg font-semibold text-muted-foreground">Aucun établissement trouvé</h3>
+            <h3 className="text-lg font-semibold text-muted-foreground">Aucun bien trouvé</h3>
             <p className="text-sm text-muted-foreground">Essayez de modifier vos critères de recherche</p>
           </div>
         ) : (
           <div className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredEstablishments.map((est, index) => (
-              <Card
-                key={est.id}
-                className="overflow-hidden group cursor-pointer hover:shadow-lg transition-all duration-300"
-                onClick={() => handleViewDetail(est.id)}
-              >
+              <Link key={est.id} href={`/biens/${getPropertySlug(est)}`} className="block">
+              <Card className="h-full overflow-hidden group cursor-pointer hover:shadow-lg transition-all duration-300">
                 {/* Image */}
                 <div className="relative h-48 overflow-hidden bg-muted">
                   {est.images && est.images.length > 0 ? (
@@ -264,8 +301,8 @@ export function HomePage() {
                       <Building2 className="h-12 w-12 text-primary/40" />
                     </div>
                   )}
-                  <Badge className={`absolute top-3 left-3 ${getTypeColor(est.type)}`}>
-                    {getTypeLabel(est.type)}
+                  <Badge className="absolute top-3 left-3 bg-emerald-700 text-white">
+                    {getOperationBadgeLabel(getOperationType(est))}
                   </Badge>
                   <Badge className="absolute top-3 right-3" variant="secondary">
                     <MapPin className="h-3 w-3 mr-1" />
@@ -286,32 +323,23 @@ export function HomePage() {
                   )}
                   <div className="flex items-center justify-between pt-2">
                     <div>
-                      {est.type === 'maison_a_vendre' ? (
-                        <p className="text-sm">
-                          <span className="font-bold text-primary">À vendre</span>
-                        </p>
-                      ) : est.minPrice !== null && est.minPrice !== undefined ? (
-                        <p className="text-sm">
-                          <span className="font-bold text-primary">{est.minPrice.toLocaleString()} FCFA</span>
-                          <span className="text-muted-foreground"> / nuit</span>
-                        </p>
-                      ) : (
-                        <p className="text-sm text-muted-foreground">Prix non disponible</p>
-                      )}
+                      <p className="text-sm font-bold text-primary">{getPriceDisplay(est)}</p>
+                      <Badge variant="outline" className={getTypeColor(est.type)}>{getTypeLabel(est.type)}</Badge>
                     </div>
-                    <Button size="sm" className="gap-1">
+                    <span className="inline-flex h-9 items-center justify-center gap-1 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground">
                       Voir détails
                       <ArrowRight className="h-3 w-3" />
-                    </Button>
+                    </span>
                   </div>
-                  {est.rooms.length > 0 && (
+                  {est.bedrooms ? (
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Users className="h-3 w-3" />
-                      {est.rooms.filter((r) => r.isAvailable).length} chambre{est.rooms.filter((r) => r.isAvailable).length !== 1 ? 's' : ''} disponible{est.rooms.filter((r) => r.isAvailable).length !== 1 ? 's' : ''}
+                      <BedDouble className="h-3 w-3" />
+                      {est.bedrooms} chambre{est.bedrooms !== 1 ? 's' : ''}
                     </div>
-                  )}
+                  ) : null}
                 </CardContent>
               </Card>
+              </Link>
               ))}
             </div>
 

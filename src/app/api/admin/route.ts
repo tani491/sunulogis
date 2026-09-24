@@ -10,31 +10,45 @@ export async function GET() {
     }
 
     const [
-      totalOwners,
       totalEstablishments,
       approvedEstablishments,
       pendingEstablishments,
       suspendedEstablishments,
-      totalRooms,
-      totalBookings,
+      activeProspects,
+      upcomingVisits,
+      estimatedCommissions,
+      collectedCommissions,
     ] = await Promise.all([
-      db.user.count({ where: { role: 'owner' } }),
       db.establishment.count(),
       db.establishment.count({ where: { isApproved: true, isSuspended: false } }),
       db.establishment.count({ where: { isApproved: false } }),
       db.establishment.count({ where: { isSuspended: true } }),
-      db.room.count(),
-      db.booking.count(),
+      db.prospect.count({ where: { status: { notIn: ['CONCLU', 'PERDU'] } } }),
+      db.visit.count({
+        where: {
+          status: 'PROGRAMMEE',
+          scheduledAt: { gte: new Date() },
+        },
+      }),
+      db.commission.aggregate({
+        _sum: { amountEstimated: true },
+        where: { status: { in: ['ESTIMEE', 'ACQUISE'] } },
+      }),
+      db.commission.aggregate({
+        _sum: { amountCollected: true },
+        where: { status: 'ENCAISSEE' },
+      }),
     ]);
 
     return NextResponse.json({
-      totalOwners,
       totalEstablishments,
       approvedEstablishments,
       pendingEstablishments,
       suspendedEstablishments,
-      totalRooms,
-      totalBookings,
+      activeProspects,
+      upcomingVisits,
+      estimatedCommissions: estimatedCommissions._sum.amountEstimated ?? 0,
+      collectedCommissions: collectedCommissions._sum.amountCollected ?? 0,
     });
   } catch (error) {
     console.error('Admin stats error:', error);

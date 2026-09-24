@@ -1,6 +1,7 @@
 'use client'; 
 
 import Image from 'next/image';
+import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useAppStore } from '@/store/app-store';
 import { Button } from '@/components/ui/button';
@@ -9,16 +10,12 @@ import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Home, LogOut, Menu, Search, MapPin, Banknote, ChevronDown, User, Shield, BookOpen, ChevronLeft } from 'lucide-react';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
-import { DAKAR_NEIGHBORHOODS } from '@/lib/constants';
-
-const regions = [
-  'Dakar', 'Diourbel', 'Fatick', 'Kaffrine', 'Kaolack',
-  'Kedougou', 'Kolda', 'Louga', 'Matam', 'Sedhiou',
-  'Saint-Louis', 'Tambacounda', 'Thies', 'Ziguinchor',
-];
+import { DAKAR_NEIGHBORHOODS, PRICE_RANGES, REGIONS } from '@/lib/constants';
 
 export default function Navbar() {
   const { currentUser, navigate, logout, currentView, searchFilters, setSearchFilters, goBack, viewHistory } = useAppStore();
+  const router = useRouter();
+  const pathname = usePathname();
   const canGoBack = viewHistory.length > 0;
   const [mobileOpen, setMobileOpen] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
@@ -30,10 +27,17 @@ export default function Navbar() {
     setShowUserMenu(false);
   };
 
-  const isPublicPage = currentView === 'landing' || currentView === 'home' || currentView === 'establishment-detail';
+  const isPublicRoute = pathname === '/' || pathname.startsWith('/biens');
+  const isPublicPage = isPublicRoute || currentView === 'landing' || currentView === 'home' || currentView === 'establishment-detail';
+
+  const goTo = (path: string, view: Parameters<typeof navigate>[0]) => {
+    navigate(view);
+    router.push(path);
+  };
 
   const handleSearch = () => {
     navigate('home');
+    router.push('/biens');
   };
 
   const handleRegionChange = (region: string) => {
@@ -64,7 +68,13 @@ export default function Navbar() {
             </Button>
           )}
           <button
-            onClick={() => navigate(currentUser?.role === 'admin' ? 'admin' : (currentUser ? 'home' : 'landing'))}
+            onClick={() => {
+              if (currentUser?.role === 'admin') {
+                goTo('/sunu-portail-gestion', 'admin');
+              } else {
+                goTo('/', currentUser ? 'home' : 'landing');
+              }
+            }}
             className="flex min-w-0 max-w-[calc(100vw-7rem)] items-center gap-2 hover:opacity-80 transition-opacity sm:max-w-none"
             aria-label="Aller à l'accueil SunuLogis"
           >
@@ -103,7 +113,7 @@ export default function Navbar() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Toutes les regions</SelectItem>
-                {regions.map((r) => (
+                {REGIONS.map((r) => (
                   <SelectItem key={r} value={r}>{r}</SelectItem>
                 ))}
               </SelectContent>
@@ -128,12 +138,9 @@ export default function Navbar() {
                 <SelectValue placeholder="Budget" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous les prix</SelectItem>
-                <SelectItem value="0-10000">0 - 10 000 FCFA</SelectItem>
-                <SelectItem value="10000-25000">10 000 - 25 000 FCFA</SelectItem>
-                <SelectItem value="25000-50000">25 000 - 50 000 FCFA</SelectItem>
-                <SelectItem value="50000-100000">50 000 - 100 000 FCFA</SelectItem>
-                <SelectItem value="100000+">100 000+ FCFA</SelectItem>
+                {PRICE_RANGES.map((range) => (
+                  <SelectItem key={range.value} value={range.value}>{range.label}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -171,7 +178,7 @@ export default function Navbar() {
                           variant="ghost"
                           size="sm"
                           className="w-full justify-start gap-2"
-                          onClick={() => { navigate('admin'); setShowUserMenu(false); }}
+                          onClick={() => { goTo('/sunu-portail-gestion', 'admin'); setShowUserMenu(false); }}
                         >
                           <Shield className="h-4 w-4" />
                           Panel Admin
@@ -182,7 +189,7 @@ export default function Navbar() {
                             variant="ghost"
                             size="sm"
                             className="w-full justify-start gap-2"
-                            onClick={() => { navigate('home'); setShowUserMenu(false); }}
+                            onClick={() => { goTo('/biens', 'home'); setShowUserMenu(false); }}
                           >
                             <Home className="h-4 w-4" />
                             Accueil
@@ -192,7 +199,7 @@ export default function Navbar() {
                             variant="ghost"
                             size="sm"
                             className="w-full justify-start gap-2"
-                            onClick={() => { navigate('blog'); setShowUserMenu(false); }}
+                            onClick={() => { goTo('/blog', 'blog'); setShowUserMenu(false); }}
                           >
                             <BookOpen className="h-4 w-4" />
                             Blog
@@ -219,7 +226,7 @@ export default function Navbar() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => navigate('home')}
+                onClick={() => goTo('/biens', 'home')}
                 className="gap-2"
               >
                 <Home className="h-4 w-4" />
@@ -228,7 +235,7 @@ export default function Navbar() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => navigate('blog')}
+                onClick={() => goTo('/blog', 'blog')}
                 className="gap-2"
               >
                 <BookOpen className="h-4 w-4" />
@@ -276,7 +283,7 @@ export default function Navbar() {
                         variant={currentView.startsWith('admin') ? 'secondary' : 'ghost'}
                         size="sm"
                         className="w-full justify-start gap-2"
-                        onClick={() => { navigate('admin'); setMobileOpen(false); }}
+                        onClick={() => { goTo('/sunu-portail-gestion', 'admin'); setMobileOpen(false); }}
                       >
                         <Shield className="h-4 w-4" />
                         Panel Admin
@@ -287,7 +294,7 @@ export default function Navbar() {
                           variant={currentView === 'home' ? 'secondary' : 'ghost'}
                           size="sm"
                           className="w-full justify-start gap-2"
-                          onClick={() => { navigate('home'); setMobileOpen(false); }}
+                          onClick={() => { goTo('/biens', 'home'); setMobileOpen(false); }}
                         >
                           <Home className="h-4 w-4" />
                           Accueil
@@ -297,7 +304,7 @@ export default function Navbar() {
                           variant={currentView === 'blog' ? 'secondary' : 'ghost'}
                           size="sm"
                           className="w-full justify-start gap-2"
-                          onClick={() => { navigate('blog'); setMobileOpen(false); }}
+                          onClick={() => { goTo('/blog', 'blog'); setMobileOpen(false); }}
                         >
                           <BookOpen className="h-4 w-4" />
                           Blog
@@ -321,7 +328,7 @@ export default function Navbar() {
                       variant="ghost"
                       size="sm"
                       className="w-full justify-start gap-2"
-                      onClick={() => { navigate('home'); setMobileOpen(false); }}
+                      onClick={() => { goTo('/biens', 'home'); setMobileOpen(false); }}
                     >
                       <Home className="h-4 w-4" />
                       Explorer
@@ -330,7 +337,7 @@ export default function Navbar() {
                       variant="ghost"
                       size="sm"
                       className="w-full justify-start gap-2"
-                      onClick={() => { navigate('blog'); setMobileOpen(false); }}
+                      onClick={() => { goTo('/blog', 'blog'); setMobileOpen(false); }}
                     >
                       <BookOpen className="h-4 w-4" />
                       Blog
@@ -364,7 +371,7 @@ export default function Navbar() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Toutes</SelectItem>
-                {regions.map((r) => (
+                {REGIONS.map((r) => (
                   <SelectItem key={r} value={r}>{r}</SelectItem>
                 ))}
               </SelectContent>
@@ -375,12 +382,9 @@ export default function Navbar() {
                 <SelectValue placeholder="Budget" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous</SelectItem>
-                <SelectItem value="0-10000">0-10K</SelectItem>
-                <SelectItem value="10000-25000">10K-25K</SelectItem>
-                <SelectItem value="25000-50000">25K-50K</SelectItem>
-                <SelectItem value="50000-100000">50K-100K</SelectItem>
-                <SelectItem value="100000+">100K+</SelectItem>
+                {PRICE_RANGES.map((range) => (
+                  <SelectItem key={range.value} value={range.value}>{range.label}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

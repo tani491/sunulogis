@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { useAppStore } from '@/store/app-store'
+import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -56,7 +56,6 @@ const getCategoryLabel = (cat: string) => {
 }
 
 export function BlogPage() {
-  const { selectBlogPost } = useAppStore()
   const [posts, setPosts] = useState<BlogPost[]>([])
   const [loading, setLoading] = useState(true)
   const [activeCategory, setActiveCategory] = useState('all')
@@ -132,11 +131,8 @@ export function BlogPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {posts.map((post) => (
-            <Card
-              key={post.id}
-              className="overflow-hidden group cursor-pointer hover:shadow-lg transition-all duration-300"
-              onClick={() => selectBlogPost(post.slug)}
-            >
+            <Link key={post.id} href={`/blog/${post.slug}`} className="block">
+            <Card className="h-full overflow-hidden group cursor-pointer hover:shadow-lg transition-all duration-300">
               <div className="relative h-48 overflow-hidden bg-muted">
                 {post.coverImage ? (
                   <Image
@@ -172,6 +168,7 @@ export function BlogPage() {
                 </div>
               </CardContent>
             </Card>
+            </Link>
           ))}
         </div>
       )}

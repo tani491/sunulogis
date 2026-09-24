@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAppStore } from '@/store/app-store'
 import { Mail, Loader2, MapPin, Phone } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -57,6 +58,7 @@ const socialLinks = [
 
 export default function Footer() {
   const { navigate } = useAppStore()
+  const router = useRouter()
   const [email, setEmail] = useState('')
   const [subscribing, setSubscribing] = useState(false)
 
@@ -90,6 +92,11 @@ export default function Footer() {
     }
   }
 
+  const goTo = (path: string, view: Parameters<typeof navigate>[0]) => {
+    navigate(view)
+    router.push(path)
+  }
+
   return (
     <footer className="border-t border-green-500/30 bg-card mt-auto">
       <div className="container mx-auto px-4 pt-10 pb-6">
@@ -106,7 +113,7 @@ export default function Footer() {
               className="h-13 w-auto object-contain"
             />
             <p className="text-sm text-muted-foreground leading-relaxed">
-              La plateforme de reservation d&apos;hebergements au Senegal — auberges, hotels, appartements, villas et lodges dans les 14 regions.
+              Catalogue immobilier SunuLogis pour trouver un bien à vendre ou à louer au Sénégal avec accompagnement jusqu’à la visite.
             </p>
 
             {/* Reseaux sociaux */}
@@ -151,13 +158,13 @@ export default function Footer() {
             <h4 className="font-semibold text-sm tracking-wide uppercase text-foreground/60">Navigation</h4>
             <ul className="space-y-2.5">
               {[
-                { label: 'Accueil', view: 'home' as const },
-                { label: 'Etablissements', view: 'home' as const },
-                { label: 'Blog', view: 'blog' as const },
-              ].map(({ label, view }) => (
+                { label: 'Accueil', view: 'landing' as const, path: '/' },
+                { label: 'Catalogue', view: 'home' as const, path: '/biens' },
+                { label: 'Blog', view: 'blog' as const, path: '/blog' },
+              ].map(({ label, view, path }) => (
                 <li key={label}>
                   <button
-                    onClick={() => navigate(view)}
+                    onClick={() => goTo(path, view)}
                     className="text-sm text-muted-foreground hover:text-primary transition-colors hover:underline underline-offset-4"
                   >
                     {label}
@@ -213,7 +220,7 @@ export default function Footer() {
           <div className="space-y-4">
             <h4 className="font-semibold text-sm tracking-wide uppercase text-foreground/60">Newsletter</h4>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Offres exclusives et bons plans hebergement au Senegal directement dans votre boite mail.
+              Nouveaux biens, conseils et opportunités immobilières au Sénégal directement dans votre boîte mail.
             </p>
             <form onSubmit={handleSubscribe} className="space-y-2">
               <Input

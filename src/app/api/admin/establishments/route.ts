@@ -1,14 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getSessionUser, isAdminRole } from '@/lib/auth';
+import { getPropertyOverrides, getPropertyReference, getPropertySlug } from '@/lib/real-estate';
+
+function safeParseImages(raw: unknown): string[] {
+  if (Array.isArray(raw)) return raw;
+  if (typeof raw !== 'string') return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
 
 function parseEstablishment(e: any) {
+  const overrides = getPropertyOverrides(e);
+  const availablePrices = Array.isArray(e.rooms)
+    ? e.rooms.filter((r: any) => r.isAvailable).map((r: any) => r.pricePerNight).filter((value: number) => Number.isFinite(value) && value > 0)
+    : [];
   return {
     ...e,
-    images: typeof e.images === 'string' ? JSON.parse(e.images) : e.images,
-    minPrice: e.rooms && e.rooms.length > 0
-      ? Math.min(...e.rooms.filter((r: any) => r.isAvailable).map((r: any) => r.pricePerNight))
-      : null,
+    images: safeParseImages(e.images),
+    minPrice: availablePrices.length > 0 ? Math.min(...availablePrices) : null,
+    reference: e.reference || getPropertyReference(e),
+    slug: e.slug || getPropertySlug(e),
+    ...(overrides || {}),
     owner: e.owner ? { ...e.owner, fullName: e.owner.name ?? e.owner.fullName } : e.owner,
   };
 }
@@ -43,7 +60,7 @@ export async function PUT(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { establishmentId, isApproved, isSuspended } = body;
+    const { establishmentId, isApproved, isSuspended, isFeatured } = body;
 
     if (!establishmentId) {
       return NextResponse.json({ error: 'establishmentId requis' }, { status: 400 });
@@ -59,6 +76,7 @@ export async function PUT(req: NextRequest) {
       data: {
         ...(isApproved !== undefined && { isApproved }),
         ...(isSuspended !== undefined && { isSuspended }),
+        ...(isFeatured !== undefined && { isFeatured }),
       },
       include: {
         owner: { select: { id: true, name: true, email: true } },

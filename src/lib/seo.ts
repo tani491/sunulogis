@@ -23,14 +23,14 @@ export const siteConfig = {
       process.env.VERCEL_URL
   ),
   title:
-    "SunuLogis | Location appartement Dakar et logements au S\u00e9n\u00e9gal",
+    "SunuLogis | Biens immobiliers à vendre et à louer au Sénégal",
   description:
-    "Trouvez rapidement un appartement meuble, une chambre, une villa, un hotel ou une auberge a Dakar et partout au Senegal. SunuLogis facilite la recherche de logements fiables avec contact direct WhatsApp.",
+    "Découvrez une sélection exclusive de biens immobiliers à vendre et à louer au Sénégal. SunuLogis aide à préciser la recherche, demander un dossier et organiser les visites.",
   ogDescription:
-    "Appartements, chambres, villas, hotels et auberges au Senegal avec recherche simple, filtres utiles et contact direct WhatsApp.",
+    "Catalogue immobilier SunuLogis : biens à vendre ou à louer, demande de visite et contact WhatsApp direct.",
   locale: "fr_SN",
   email: "contact@sunulogis.sn",
-  phone: "+221773615944",
+  phone: "+221778057536",
   ogImage: "/opengraph-image",
   sameAs: [
     "https://www.facebook.com/SunuLogis",
@@ -45,19 +45,15 @@ export function getAbsoluteUrl(path = "/") {
 
 export const seoKeywords = [
   "SunuLogis",
-  "location appartement Dakar",
-  "appartement meuble Dakar",
-  "logement Senegal",
-  "hebergement Dakar",
-  "reservation logement Senegal",
-  "auberge Senegal",
-  "hotel Dakar",
-  "villa a louer Senegal",
-  "chambre a louer Dakar",
-  "logement etudiant Dakar",
-  "location vacances Senegal",
-  "maison a vendre Senegal",
-  "WhatsApp reservation logement",
+  "achat immobilier Sénégal",
+  "maison à vendre Sénégal",
+  "villa à vendre Dakar",
+  "appartement à louer Dakar",
+  "location appartement Sénégal",
+  "terrain à vendre Sénégal",
+  "apporteur affaires immobilier Sénégal",
+  "visite immobilière Dakar",
+  "SunuLogis immobilier",
 ];
 
 export const defaultMetadata: Metadata = {
@@ -92,7 +88,7 @@ export const defaultMetadata: Metadata = {
         url: siteConfig.ogImage,
         width: 1200,
         height: 630,
-        alt: "SunuLogis - logements fiables au Senegal",
+        alt: "SunuLogis - biens immobiliers au Sénégal",
       },
     ],
   },
@@ -152,27 +148,27 @@ export function getStructuredData() {
       sameAs: siteConfig.sameAs,
       hasOfferCatalog: {
         "@type": "OfferCatalog",
-        name: "Locations et logements SunuLogis",
+        name: "Biens immobiliers SunuLogis",
         itemListElement: [
           {
             "@type": "Offer",
             itemOffered: {
-              "@type": "Accommodation",
-              name: "Appartements meubles a Dakar",
+              "@type": "House",
+              name: "Biens à vendre au Sénégal",
             },
           },
           {
             "@type": "Offer",
             itemOffered: {
-              "@type": "Accommodation",
-              name: "Chambres et auberges au Senegal",
+              "@type": "Apartment",
+              name: "Appartements à louer au Sénégal",
             },
           },
           {
             "@type": "Offer",
             itemOffered: {
-              "@type": "Accommodation",
-              name: "Villas, hotels et lodges au Senegal",
+              "@type": "Residence",
+              name: "Villas et maisons au Sénégal",
             },
           },
         ],

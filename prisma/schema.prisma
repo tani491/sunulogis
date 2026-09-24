@@ -8,6 +8,51 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+enum OperationType {
+  VENTE
+  LOCATION_MENSUELLE
+  SEJOUR_NUITEE
+}
+
+enum PricePeriod {
+  MOIS
+  NUITEE
+  NONE
+}
+
+enum PriceStatus {
+  KNOWN
+  SUR_DEMANDE
+}
+
+enum ProspectStatus {
+  NOUVEAU
+  QUALIFIE
+  VISITE_PROGRAMMEE
+  NEGOCIATION
+  CONCLU
+  PERDU
+}
+
+enum VisitStatus {
+  PROGRAMMEE
+  EFFECTUEE
+  ANNULEE
+  REPORTEE
+}
+
+enum CommissionType {
+  POURCENTAGE
+  MONTANT_FIXE
+}
+
+enum CommissionStatus {
+  ESTIMEE
+  ACQUISE
+  ENCAISSEE
+  ANNULEE
+}
+
 model User {
   id              String   @id @default(cuid())
   email           String   @unique
@@ -25,6 +70,7 @@ model User {
   posts                BlogPost[]
   subscriptionRequests SubscriptionRequest[]
   passwordResetTokens  PasswordResetToken[]
+  prospects            Prospect[]
 
   @@index([role])
   @@index([isActive])
@@ -65,6 +111,14 @@ model Establishment {
   ownerId        String
   name           String
   type           String    @default("auberge")
+  reference      String?   @unique
+  slug           String?   @unique
+  operationType  OperationType @default(SEJOUR_NUITEE)
+  priceAmount    Int?
+  pricePeriod    PricePeriod?
+  priceStatus    PriceStatus @default(KNOWN)
+  bedrooms       Int?
+  surfaceM2      Int?
   description    String    @default("")
   city           String
   region         String    @default("")
@@ -82,18 +136,120 @@ model Establishment {
   isSuspended    Boolean   @default(false)
   commission     Int       @default(0)
   paymentStatus  String    @default("en_attente")
+  partnerId      String?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
-  owner User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  rooms Room[]
+  owner       User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  partner     Partner?      @relation(fields: [partnerId], references: [id], onDelete: SetNull)
+  rooms       Room[]
+  prospects   Prospect[]
+  visits      Visit[]
+  commissions Commission[]
 
   @@index([ownerId])
+  @@index([partnerId])
   @@index([type])
+  @@index([operationType])
   @@index([city])
   @@index([isApproved])
   @@index([isFeatured])
   @@index([paymentStatus])
+}
+
+model Partner {
+  id             String   @id @default(cuid())
+  name           String
+  phone          String?
+  email          String?
+  company        String?
+  notes          String   @default("")
+  mandateDetails String   @default("")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  establishments Establishment[]
+  commissions    Commission[]
+
+  @@index([name])
+  @@index([company])
+}
+
+model Prospect {
+  id          String         @id @default(cuid())
+  ownerId     String?
+  name        String
+  phone       String
+  email       String?
+  status      ProspectStatus @default(NOUVEAU)
+  projectType OperationType?
+  desiredZone String         @default("")
+  budget      Int?
+  timeframe   String         @default("")
+  notes       String         @default("")
+  followUpAt  DateTime?
+  source      String         @default("site")
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  owner       User?          @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  properties  Establishment[]
+  visits      Visit[]
+  commissions Commission[]
+
+  @@index([ownerId])
+  @@index([status])
+  @@index([projectType])
+  @@index([followUpAt])
+  @@index([createdAt])
+}
+
+model Visit {
+  id              String      @id @default(cuid())
+  prospectId      String?
+  establishmentId String?
+  scheduledAt     DateTime
+  status          VisitStatus @default(PROGRAMMEE)
+  notes           String      @default("")
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  prospect      Prospect?      @relation(fields: [prospectId], references: [id], onDelete: SetNull)
+  establishment Establishment? @relation(fields: [establishmentId], references: [id], onDelete: SetNull)
+
+  @@index([prospectId])
+  @@index([establishmentId])
+  @@index([scheduledAt])
+  @@index([status])
+}
+
+model Commission {
+  id              String           @id @default(cuid())
+  partnerId       String?
+  establishmentId String?
+  prospectId      String?
+  type            CommissionType   @default(POURCENTAGE)
+  rate            Float?
+  amountFixed     Int?
+  amountEstimated Int?
+  amountInvoiced  Int?
+  amountCollected Int?
+  status          CommissionStatus @default(ESTIMEE)
+  notes           String           @default("")
+  dueAt           DateTime?
+  paidAt          DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  partner       Partner?       @relation(fields: [partnerId], references: [id], onDelete: SetNull)
+  establishment Establishment? @relation(fields: [establishmentId], references: [id], onDelete: SetNull)
+  prospect      Prospect?      @relation(fields: [prospectId], references: [id], onDelete: SetNull)
+
+  @@index([partnerId])
+  @@index([establishmentId])
+  @@index([prospectId])
+  @@index([status])
+  @@index([createdAt])
 }
 
 model Room {

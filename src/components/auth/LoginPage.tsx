@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
 import { useAppStore } from '@/store/app-store'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -12,6 +13,8 @@ import { parseJsonResponse } from '@/lib/fetch-json'
 
 export function LoginPage() {
   const { navigate, setUser } = useAppStore()
+  const router = useRouter()
+  const pathname = usePathname()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -63,8 +66,12 @@ export function LoginPage() {
       // Navigate based on role
       if (data.role === 'admin') {
         navigate('admin')
+        if (pathname.startsWith('/sunu-portail-gestion')) {
+          router.refresh()
+        }
       } else {
         navigate('home')
+        router.push('/biens')
       }
     } catch (err) {
       console.error(err)

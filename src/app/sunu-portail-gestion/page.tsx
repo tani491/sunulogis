@@ -1,48 +1,18 @@
-'use client'
-
-import { useEffect } from 'react'
 import Navbar from '@/components/shared/Navbar'
 import Footer from '@/components/shared/Footer'
 import { LoginPage } from '@/components/auth/LoginPage'
 import { AdminLayout } from '@/components/admin/AdminLayout'
-import { useAppStore } from '@/store/app-store'
-import { parseJsonResponse } from '@/lib/fetch-json'
+import { getSessionUser, isAdminRole } from '@/lib/auth'
 
-export default function SunuPortailGestionRoute() {
-  const { currentUser, currentView, setUser, navigate } = useAppStore()
-  const isAdminView = currentView.startsWith('admin') && currentUser?.role === 'admin'
-
-  useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const res = await fetch('/api/auth/session')
-        const data = await parseJsonResponse<{
-          id: string
-          email: string
-          fullName: string | null
-          role: string
-          phone: string | null
-          isSubscribed: boolean
-          paymentReminder?: boolean
-        } | null>(res)
-
-        if (data?.role === 'admin') {
-          setUser(data)
-          navigate('admin')
-        }
-      } catch {
-        // Keep the login form visible when no admin session exists.
-      }
-    }
-
-    void checkSession()
-  }, [navigate, setUser])
+export default async function SunuPortailGestionRoute() {
+  const user = await getSessionUser()
+  const isAdmin = isAdminRole(user?.role)
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="flex min-h-screen flex-col">
       <Navbar />
       <main className="flex-1">
-        {isAdminView ? (
+        {isAdmin ? (
           <AdminLayout />
         ) : (
           <div className="container mx-auto px-4 py-6">
@@ -50,7 +20,8 @@ export default function SunuPortailGestionRoute() {
           </div>
         )}
       </main>
-      {!isAdminView && <Footer />}
+      {!isAdmin && <Footer />}
     </div>
   )
 }
+

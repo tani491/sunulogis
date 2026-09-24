@@ -1,14 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getSessionUser, isAdminRole } from '@/lib/auth';
+import { getPropertyOverrides, getPropertyReference, getPropertySlug } from '@/lib/real-estate';
+
+function safeParseImages(raw: unknown): string[] {
+  if (Array.isArray(raw)) return raw;
+  if (typeof raw !== 'string') return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
 
 function parseEstablishment(e: any) {
+  const overrides = getPropertyOverrides(e);
+  const availablePrices = Array.isArray(e.rooms)
+    ? e.rooms.filter((r: any) => r.isAvailable).map((r: any) => r.pricePerNight).filter((value: number) => Number.isFinite(value) && value > 0)
+    : [];
   return {
     ...e,
-    images: typeof e.images === 'string' ? JSON.parse(e.images) : e.images,
-    minPrice: e.rooms && e.rooms.length > 0
-      ? Math.min(...e.rooms.filter((r: any) => r.isAvailable).map((r: any) => r.pricePerNight))
-      : null,
+    images: safeParseImages(e.images),
+    minPrice: availablePrices.length > 0 ? Math.min(...availablePrices) : null,
+    reference: e.reference || getPropertyReference(e),
+    slug: e.slug || getPropertySlug(e),
+    ...(overrides || {}),
     owner: e.owner ? { ...e.owner, fullName: e.owner.name ?? e.owner.fullName } : e.owner,
   };
 }
@@ -80,6 +97,14 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         ...(body.city !== undefined && { city: body.city }),
         ...(body.region !== undefined && { region: body.region }),
         ...(body.type !== undefined && { type: body.type }),
+        ...(body.reference !== undefined && { reference: body.reference || null }),
+        ...(body.slug !== undefined && { slug: body.slug || null }),
+        ...(body.operationType !== undefined && { operationType: body.operationType }),
+        ...(body.priceAmount !== undefined && { priceAmount: body.priceAmount }),
+        ...(body.pricePeriod !== undefined && { pricePeriod: body.pricePeriod }),
+        ...(body.priceStatus !== undefined && { priceStatus: body.priceStatus }),
+        ...(body.bedrooms !== undefined && { bedrooms: body.bedrooms }),
+        ...(body.surfaceM2 !== undefined && { surfaceM2: body.surfaceM2 }),
         ...(body.address !== undefined && { address: body.address }),
         ...(body.website !== undefined && { website: body.website }),
         ...(body.phone !== undefined && { phone: body.phone }),

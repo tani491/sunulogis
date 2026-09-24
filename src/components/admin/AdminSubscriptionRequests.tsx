@@ -47,7 +47,13 @@ export function AdminSubscriptionRequests() {
     }
   }, [])
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      void load()
+    }, 0)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [load])
 
   const decide = async (requestId: string, decision: 'APPROVED' | 'REJECTED') => {
     setActionId(requestId)

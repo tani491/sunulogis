@@ -14,7 +14,8 @@ import { Separator } from '@/components/ui/separator'
 import { Pencil, Save, X, Globe, Phone, MapPin, CheckCircle, Ban, ShieldCheck, Clock, Trash2, ImagePlus, Star, PlusCircle, Banknote, ListChecks } from 'lucide-react'
 import { toast } from 'sonner'
 import { DragDropImageUpload } from '@/components/shared/DragDropImageUpload'
-import { DAKAR_NEIGHBORHOODS, ESTABLISHMENT_TYPES, REGIONS, getTypeLabel, getTypeColor, WAVE_INFO, getCommissionAmount, PAYMENT_STATUSES } from '@/lib/constants'
+import { DAKAR_NEIGHBORHOODS, ESTABLISHMENT_TYPES, OPERATION_FILTERS, REGIONS, getTypeLabel, getTypeColor } from '@/lib/constants'
+import { slugify } from '@/lib/real-estate'
 
 const PRIMARY_ROOM_NAME = 'Offre principale'
 const EQUIPMENT_SECTION_REGEX = /\n{0,2}(?:É|E)quipements\s*:\s*([\s\S]*)$/i
@@ -59,6 +60,14 @@ interface Establishment {
   images: string[]
   website?: string
   phone?: string
+  reference?: string | null
+  slug?: string | null
+  operationType?: 'VENTE' | 'LOCATION_MENSUELLE' | 'SEJOUR_NUITEE'
+  priceAmount?: number | null
+  pricePeriod?: 'MOIS' | 'NUITEE' | 'NONE' | null
+  priceStatus?: 'KNOWN' | 'SUR_DEMANDE'
+  bedrooms?: number | null
+  surfaceM2?: number | null
   isApproved: boolean
   isSuspended: boolean
   isFeatured: boolean
@@ -83,7 +92,12 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
 
   // Form fields
   const [name, setName] = useState('')
-  const [type, setType] = useState('auberge')
+  const [type, setType] = useState('appartement')
+  const [reference, setReference] = useState('')
+  const [slug, setSlug] = useState('')
+  const [operationType, setOperationType] = useState<'VENTE' | 'LOCATION_MENSUELLE' | 'SEJOUR_NUITEE'>('VENTE')
+  const [priceStatus, setPriceStatus] = useState<'KNOWN' | 'SUR_DEMANDE'>('KNOWN')
+  const [pricePeriod, setPricePeriod] = useState<'MOIS' | 'NUITEE' | 'NONE'>('NONE')
   const [description, setDescription] = useState('')
   const [city, setCity] = useState('')
   const [region, setRegion] = useState('')
@@ -92,6 +106,8 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
   const [phone, setPhone] = useState('')
   const [images, setImages] = useState<string[]>([])
   const [price, setPrice] = useState('')
+  const [bedrooms, setBedrooms] = useState('')
+  const [surfaceM2, setSurfaceM2] = useState('')
   const [amenities, setAmenities] = useState('')
   const [isFeatured, setIsFeatured] = useState(false)
   const [publishNow, setPublishNow] = useState(true)
@@ -106,7 +122,12 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
         const primaryRoom = data.rooms?.find((room: NonNullable<Establishment['rooms']>[number]) => room.isAvailable) || data.rooms?.[0]
         setEstablishment(data)
         setName(data.name || '')
-        setType(data.type || 'auberge')
+        setType(data.type || 'appartement')
+        setReference(data.reference || '')
+        setSlug(data.slug || '')
+        setOperationType(data.operationType || (data.type === 'maison_a_vendre' ? 'VENTE' : 'SEJOUR_NUITEE'))
+        setPriceStatus(data.priceStatus || (data.priceAmount ? 'KNOWN' : 'SUR_DEMANDE'))
+        setPricePeriod(data.pricePeriod || (data.operationType === 'LOCATION_MENSUELLE' ? 'MOIS' : data.operationType === 'SEJOUR_NUITEE' ? 'NUITEE' : 'NONE'))
         setDescription(baseDescription)
         setCity(data.city || '')
         setRegion(data.region || '')
@@ -114,7 +135,9 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
         setWebsite(data.website || '')
         setPhone(data.phone || '')
         setImages(data.images || [])
-        setPrice(primaryRoom?.pricePerNight?.toString() || '')
+        setPrice(data.priceAmount?.toString() || primaryRoom?.pricePerNight?.toString() || '')
+        setBedrooms(data.bedrooms?.toString() || '')
+        setSurfaceM2(data.surfaceM2?.toString() || '')
         setAmenities(parsedAmenities)
         setIsFeatured(data.isFeatured || false)
       } else {
@@ -139,21 +162,32 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
       return () => window.clearTimeout(timeoutId)
     }
 
-    setEstablishment(null)
-    setName('')
-    setType('auberge')
-    setDescription('')
-    setCity('')
-    setRegion('')
-    setAddress('')
-    setWebsite('')
-    setPhone('')
-    setImages([])
-    setPrice('')
-    setAmenities('')
-    setIsFeatured(false)
-    setPublishNow(true)
-    setLoading(false)
+    const timeoutId = window.setTimeout(() => {
+      setEstablishment(null)
+      setName('')
+      setType('appartement')
+      setReference('')
+      setSlug('')
+      setOperationType('VENTE')
+      setPriceStatus('KNOWN')
+      setPricePeriod('NONE')
+      setDescription('')
+      setCity('')
+      setRegion('')
+      setAddress('')
+      setWebsite('')
+      setPhone('')
+      setImages([])
+      setPrice('')
+      setBedrooms('')
+      setSurfaceM2('')
+      setAmenities('')
+      setIsFeatured(false)
+      setPublishNow(true)
+      setLoading(false)
+    }, 0)
+
+    return () => window.clearTimeout(timeoutId)
   }, [establishmentId])
 
   const handleRegionChange = (value: string) => {
@@ -165,7 +199,7 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
 
   const savePrimaryRoom = async (targetEstablishmentId: string) => {
     const cleanPrice = price.trim()
-    if (!cleanPrice) return
+    if (!cleanPrice || priceStatus === 'SUR_DEMANDE' || operationType === 'VENTE') return
 
     const numericPrice = Number(cleanPrice)
     const primaryRoom = establishment?.rooms?.find((room) => room.isAvailable) || establishment?.rooms?.[0]
@@ -201,11 +235,31 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
       }
     }
 
+    if (bedrooms.trim() && (!Number.isFinite(Number(bedrooms)) || Number(bedrooms) < 0)) {
+      toast.error('Le nombre de chambres doit être valide')
+      return
+    }
+
+    if (surfaceM2.trim() && (!Number.isFinite(Number(surfaceM2)) || Number(surfaceM2) < 0)) {
+      toast.error('La surface doit être valide')
+      return
+    }
+
     setSaving(true)
     try {
+      const cleanSlug = slug.trim() || slugify(name)
+      const numericPrice = priceStatus === 'KNOWN' && price.trim() ? Number(price) : null
       const payload = {
         name,
         type,
+        reference: reference.trim() || null,
+        slug: cleanSlug || null,
+        operationType,
+        priceAmount: numericPrice,
+        pricePeriod: operationType === 'VENTE' ? 'NONE' : pricePeriod,
+        priceStatus,
+        bedrooms: bedrooms.trim() ? Number(bedrooms) : null,
+        surfaceM2: surfaceM2.trim() ? Number(surfaceM2) : null,
         description: composeDescription(description, amenities),
         city,
         region,
@@ -345,8 +399,6 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
 
   if (!isCreateMode && !establishment) return null
 
-  const expectedCommission = getCommissionAmount(type)
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -362,7 +414,7 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
               ) : (
                 <Pencil className="h-5 w-5 text-primary" />
               )}
-              {isCreateMode ? 'Créer un établissement' : 'Modification administrateur'}
+              {isCreateMode ? 'Créer un bien' : 'Modification du bien'}
             </h1>
             <p className="text-sm text-muted-foreground">
               {isCreateMode ? 'Ajouter un nouveau bien au catalogue SunuLogis.' : `Modifier l'établissement ${establishment?.name || ''}`}
@@ -391,7 +443,7 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
                 <h3 className="font-semibold text-sm">Actions de modération</h3>
-                <p className="text-xs text-muted-foreground">Gérer le statut de cet établissement</p>
+                <p className="text-xs text-muted-foreground">Gérer le statut de publication de ce bien</p>
               </div>
               <div className="flex items-center gap-2 flex-wrap">
                 {!establishment.isApproved && (
@@ -404,7 +456,7 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Valider cet établissement ?</AlertDialogTitle>
+                        <AlertDialogTitle>Valider ce bien ?</AlertDialogTitle>
                         <AlertDialogDescription>
                           Approuver <strong>{establishment.name}</strong> ? Il sera visible publiquement sur le site après validation.
                         </AlertDialogDescription>
@@ -428,7 +480,7 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Suspendre cet établissement ?</AlertDialogTitle>
+                        <AlertDialogTitle>Suspendre ce bien ?</AlertDialogTitle>
                         <AlertDialogDescription>
                           Suspendre <strong>{establishment.name}</strong> ? Il ne sera plus visible publiquement.
                         </AlertDialogDescription>
@@ -458,7 +510,7 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
                     <AlertDialogHeader>
                       <AlertDialogTitle>Supprimer définitivement ?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Cette action est irréversible. <strong>{establishment.name}</strong> et toutes ses chambres et réservations seront supprimés.
+                        Cette action est irréversible. <strong>{establishment.name}</strong> et ses données associées seront supprimés.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -500,24 +552,23 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
         </Card>
       )}
 
-      {/* Commission info */}
       {!isCreateMode && establishment && (
         <Card>
           <CardContent className="p-4">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
               <div>
-                <p className="text-muted-foreground">Commission attendue</p>
-                <p className="font-bold text-lg">{expectedCommission.toLocaleString()} FCFA</p>
+                <p className="text-muted-foreground">Référence</p>
+                <p className="font-bold text-lg">{reference || 'À générer'}</p>
               </div>
               <div>
-                <p className="text-muted-foreground">Statut de paiement</p>
-                <Badge className={establishment.paymentStatus === 'paye' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
-                  {PAYMENT_STATUSES[establishment.paymentStatus as keyof typeof PAYMENT_STATUSES] || establishment.paymentStatus}
+                <p className="text-muted-foreground">Nature</p>
+                <Badge className="bg-emerald-700 text-white">
+                  {OPERATION_FILTERS.find((item) => item.value === operationType)?.label || operationType}
                 </Badge>
               </div>
               <div>
-                <p className="text-muted-foreground">Paiement Wave</p>
-                <p className="font-medium">{WAVE_INFO.number} ({WAVE_INFO.name})</p>
+                <p className="text-muted-foreground">Prix public</p>
+                <p className="font-medium">{priceStatus === 'SUR_DEMANDE' ? 'Prix sur demande' : `${Number(price || 0).toLocaleString()} FCFA`}</p>
               </div>
             </div>
           </CardContent>
@@ -555,6 +606,36 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
                     {ESTABLISHMENT_TYPES.map((t) => (
                       <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
                     ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="admin-reference">Référence</Label>
+                <Input id="admin-reference" value={reference} onChange={(e) => setReference(e.target.value)} placeholder="SL-001" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="admin-slug">Slug public</Label>
+                <Input id="admin-slug" value={slug} onChange={(e) => setSlug(e.target.value)} placeholder={slugify(name || 'bien-sunulogis')} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="admin-operation">Nature de l’opération *</Label>
+                <Select
+                  value={operationType}
+                  onValueChange={(value: 'VENTE' | 'LOCATION_MENSUELLE' | 'SEJOUR_NUITEE') => {
+                    setOperationType(value)
+                    setPricePeriod(value === 'VENTE' ? 'NONE' : value === 'LOCATION_MENSUELLE' ? 'MOIS' : 'NUITEE')
+                  }}
+                >
+                  <SelectTrigger id="admin-operation" className="w-full">
+                    <SelectValue placeholder="Opération" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="VENTE">Vente</SelectItem>
+                    <SelectItem value="LOCATION_MENSUELLE">Location mensuelle</SelectItem>
+                    <SelectItem value="SEJOUR_NUITEE">Séjour à la nuitée</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -619,11 +700,11 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="admin-price" className="flex items-center gap-2">
                   <Banknote className="h-3.5 w-3.5" />
-                  Prix à partir de
+                  Prix public
                 </Label>
                 <Input
                   id="admin-price"
@@ -631,16 +712,52 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
                   min="0"
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
-                  placeholder="25000"
+                  placeholder="157200000"
+                  disabled={priceStatus === 'SUR_DEMANDE'}
                 />
-                <p className="text-xs text-muted-foreground">Montant en FCFA.</p>
+              </div>
+              <div className="space-y-2">
+                <Label>Statut du prix</Label>
+                <Select value={priceStatus} onValueChange={(value: 'KNOWN' | 'SUR_DEMANDE') => setPriceStatus(value)}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Statut" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="KNOWN">Prix connu</SelectItem>
+                    <SelectItem value="SUR_DEMANDE">Prix sur demande</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Période</Label>
+                <Select value={pricePeriod} onValueChange={(value: 'MOIS' | 'NUITEE' | 'NONE') => setPricePeriod(value)} disabled={operationType === 'VENTE'}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Période" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="NONE">Aucune</SelectItem>
+                    <SelectItem value="MOIS">Mois</SelectItem>
+                    <SelectItem value="NUITEE">Nuitée</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="admin-bedrooms">Chambres</Label>
+                <Input id="admin-bedrooms" type="number" min="0" value={bedrooms} onChange={(e) => setBedrooms(e.target.value)} placeholder="3" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="admin-surface">Surface m²</Label>
+                <Input id="admin-surface" type="number" min="0" value={surfaceM2} onChange={(e) => setSurfaceM2(e.target.value)} placeholder="120" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="admin-website" className="flex items-center gap-2">
                   <Globe className="h-3.5 w-3.5" />
-                  Site web
+                  Site web / dossier
                 </Label>
-                <Input id="admin-website" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://mon-etablissement.sn" />
+                <Input id="admin-website" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://..." />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="admin-phone" className="flex items-center gap-2">
@@ -663,7 +780,7 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
                   className="flex items-center gap-2 text-sm font-medium leading-none cursor-pointer"
                 >
                   <Star className="h-4 w-4 text-amber-500" />
-                  Mettre cet établissement en vedette
+                  Mettre ce bien en vedette
                 </label>
               </div>
             )}
@@ -715,12 +832,12 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
         </CardContent>
       </Card>
 
-      {/* Rooms summary */}
+      {/* Legacy room data summary */}
       {!isCreateMode && establishment?.rooms && establishment.rooms.length > 0 && (
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-semibold text-muted-foreground">
-              Chambres ({establishment.rooms.length})
+              Offres héritées ({establishment.rooms.length})
             </CardTitle>
           </CardHeader>
           <CardContent className="pb-4">
@@ -732,7 +849,7 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
                     <Badge variant="outline">{room.capacity} pers.</Badge>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold">{room.pricePerNight.toLocaleString()} FCFA/nuit</span>
+                    <span className="font-semibold">{room.pricePerNight.toLocaleString()} FCFA</span>
                     <Badge className={room.isAvailable ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
                       {room.isAvailable ? 'Disponible' : 'Indisponible'}
                     </Badge>
