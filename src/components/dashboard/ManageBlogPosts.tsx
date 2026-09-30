@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { DragDropImageUpload } from '@/components/shared/DragDropImageUpload'
-import { BLOG_CATEGORIES } from '@/lib/constants'
+import { BLOG_CATEGORIES, BLOG_DEFAULT_CATEGORY, isBlogCategory } from '@/lib/constants'
 import { Lock, Newspaper, Pencil, Save, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -43,7 +43,7 @@ export function ManageBlogPosts() {
   const [title, setTitle] = useState('')
   const [excerpt, setExcerpt] = useState('')
   const [content, setContent] = useState('')
-  const [category, setCategory] = useState('general')
+  const [category, setCategory] = useState<string>(BLOG_DEFAULT_CATEGORY)
   const [coverImages, setCoverImages] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
 
@@ -92,7 +92,7 @@ export function ManageBlogPosts() {
     setTitle('')
     setExcerpt('')
     setContent('')
-    setCategory('general')
+    setCategory(BLOG_DEFAULT_CATEGORY)
     setCoverImages([])
   }
 
@@ -101,7 +101,7 @@ export function ManageBlogPosts() {
     setTitle(post.title)
     setExcerpt(post.excerpt)
     setContent(post.content)
-    setCategory(post.category)
+    setCategory(isBlogCategory(post.category) ? post.category : BLOG_DEFAULT_CATEGORY)
     setCoverImages(post.coverImage ? [post.coverImage] : [])
   }
 

@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ArrowLeft, MapPin, Phone, BedDouble, Home, Ruler } from 'lucide-react'
+import { ArrowLeft, MapPin, Phone, BedDouble, ExternalLink, Home, Ruler } from 'lucide-react'
 import { SUNULOGIS_CONTACT, getTypeLabel, getTypeColor } from '@/lib/constants'
 import { parseJsonResponse } from '@/lib/fetch-json'
 import { PropertyContactActions } from '@/components/shared/PropertyContactActions'
@@ -32,6 +32,7 @@ interface Establishment {
   images: string[]
   phone?: string
   website?: string
+  externalUrl?: string | null
   reference?: string | null
   operationType?: string | null
   priceAmount?: number | null
@@ -109,6 +110,7 @@ export function EstablishmentDetailPage() {
   const contactLocation = getPropertyLocation(establishment)
   const reference = getPropertyReference(establishment)
   const operationType = getOperationType(establishment)
+  const externalUrl = typeof establishment.externalUrl === 'string' ? establishment.externalUrl.trim() : ''
 
   return (
     <div className="space-y-8">
@@ -294,6 +296,18 @@ export function EstablishmentDetailPage() {
                 title={establishment.name}
                 location={contactLocation}
               />
+              {externalUrl && (
+                <Button
+                  variant="outline"
+                  className="gap-2 border-emerald-600 px-4 py-2 font-medium text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800"
+                  asChild
+                >
+                  <a href={externalUrl} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-4 w-4" />
+                    Découvrir le site du programme
+                  </a>
+                </Button>
+              )}
             </CardContent>
           </Card>
 

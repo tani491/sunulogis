@@ -59,6 +59,7 @@ interface Establishment {
   address: string
   images: string[]
   website?: string
+  externalUrl?: string | null
   phone?: string
   reference?: string | null
   slug?: string | null
@@ -103,6 +104,7 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
   const [region, setRegion] = useState('')
   const [address, setAddress] = useState('')
   const [website, setWebsite] = useState('')
+  const [externalUrl, setExternalUrl] = useState('')
   const [phone, setPhone] = useState('')
   const [images, setImages] = useState<string[]>([])
   const [price, setPrice] = useState('')
@@ -133,6 +135,7 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
         setRegion(data.region || '')
         setAddress(data.address || '')
         setWebsite(data.website || '')
+        setExternalUrl(data.externalUrl || '')
         setPhone(data.phone || '')
         setImages(data.images || [])
         setPrice(data.priceAmount?.toString() || primaryRoom?.pricePerNight?.toString() || '')
@@ -176,6 +179,7 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
       setRegion('')
       setAddress('')
       setWebsite('')
+      setExternalUrl('')
       setPhone('')
       setImages([])
       setPrice('')
@@ -248,6 +252,9 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
     setSaving(true)
     try {
       const cleanSlug = slug.trim() || slugify(name)
+      const cleanWebsite = website.trim()
+      const cleanExternalUrl = externalUrl.trim()
+      const cleanPhone = phone.trim()
       const numericPrice = priceStatus === 'KNOWN' && price.trim() ? Number(price) : null
       const payload = {
         name,
@@ -264,8 +271,9 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
         city,
         region,
         address,
-        website: website || null,
-        phone: phone || null,
+        website: cleanWebsite || null,
+        externalUrl: cleanExternalUrl || null,
+        phone: cleanPhone || null,
         images,
         ...(establishment?.isApproved ? { isFeatured } : {}),
       }
@@ -758,6 +766,18 @@ export function AdminEstablishmentEditor({ establishmentId, onClose, onSaved }: 
                   Site web / dossier
                 </Label>
                 <Input id="admin-website" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://..." />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="admin-external-url" className="flex items-center gap-2">
+                  <Globe className="h-3.5 w-3.5" />
+                  Site web du programme / promoteur (optionnel)
+                </Label>
+                <Input
+                  id="admin-external-url"
+                  value={externalUrl}
+                  onChange={(e) => setExternalUrl(e.target.value)}
+                  placeholder="https://..."
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="admin-phone" className="flex items-center gap-2">

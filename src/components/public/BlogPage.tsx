@@ -12,6 +12,7 @@ import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { NewsletterForm } from '@/components/shared/NewsletterForm'
 import { parseJsonResponse } from '@/lib/fetch-json'
+import { BLOG_CATEGORIES, getBlogCategoryColor, getBlogCategoryLabel } from '@/lib/constants'
 
 interface BlogPost {
   id: string
@@ -25,36 +26,6 @@ interface BlogPost {
   author: { fullName: string | null; email: string }
 }
 
-const blogCategories = [
-  { value: 'all', label: 'Tous' },
-  { value: 'voyage', label: 'Voyage' },
-  { value: 'culture', label: 'Culture' },
-  { value: 'guide', label: 'Guide' },
-  { value: 'actu', label: 'Actualités' },
-]
-
-const getCategoryColor = (cat: string) => {
-  const colors: Record<string, string> = {
-    voyage: 'bg-blue-100 text-blue-800',
-    culture: 'bg-purple-100 text-purple-800',
-    guide: 'bg-green-100 text-green-800',
-    actu: 'bg-orange-100 text-orange-800',
-    general: 'bg-gray-100 text-gray-800',
-  }
-  return colors[cat] || colors.general
-}
-
-const getCategoryLabel = (cat: string) => {
-  const labels: Record<string, string> = {
-    voyage: 'Voyage',
-    culture: 'Culture',
-    guide: 'Guide',
-    actu: 'Actualités',
-    general: 'Général',
-  }
-  return labels[cat] || cat
-}
-
 export function BlogPage() {
   const [posts, setPosts] = useState<BlogPost[]>([])
   const [loading, setLoading] = useState(true)
@@ -63,7 +34,7 @@ export function BlogPage() {
   async function fetchPosts() {
     setLoading(true)
     try {
-      const url = activeCategory !== 'all' ? `/api/blog?category=${activeCategory}` : '/api/blog'
+      const url = activeCategory !== 'all' ? `/api/blog?category=${encodeURIComponent(activeCategory)}` : '/api/blog'
       const res = await fetch(url)
       const data = await parseJsonResponse<BlogPost[]>(res)
       if (Array.isArray(data)) setPosts(data)
@@ -91,13 +62,13 @@ export function BlogPage() {
           <h1 className="text-3xl md:text-4xl font-bold">Blog SunuLogis</h1>
         </div>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Conseils de voyage, guides pratiques et actualités sur le Sénégal. Tout pour préparer votre séjour.
+          Actualités, guides d’achat et conseils pratiques pour réussir votre projet immobilier au Sénégal.
         </p>
       </div>
 
       {/* Category filters */}
       <div className="flex items-center gap-2 flex-wrap justify-center">
-        {blogCategories.map((cat) => (
+        {BLOG_CATEGORIES.map((cat) => (
           <Button
             key={cat.value}
             variant={activeCategory === cat.value ? 'default' : 'outline'}
@@ -147,8 +118,8 @@ export function BlogPage() {
                     <BookOpen className="h-12 w-12 text-primary/40" />
                   </div>
                 )}
-                <Badge className={`absolute top-3 left-3 ${getCategoryColor(post.category)}`}>
-                  {getCategoryLabel(post.category)}
+                <Badge className={`absolute top-3 left-3 ${getBlogCategoryColor(post.category)}`}>
+                  {getBlogCategoryLabel(post.category)}
                 </Badge>
               </div>
               <CardContent className="p-4 space-y-3">

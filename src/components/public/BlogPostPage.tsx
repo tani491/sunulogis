@@ -12,6 +12,7 @@ import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import ReactMarkdown from 'react-markdown'
 import { parseJsonResponse } from '@/lib/fetch-json'
+import { getBlogCategoryColor, getBlogCategoryLabel } from '@/lib/constants'
 
 interface BlogPost {
   id: string
@@ -24,24 +25,6 @@ interface BlogPost {
   createdAt: string
   updatedAt: string
   author: { fullName: string | null; email: string }
-}
-
-const getCategoryColor = (cat: string) => {
-  const colors: Record<string, string> = {
-    voyage: 'bg-blue-100 text-blue-800',
-    culture: 'bg-purple-100 text-purple-800',
-    guide: 'bg-green-100 text-green-800',
-    actu: 'bg-orange-100 text-orange-800',
-    general: 'bg-gray-100 text-gray-800',
-  }
-  return colors[cat] || colors.general
-}
-
-const getCategoryLabel = (cat: string) => {
-  const labels: Record<string, string> = {
-    voyage: 'Voyage', culture: 'Culture', guide: 'Guide', actu: 'Actualités', general: 'Général',
-  }
-  return labels[cat] || cat
 }
 
 interface RecentPost {
@@ -147,8 +130,8 @@ export function BlogPostPage() {
 
           {/* Post header */}
           <div className="space-y-4">
-            <Badge className={getCategoryColor(post.category)}>
-              {getCategoryLabel(post.category)}
+            <Badge className={getBlogCategoryColor(post.category)}>
+              {getBlogCategoryLabel(post.category)}
             </Badge>
             <h1 className="text-2xl md:text-3xl font-bold leading-tight">{post.title}</h1>
             <div className="flex items-center gap-4 text-sm text-muted-foreground">

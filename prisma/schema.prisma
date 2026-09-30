@@ -125,6 +125,7 @@ model Establishment {
   address        String    @default("")
   images         String    @default("[]")
   website        String?
+  externalUrl    String?
   phone          String?
   isFeatured     Boolean   @default(false)
   isVerified     Boolean   @default(false)
@@ -294,7 +295,7 @@ model BlogPost {
   excerpt     String   @default("")
   content     String   @default("")
   coverImage  String?
-  category    String   @default("general")
+  category    String   @default("Actualité")
   isPublished Boolean  @default(false)
   authorId    String
   createdAt   DateTime @default(now())

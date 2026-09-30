@@ -13,6 +13,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { DragDropImageUpload } from '@/components/shared/DragDropImageUpload'
+import { BLOG_CATEGORIES, BLOG_DEFAULT_CATEGORY, getBlogCategoryLabel, isBlogCategory } from '@/lib/constants'
 import { Plus, Pencil, Trash2, Newspaper } from 'lucide-react'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
@@ -30,14 +31,6 @@ interface BlogPost {
   createdAt: string
   author: { fullName: string | null }
 }
-
-const blogCategories = [
-  { value: 'general', label: 'Général' },
-  { value: 'voyage', label: 'Voyage' },
-  { value: 'culture', label: 'Culture' },
-  { value: 'guide', label: 'Guide' },
-  { value: 'actu', label: 'Actualités' },
-]
 
 function generateSlug(title: string): string {
   return title
@@ -62,7 +55,7 @@ export function AdminBlog() {
   const [excerpt, setExcerpt] = useState('')
   const [content, setContent] = useState('')
   const [coverImages, setCoverImages] = useState<string[]>([])
-  const [category, setCategory] = useState('general')
+  const [category, setCategory] = useState<string>(BLOG_DEFAULT_CATEGORY)
   const [isPublished, setIsPublished] = useState(false)
   const [slugManual, setSlugManual] = useState(false)
 
@@ -91,7 +84,7 @@ export function AdminBlog() {
     setExcerpt('')
     setContent('')
     setCoverImages([])
-    setCategory('general')
+    setCategory(BLOG_DEFAULT_CATEGORY)
     setIsPublished(false)
     setSlugManual(false)
     setEditingPost(null)
@@ -104,7 +97,7 @@ export function AdminBlog() {
     setExcerpt(post.excerpt)
     setContent(post.content)
     setCoverImages(post.coverImage ? [post.coverImage] : [])
-    setCategory(post.category)
+    setCategory(isBlogCategory(post.category) ? post.category : BLOG_DEFAULT_CATEGORY)
     setIsPublished(post.isPublished)
     setSlugManual(true)
     setEditingPost(post)
@@ -117,7 +110,7 @@ export function AdminBlog() {
     setExcerpt('')
     setContent('')
     setCoverImages([])
-    setCategory('general')
+    setCategory(BLOG_DEFAULT_CATEGORY)
     setIsPublished(false)
     setEditingPost(null)
     setShowDialog(false)
@@ -195,7 +188,7 @@ export function AdminBlog() {
   }
 
   const getCategoryLabel = (cat: string) => {
-    return blogCategories.find(c => c.value === cat)?.label || cat
+    return getBlogCategoryLabel(cat)
   }
 
   const getStatusBadge = (post: BlogPost) => {
@@ -398,7 +391,7 @@ export function AdminBlog() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {blogCategories.map((cat) => (
+                    {BLOG_CATEGORIES.filter((cat) => cat.value !== 'all').map((cat) => (
                       <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
                     ))}
                   </SelectContent>

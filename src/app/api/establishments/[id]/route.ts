@@ -107,6 +107,9 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         ...(body.surfaceM2 !== undefined && { surfaceM2: body.surfaceM2 }),
         ...(body.address !== undefined && { address: body.address }),
         ...(body.website !== undefined && { website: body.website }),
+        ...(body.externalUrl !== undefined && {
+          externalUrl: typeof body.externalUrl === 'string' ? body.externalUrl.trim() || null : body.externalUrl,
+        }),
         ...(body.phone !== undefined && { phone: body.phone }),
         ...(body.images !== undefined && { images: JSON.stringify(body.images) }),
         ...(body.isFeatured !== undefined && existing.isApproved && { isFeatured: body.isFeatured }),

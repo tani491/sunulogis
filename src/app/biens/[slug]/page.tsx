@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
-import { ArrowLeft, BedDouble, Building2, Home, MapPin, Ruler } from 'lucide-react'
+import { ArrowLeft, BedDouble, Building2, ExternalLink, Home, MapPin, Ruler } from 'lucide-react'
 import Link from 'next/link'
 import Navbar from '@/components/shared/Navbar'
 import Footer from '@/components/shared/Footer'
@@ -115,6 +115,7 @@ export default async function PropertyDetailRoute({ params }: Props) {
   const images = property.images
   const location = getPropertyLocation(property)
   const operationType = getOperationType(property)
+  const externalUrl = typeof property.externalUrl === 'string' ? property.externalUrl.trim() : ''
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -223,6 +224,18 @@ export default async function PropertyDetailRoute({ params }: Props) {
                   location={location}
                   stickyMobile
                 />
+                {externalUrl && (
+                  <Button
+                    variant="outline"
+                    className="gap-2 border-emerald-600 px-4 py-2 font-medium text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800"
+                    asChild
+                  >
+                    <a href={externalUrl} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="h-4 w-4" />
+                      Découvrir le site du programme
+                    </a>
+                  </Button>
+                )}
               </CardContent>
             </Card>
 
@@ -238,4 +251,3 @@ export default async function PropertyDetailRoute({ params }: Props) {
     </div>
   )
 }
-

@@ -42,7 +42,8 @@ export const establishmentSchema = z.object({
   city: z.string().min(1, 'Ville requise').max(100),
   region: z.string().max(100).optional(),
   address: z.string().max(500).optional(),
-  website: z.string().url('URL invalide').max(500).nullable().optional(),
+  website: z.string().trim().url('URL invalide').max(500).nullable().optional(),
+  externalUrl: z.string().trim().url('URL invalide').max(500).nullable().optional(),
   phone: z
     .string()
     .max(20)

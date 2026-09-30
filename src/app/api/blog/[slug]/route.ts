@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getSessionUser, isAdminRole } from '@/lib/auth';
+import { BLOG_DEFAULT_CATEGORY, isBlogCategory } from '@/lib/constants';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   try {
@@ -37,6 +38,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ slug
     const { slug } = await params;
     const body = await req.json();
     const { title, excerpt, content, coverImage, category, isPublished } = body;
+    const blogCategory = typeof category === 'string' && isBlogCategory(category) ? category : BLOG_DEFAULT_CATEGORY;
 
     const existing = await db.blogPost.findUnique({
       where: { slug },
@@ -54,7 +56,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ slug
         ...(excerpt !== undefined ? { excerpt } : {}),
         ...(content !== undefined ? { content } : {}),
         ...(coverImage !== undefined ? { coverImage } : {}),
-        ...(category !== undefined ? { category } : {}),
+        ...(category !== undefined ? { category: blogCategory } : {}),
         ...(isPublished !== undefined ? { isPublished } : {}),
       },
       include: {

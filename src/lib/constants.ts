@@ -127,13 +127,46 @@ export const ROLE_LABELS: Record<string, string> = {
 } as const
 
 // Blog categories
+export const BLOG_CATEGORY_OPTIONS = [
+  { value: 'Actualité', label: 'Actualité' },
+  { value: 'Acheter de bien immobilière au Sénégal', label: 'Acheter de bien immobilière au Sénégal' },
+  { value: 'Diaspora & achat à distance', label: 'Diaspora & achat à distance' },
+  { value: 'Quartiers & cadre de vie', label: 'Quartiers & cadre de vie' },
+  { value: "Budget & financement d'un bien immobilière", label: "Budget & financement d'un bien immobilière" },
+  { value: 'Investissement locatif', label: 'Investissement locatif' },
+  { value: 'Programmes à découvrir', label: 'Programmes à découvrir' },
+] as const
+
+export type BlogCategoryValue = (typeof BLOG_CATEGORY_OPTIONS)[number]['value']
+
 export const BLOG_CATEGORIES = [
   { value: 'all', label: 'Toutes' },
-  { value: 'voyage', label: 'Voyage' },
-  { value: 'culture', label: 'Culture' },
-  { value: 'guide', label: 'Guide' },
-  { value: 'actu', label: 'Actualités' },
+  ...BLOG_CATEGORY_OPTIONS,
 ] as const
+
+export const BLOG_DEFAULT_CATEGORY: BlogCategoryValue = BLOG_CATEGORY_OPTIONS[0].value
+
+export function isBlogCategory(category: string): category is BlogCategoryValue {
+  return BLOG_CATEGORY_OPTIONS.some((cat) => cat.value === category)
+}
+
+export function getBlogCategoryLabel(category: string): string {
+  return BLOG_CATEGORIES.find((cat) => cat.value === category)?.label || category
+}
+
+export function getBlogCategoryColor(category: string): string {
+  const colors: Record<BlogCategoryValue, string> = {
+    'Actualité': 'bg-orange-100 text-orange-800',
+    'Acheter de bien immobilière au Sénégal': 'bg-emerald-100 text-emerald-800',
+    'Diaspora & achat à distance': 'bg-blue-100 text-blue-800',
+    'Quartiers & cadre de vie': 'bg-lime-100 text-lime-800',
+    "Budget & financement d'un bien immobilière": 'bg-amber-100 text-amber-800',
+    'Investissement locatif': 'bg-purple-100 text-purple-800',
+    'Programmes à découvrir': 'bg-teal-100 text-teal-800',
+  }
+
+  return isBlogCategory(category) ? colors[category] : 'bg-gray-100 text-gray-800'
+}
 
 // Price range options
 export const PRICE_RANGES = [

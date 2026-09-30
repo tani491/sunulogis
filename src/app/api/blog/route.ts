@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getSessionUser, isAdminRole } from '@/lib/auth';
+import { BLOG_DEFAULT_CATEGORY, isBlogCategory } from '@/lib/constants';
 
 export async function GET(req: NextRequest) {
   try {
@@ -52,6 +53,7 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const { title, slug, excerpt, content, coverImage, category, isPublished } = body;
+    const blogCategory = typeof category === 'string' && isBlogCategory(category) ? category : BLOG_DEFAULT_CATEGORY;
 
     if (!title || !slug) {
       return NextResponse.json({ error: 'Titre et slug requis' }, { status: 400 });
@@ -70,7 +72,7 @@ export async function POST(req: NextRequest) {
         excerpt: excerpt || '',
         content: content || '',
         coverImage: coverImage || null,
-        category: category || 'general',
+        category: blogCategory,
         isPublished: Boolean(isPublished),
         authorId: user.id,
       },

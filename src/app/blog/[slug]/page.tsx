@@ -12,30 +12,9 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { db } from '@/lib/db'
+import { getBlogCategoryColor, getBlogCategoryLabel } from '@/lib/constants'
 
 type Props = { params: Promise<{ slug: string }> }
-
-const getCategoryColor = (cat: string) => {
-  const colors: Record<string, string> = {
-    voyage: 'bg-blue-100 text-blue-800',
-    culture: 'bg-purple-100 text-purple-800',
-    guide: 'bg-green-100 text-green-800',
-    actu: 'bg-orange-100 text-orange-800',
-    general: 'bg-gray-100 text-gray-800',
-  }
-  return colors[cat] || colors.general
-}
-
-const getCategoryLabel = (cat: string) => {
-  const labels: Record<string, string> = {
-    voyage: 'Voyage',
-    culture: 'Culture',
-    guide: 'Guide',
-    actu: 'Actualités',
-    general: 'Général',
-  }
-  return labels[cat] || cat
-}
 
 async function getPost(slug: string) {
   return db.blogPost.findFirst({
@@ -115,7 +94,7 @@ export default async function BlogPostRoute({ params }: Props) {
               )}
 
               <div className="space-y-4">
-                <Badge className={getCategoryColor(post.category)}>{getCategoryLabel(post.category)}</Badge>
+                <Badge className={getBlogCategoryColor(post.category)}>{getBlogCategoryLabel(post.category)}</Badge>
                 <h1 className="text-2xl font-bold leading-tight md:text-4xl">{post.title}</h1>
                 <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1.5">
@@ -177,4 +156,3 @@ export default async function BlogPostRoute({ params }: Props) {
     </div>
   )
 }
-

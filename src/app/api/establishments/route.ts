@@ -206,6 +206,7 @@ export async function POST(req: NextRequest) {
       region,
       address,
       website,
+      externalUrl,
       phone,
       images,
     } = parsed.data;
@@ -228,6 +229,7 @@ export async function POST(req: NextRequest) {
         region: region ?? '',
         address: address ?? '',
         website: website ?? null,
+        externalUrl: externalUrl ?? null,
         phone: phone ?? null,
         images: JSON.stringify(images ?? []),
         isApproved: false,
