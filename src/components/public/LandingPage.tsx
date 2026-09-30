@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Building2, Search, MapPin, ArrowRight, Home, CalendarCheck, Star } from 'lucide-react';
+import { Building2, Search, MapPin, ArrowRight, Home, CalendarCheck, Star, BookOpen, MessageCircle } from 'lucide-react';
 import { getTypeLabel, getTypeColor } from '@/lib/constants';
 import { parseJsonResponse } from '@/lib/fetch-json';
 import { CustomSearchRequestForm } from './CustomSearchRequestForm';
@@ -160,25 +160,48 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Search CTA */}
-      <section className="py-8 px-4">
-        <div className="container mx-auto">
-          <div className="max-w-md mx-auto">
-            <Link href="/biens" className="block">
-            <Card className="cursor-pointer hover:shadow-lg transition-all group border-2 hover:border-primary/50">
-              <CardContent className="p-6 flex items-center gap-4">
-                <div className="flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                  <Search className="h-7 w-7 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-lg">Je cherche un logement</h3>
-                  <p className="text-sm text-muted-foreground">Explorez les biens disponibles</p>
-                </div>
-              </CardContent>
-            </Card>
-            </Link>
+      {/* Quick Access Cards */}
+      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto px-4 my-8">
+        <Link
+          href="/biens"
+          className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm hover:shadow-md transition-all cursor-pointer flex items-center gap-4"
+        >
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+            <Search className="h-7 w-7" />
           </div>
-        </div>
+          <div>
+            <h3 className="text-lg font-semibold">Je cherche un logement</h3>
+            <p className="text-sm text-muted-foreground">Explorez les biens disponibles à la vente et à la location</p>
+          </div>
+        </Link>
+
+        <Link
+          href="/blog"
+          className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm hover:shadow-md transition-all cursor-pointer flex items-center gap-4"
+        >
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+            <BookOpen className="h-7 w-7" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold">Lire notre blog</h3>
+            <p className="text-sm text-muted-foreground">Conseils, guides d'achat et actualités immobilières au Sénégal</p>
+          </div>
+        </Link>
+
+        <Link
+          href="https://wa.me/221778057536?text=Bonjour%20SunuLogis%2C%20j%27ai%20un%20projet%20immobilier%20sur%20mesure%20dont%20je%20souhaite%20discuter."
+          target="_blank"
+          rel="noopener noreferrer"
+          className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm hover:shadow-md transition-all cursor-pointer flex items-center gap-4"
+        >
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+            <MessageCircle className="h-7 w-7" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold">Un projet sur mesure ?</h3>
+            <p className="text-sm text-muted-foreground">Discutez directement avec notre apporteur d'affaires sur WhatsApp</p>
+          </div>
+        </Link>
       </section>
 
       {/* Featured establishments */}
