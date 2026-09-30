@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
 import { notFound } from 'next/navigation'
-import { ArrowLeft, BedDouble, Building2, ExternalLink, Home, MapPin, Ruler } from 'lucide-react'
+import { ArrowLeft, BedDouble, ExternalLink, Home, MapPin, Ruler } from 'lucide-react'
 import Link from 'next/link'
 import Navbar from '@/components/shared/Navbar'
 import Footer from '@/components/shared/Footer'
@@ -9,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { PropertyContactActions } from '@/components/shared/PropertyContactActions'
+import { PropertyGallery } from '@/components/public/PropertyGallery'
 import { db } from '@/lib/db'
 import { getTypeColor, getTypeLabel } from '@/lib/constants'
 import {
@@ -130,36 +130,12 @@ export default async function PropertyDetailRoute({ params }: Props) {
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           <div className="space-y-6 lg:col-span-2">
-            <div className="relative h-72 overflow-hidden rounded-xl bg-muted md:h-[460px]">
-              {images.length > 0 ? (
-                <Image
-                  src={images[0]}
-                  alt={property.name}
-                  fill
-                  priority
-                  sizes="(max-width: 1023px) 100vw, 66vw"
-                  className="object-cover"
-                />
-              ) : (
-                <div className="flex h-full items-center justify-center">
-                  <Building2 className="h-16 w-16 text-muted-foreground/40" />
-                </div>
-              )}
-              <div className="absolute left-4 top-4 flex flex-wrap gap-2">
-                <Badge className="bg-emerald-700 text-white">{getOperationBadgeLabel(operationType)}</Badge>
-                <Badge variant="secondary">{property.reference}</Badge>
-              </div>
-            </div>
-
-            {images.length > 1 && (
-              <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
-                {images.slice(1, 6).map((image: string, index: number) => (
-                  <div key={image} className="relative aspect-[4/3] overflow-hidden rounded-lg bg-muted">
-                    <Image src={image} alt={`${property.name} ${index + 2}`} fill sizes="160px" className="object-cover" />
-                  </div>
-                ))}
-              </div>
-            )}
+            <PropertyGallery
+              images={images}
+              title={property.name}
+              operationLabel={getOperationBadgeLabel(operationType)}
+              reference={property.reference}
+            />
 
             <section className="space-y-4">
               <div className="flex flex-wrap items-center gap-2">

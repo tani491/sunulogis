@@ -37,7 +37,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ slug
 
     const { slug } = await params;
     const body = await req.json();
-    const { title, excerpt, content, coverImage, category, isPublished } = body;
+    const { title, slug: nextSlug, excerpt, content, coverImage, category, isPublished } = body;
     const blogCategory = typeof category === 'string' && isBlogCategory(category) ? category : BLOG_DEFAULT_CATEGORY;
 
     const existing = await db.blogPost.findUnique({
@@ -49,10 +49,23 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ slug
       return NextResponse.json({ error: 'Article non trouvé' }, { status: 404 });
     }
 
+    const cleanNextSlug = typeof nextSlug === 'string' ? nextSlug.trim() : '';
+    if (cleanNextSlug && cleanNextSlug !== slug) {
+      const slugOwner = await db.blogPost.findUnique({
+        where: { slug: cleanNextSlug },
+        select: { id: true },
+      });
+
+      if (slugOwner && slugOwner.id !== existing.id) {
+        return NextResponse.json({ error: 'Ce slug existe déjà' }, { status: 400 });
+      }
+    }
+
     const post = await db.blogPost.update({
       where: { slug },
       data: {
         ...(title !== undefined ? { title } : {}),
+        ...(cleanNextSlug ? { slug: cleanNextSlug } : {}),
         ...(excerpt !== undefined ? { excerpt } : {}),
         ...(content !== undefined ? { content } : {}),
         ...(coverImage !== undefined ? { coverImage } : {}),

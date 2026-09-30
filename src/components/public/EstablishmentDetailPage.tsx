@@ -48,7 +48,7 @@ export function EstablishmentDetailPage() {
   const { currentEstablishmentId, navigate } = useAppStore()
   const [establishment, setEstablishment] = useState<Establishment | null>(null)
   const [loading, setLoading] = useState(true)
-  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [activeImage, setActiveImage] = useState('')
 
   async function fetchEstablishment() {
     setLoading(true)
@@ -56,6 +56,7 @@ export function EstablishmentDetailPage() {
       const res = await fetch(`/api/establishments/${currentEstablishmentId}`)
       const data = await parseJsonResponse<Establishment>(res)
       setEstablishment(data)
+      setActiveImage((data.images || [])[0] || '')
       void fetch(`/api/establishments/${currentEstablishmentId}/track`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -107,6 +108,7 @@ export function EstablishmentDetailPage() {
   }
 
   const images = establishment.images || []
+  const activeImageIndex = Math.max(images.indexOf(activeImage), 0)
   const contactLocation = getPropertyLocation(establishment)
   const reference = getPropertyReference(establishment)
   const operationType = getOperationType(establishment)
@@ -124,8 +126,8 @@ export function EstablishmentDetailPage() {
           {images.length > 0 ? (
             <>
               <Image
-                src={images[currentImageIndex]}
-                alt={`${establishment.name} - Image ${currentImageIndex + 1}`}
+                src={activeImage || images[0]}
+                alt={`${establishment.name} - Image ${activeImageIndex + 1}`}
                 fill
                 priority
                 sizes="(max-width: 1023px) 100vw, 66vw"
@@ -136,9 +138,9 @@ export function EstablishmentDetailPage() {
                   {images.map((_, i) => (
                     <button
                       key={i}
-                      onClick={() => setCurrentImageIndex(i)}
+                      onClick={() => setActiveImage(images[i])}
                       className={`h-3 w-3 rounded-full transition-colors ${
-                        i === currentImageIndex ? 'bg-white' : 'bg-white/50'
+                        i === activeImageIndex ? 'bg-white' : 'bg-white/50'
                       }`}
                     />
                   ))}
@@ -157,9 +159,9 @@ export function EstablishmentDetailPage() {
             {images.map((img, i) => (
               <button
                 key={i}
-                onClick={() => setCurrentImageIndex(i)}
-                className={`relative h-16 w-20 shrink-0 overflow-hidden rounded-lg border-2 transition-colors ${
-                  i === currentImageIndex ? 'border-primary' : 'border-transparent'
+                onClick={() => setActiveImage(img)}
+                className={`relative h-16 w-20 shrink-0 overflow-hidden rounded-lg transition ${
+                  activeImage === img ? 'ring-2 ring-emerald-600 ring-offset-2' : 'hover:opacity-90'
                 }`}
               >
                 <Image

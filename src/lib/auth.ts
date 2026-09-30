@@ -79,7 +79,7 @@ export async function getSessionUser() {
       id: user.id,
       email: user.email,
       fullName: user.name,
-      role: user.role,
+      role: normalizeUserRole(user.role),
       phone: user.phone,
       isSubscribed: user.isSubscribed,
       paymentReminder: user.paymentReminder,
@@ -89,8 +89,12 @@ export async function getSessionUser() {
   }
 }
 
+export function normalizeUserRole(role: string | null | undefined): string {
+  return role?.trim().toLowerCase() ?? '';
+}
+
 export function isAdminRole(role: string | null | undefined): boolean {
-  return role === 'admin';
+  return normalizeUserRole(role) === 'admin';
 }
 
 export function getCookieOptions() {

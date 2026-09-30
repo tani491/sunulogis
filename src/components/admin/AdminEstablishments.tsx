@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
-import { Building2, Check, Ban, ShieldCheck, Filter, MapPin, Eye, Clock, Plus } from 'lucide-react'
+import { Building2, Check, Ban, ShieldCheck, Filter, MapPin, Eye, Clock, Plus, Pencil, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { ESTABLISHMENT_TYPE_FILTERS, getTypeLabel, getTypeColor } from '@/lib/constants'
 import { AdminEstablishmentEditor } from './AdminEstablishmentEditor'
@@ -80,6 +80,28 @@ export function AdminEstablishments() {
       } else {
         const data = await res.json()
         toast.error(data.error || 'Erreur')
+      }
+    } catch (err) {
+      console.error(err)
+      toast.error('Erreur serveur')
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  const deleteEstablishment = async (establishmentId: string) => {
+    setActionLoading(establishmentId)
+    try {
+      const res = await fetch(`/api/establishments/${establishmentId}`, {
+        method: 'DELETE',
+      })
+
+      if (res.ok) {
+        toast.success('Bien supprimé')
+        fetchEstablishments()
+      } else {
+        const data = await res.json().catch(() => ({}))
+        toast.error(data.error || 'Erreur lors de la suppression')
       }
     } catch (err) {
       console.error(err)
@@ -286,8 +308,8 @@ export function AdminEstablishments() {
                       onClick={() => setEditingId(est.id)}
                       disabled={actionLoading === est.id}
                     >
-                      <Eye className="h-4 w-4" />
-                      {!est.isApproved ? 'Examiner' : 'Modifier'}
+                      <Pencil className="h-4 w-4" />
+                      Modifier
                     </Button>
 
                     {!est.isApproved && (
@@ -353,6 +375,29 @@ export function AdminEstablishments() {
                         Réactiver
                       </Button>
                     )}
+
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button size="sm" variant="outline" className="gap-1 text-destructive hover:text-destructive" disabled={actionLoading === est.id}>
+                          <Trash2 className="h-3 w-3" />
+                          Supprimer
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Supprimer ce bien ?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Cette action est irréversible. Le bien &ldquo;{est.name}&rdquo; sera définitivement supprimé.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Annuler</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => deleteEstablishment(est.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                            Supprimer
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </CardContent>
               </Card>
@@ -397,18 +442,6 @@ export function AdminEstablishments() {
                       <div>
                         <p className="font-medium">{est.name}</p>
                         <p className="text-xs text-muted-foreground line-clamp-1">{est.description?.substring(0, 60)}{est.description?.length > 60 ? '...' : ''}</p>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="mt-2 h-9 w-9 p-0 bg-blue-600 text-white border-blue-600 hover:bg-blue-700 hover:text-white sm:w-auto sm:px-3 sm:gap-1"
-                          onClick={() => setEditingId(est.id)}
-                          disabled={actionLoading === est.id}
-                          aria-label={!est.isApproved ? 'Examiner' : 'Modifier'}
-                          title={!est.isApproved ? 'Examiner' : 'Modifier'}
-                        >
-                          <Eye className="h-4 w-4" />
-                          <span className="hidden sm:inline">{!est.isApproved ? 'Examiner' : 'Modifier'}</span>
-                        </Button>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -428,6 +461,17 @@ export function AdminEstablishments() {
                     <TableCell>{getStatusBadge(est)}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="gap-1"
+                          onClick={() => setEditingId(est.id)}
+                          disabled={actionLoading === est.id}
+                        >
+                          <Pencil className="h-3 w-3" />
+                          Modifier
+                        </Button>
+
                         {!est.isApproved && (
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
@@ -489,6 +533,28 @@ export function AdminEstablishments() {
                             <ShieldCheck className="h-3 w-3" />
                           </Button>
                         )}
+
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button size="sm" variant="ghost" className="gap-1 text-destructive hover:text-destructive" disabled={actionLoading === est.id}>
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Supprimer ce bien ?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Cette action est irréversible. Le bien &ldquo;{est.name}&rdquo; sera définitivement supprimé.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Annuler</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => deleteEstablishment(est.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                Supprimer
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
                     </TableCell>
                   </TableRow>

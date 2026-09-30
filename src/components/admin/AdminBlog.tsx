@@ -308,13 +308,15 @@ export function AdminBlog() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
-                        <Button size="icon" variant="ghost" onClick={() => startEdit(post)}>
+                        <Button size="sm" variant="outline" className="gap-1" onClick={() => startEdit(post)}>
                           <Pencil className="h-4 w-4" />
+                          Modifier
                         </Button>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button size="icon" variant="ghost" className="text-destructive hover:text-destructive">
+                            <Button size="sm" variant="outline" className="gap-1 text-destructive hover:text-destructive">
                               <Trash2 className="h-4 w-4" />
+                              Supprimer
                             </Button>
                           </AlertDialogTrigger>
                           <AlertDialogContent>

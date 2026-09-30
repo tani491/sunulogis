@@ -68,8 +68,8 @@ export function AdminOverview() {
           <CardContent className="flex items-center gap-4 p-4">
             <Building2 className="h-8 w-8 text-primary" />
             <div>
-              <p className="text-sm text-muted-foreground">Biens</p>
-              <p className="text-2xl font-bold">{stats?.totalEstablishments || 0}</p>
+              <p className="text-sm text-muted-foreground">Biens publiés</p>
+              <p className="text-2xl font-bold">{stats?.approvedEstablishments || 0}</p>
             </div>
           </CardContent>
         </Card>
@@ -107,8 +107,8 @@ export function AdminOverview() {
           <CardContent className="flex items-center gap-4 p-4">
             <CheckCircle className="h-6 w-6 text-emerald-600" />
             <div>
-              <p className="text-sm text-muted-foreground">Publiés</p>
-              <p className="text-xl font-bold">{stats?.approvedEstablishments || 0}</p>
+              <p className="text-sm text-muted-foreground">Total enregistrés</p>
+              <p className="text-xl font-bold">{stats?.totalEstablishments || 0}</p>
             </div>
           </CardContent>
         </Card>
