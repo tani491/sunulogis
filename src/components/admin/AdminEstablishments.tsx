@@ -406,23 +406,23 @@ export function AdminEstablishments() {
 
           <Card className="hidden md:block">
             <div className="w-full overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
-              <Table className="min-w-[920px]">
+              <Table className="min-w-[860px]">
               <TableHeader>
                 <TableRow>
-                  <TableHead>Photo</TableHead>
-                  <TableHead>Nom</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Localisation</TableHead>
-                  <TableHead>Opération</TableHead>
-                  <TableHead>Prix</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="w-16 px-2">Photo</TableHead>
+                  <TableHead className="max-w-[190px] px-2">Nom</TableHead>
+                  <TableHead className="px-2">Type</TableHead>
+                  <TableHead className="px-2">Localisation</TableHead>
+                  <TableHead className="px-2">Opération</TableHead>
+                  <TableHead className="px-2">Prix</TableHead>
+                  <TableHead className="px-2">Statut</TableHead>
+                  <TableHead className="sticky right-0 bg-white px-2 text-right shadow-l">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredEstablishments.map((est) => (
                   <TableRow key={est.id} className={!est.isApproved ? 'bg-yellow-50/50' : ''}>
-                    <TableCell>
+                    <TableCell className="px-2">
                       {est.images && est.images.length > 0 ? (
                         <Image
                           src={est.images[0]}
@@ -438,28 +438,28 @@ export function AdminEstablishments() {
                         </div>
                       )}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="max-w-[190px] px-2">
                       <div>
                         <p className="font-medium">{est.name}</p>
                         <p className="text-xs text-muted-foreground line-clamp-1">{est.description?.substring(0, 60)}{est.description?.length > 60 ? '...' : ''}</p>
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="px-2">
                       <Badge className={getTypeColor(est.type)}>{getTypeLabel(est.type)}</Badge>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="px-2">
                       <div className="flex items-center gap-1 text-sm">
                         <MapPin className="h-3 w-3 text-muted-foreground" />
                         {est.city}{est.region ? `, ${est.region}` : ''}
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="px-2">
                       <Badge className="bg-emerald-700 text-white">{getOperationBadgeLabel(getOperationType(est))}</Badge>
                       {est.bedrooms ? <p className="mt-1 text-xs text-muted-foreground">{est.bedrooms} chambre{est.bedrooms !== 1 ? 's' : ''}</p> : null}
                     </TableCell>
-                    <TableCell className="font-medium">{getPriceDisplay(est)}</TableCell>
-                    <TableCell>{getStatusBadge(est)}</TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="px-2 font-medium">{getPriceDisplay(est)}</TableCell>
+                    <TableCell className="px-2">{getStatusBadge(est)}</TableCell>
+                    <TableCell className="sticky right-0 bg-white px-2 text-right shadow-l">
                       <div className="flex items-center justify-end gap-1">
                         <Button
                           size="sm"
