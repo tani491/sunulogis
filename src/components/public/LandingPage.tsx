@@ -69,7 +69,8 @@ export function LandingPage() {
         const data = await parseJsonResponse<EstablishmentsApiResponse | Establishment[]>(res);
         const list = Array.isArray(data) ? data : data.establishments;
         if (Array.isArray(list)) {
-          setEstablishments(list.filter((est) => est.isFeatured === true).slice(0, 6));
+          const featured = list.filter((est) => est.isFeatured === true);
+          setEstablishments((featured.length > 0 ? featured : list).slice(0, 6));
         }
       } catch (err) {
         console.error(err);

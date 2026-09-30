@@ -8,14 +8,26 @@ import { getPropertyOverrides, getPropertyReference, getPropertySlug } from '@/l
 
 // A03 — Never call JSON.parse without a try-catch; malformed data must not crash the route
 function safeParseImages(raw: unknown): string[] {
-  if (Array.isArray(raw)) return raw;
+  if (Array.isArray(raw)) return raw.filter((image): image is string => typeof image === 'string' && image.trim().length > 0);
   if (typeof raw !== 'string') return [];
   try {
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    return Array.isArray(parsed)
+      ? parsed.filter((image): image is string => typeof image === 'string' && image.trim().length > 0)
+      : [];
   } catch {
     return [];
   }
+}
+
+function nullableText(value: unknown) {
+  return typeof value === 'string' ? value.trim() || null : null;
+}
+
+function normalizeImages(images: unknown) {
+  return Array.isArray(images)
+    ? images.filter((image): image is string => typeof image === 'string' && image.trim().length > 0)
+    : [];
 }
 
 function parseEstablishment(e: any) {
@@ -127,7 +139,8 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // Public listing: only approved and non-suspended establishments
+    // Public listing: a published property is an approved property that has not been suspended.
+    // Keep this condition focused so optional legacy fields do not block public display.
     const where = {
       isApproved: true,
       isSuspended: false,
@@ -211,27 +224,31 @@ export async function POST(req: NextRequest) {
       images,
     } = parsed.data;
 
+    const normalizedImages = normalizeImages(images);
+    const normalizedOperationType = operationType ?? 'SEJOUR_NUITEE';
+    const normalizedPriceAmount = priceAmount ?? null;
+
     const establishment = await db.establishment.create({
       data: {
         ownerId: user.id,
-        name,
+        name: name.trim(),
         type: type ?? 'auberge',
-        reference: reference || null,
-        slug: slug || null,
-        operationType: operationType ?? 'SEJOUR_NUITEE',
-        priceAmount: priceAmount ?? null,
-        pricePeriod: pricePeriod ?? (operationType === 'VENTE' ? 'NONE' : operationType === 'LOCATION_MENSUELLE' ? 'MOIS' : 'NUITEE'),
-        priceStatus: priceStatus ?? (priceAmount ? 'KNOWN' : 'SUR_DEMANDE'),
+        reference: nullableText(reference),
+        slug: nullableText(slug),
+        operationType: normalizedOperationType,
+        priceAmount: normalizedPriceAmount,
+        pricePeriod: pricePeriod ?? (normalizedOperationType === 'VENTE' ? 'NONE' : normalizedOperationType === 'LOCATION_MENSUELLE' ? 'MOIS' : 'NUITEE'),
+        priceStatus: priceStatus ?? (normalizedPriceAmount ? 'KNOWN' : 'SUR_DEMANDE'),
         bedrooms: bedrooms ?? null,
         surfaceM2: surfaceM2 ?? null,
         description: description ?? '',
-        city,
+        city: city.trim(),
         region: region ?? '',
         address: address ?? '',
-        website: website ?? null,
-        externalUrl: externalUrl ?? null,
-        phone: phone ?? null,
-        images: JSON.stringify(images ?? []),
+        website: nullableText(website),
+        externalUrl: nullableText(externalUrl),
+        phone: nullableText(phone),
+        images: JSON.stringify(normalizedImages),
         isApproved: false,
         isSuspended: false,
       },
@@ -240,7 +257,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(parseEstablishment(establishment));
   } catch (error) {
-    console.error('Create establishment error:', error);
+    console.error('Erreur création bien:', error);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   }
 }

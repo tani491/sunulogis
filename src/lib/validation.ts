@@ -30,8 +30,8 @@ export const changePasswordSchema = z.object({
 export const establishmentSchema = z.object({
   name: z.string().min(1, 'Nom requis').max(200),
   type: z.string().max(50).optional(),
-  reference: z.string().max(40).optional().or(z.literal('')),
-  slug: z.string().max(120).optional().or(z.literal('')),
+  reference: z.string().max(40).nullable().optional(),
+  slug: z.string().max(120).nullable().optional(),
   operationType: z.enum(['VENTE', 'LOCATION_MENSUELLE', 'SEJOUR_NUITEE']).optional(),
   priceAmount: z.number().int().positive().nullable().optional(),
   pricePeriod: z.enum(['MOIS', 'NUITEE', 'NONE']).nullable().optional(),
@@ -50,7 +50,7 @@ export const establishmentSchema = z.object({
     .regex(/^\+?[\d\s\-()]*$/, 'Numéro de téléphone invalide')
     .nullable()
     .optional(),
-  images: z.array(z.string().url()).max(10).optional(),
+  images: z.array(z.string().min(1)).max(10).optional(),
 });
 
 export type LoginInput = z.infer<typeof loginSchema>;
