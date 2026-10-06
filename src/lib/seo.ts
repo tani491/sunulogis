@@ -1,27 +1,10 @@
 import type { Metadata } from "next";
 
-const fallbackSiteUrl = "https://sunulogis.sn";
-
-function normalizeSiteUrl(value?: string) {
-  if (!value) return fallbackSiteUrl;
-
-  const withProtocol = value.startsWith("http") ? value : `https://${value}`;
-
-  try {
-    const url = new URL(withProtocol);
-    return url.origin;
-  } catch {
-    return fallbackSiteUrl;
-  }
-}
+const officialSiteUrl = "https://sunulogis.com";
 
 export const siteConfig = {
   name: "SunuLogis",
-  url: normalizeSiteUrl(
-    process.env.NEXT_PUBLIC_APP_URL ||
-      process.env.VERCEL_PROJECT_PRODUCTION_URL ||
-      process.env.VERCEL_URL
-  ),
+  url: officialSiteUrl,
   title:
     "SunuLogis | Biens immobiliers à vendre et à louer au Sénégal",
   description:
@@ -57,7 +40,7 @@ export const seoKeywords = [
 ];
 
 export const defaultMetadata: Metadata = {
-  metadataBase: new URL(siteConfig.url),
+  metadataBase: new URL("https://sunulogis.com"),
   applicationName: siteConfig.name,
   title: {
     default: siteConfig.title,

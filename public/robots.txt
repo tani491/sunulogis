@@ -1,9 +1,0 @@
-User-agent: *
-Allow: /
-Disallow: /api/
-Disallow: /admin
-Disallow: /dashboard
-Disallow: /reset-password
-Disallow: /forgot-password
-
-Sitemap: https://sunulogis.sn/sitemap.xml
